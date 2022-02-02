@@ -14,7 +14,8 @@ import { Message } from '@lumino/messaging';
 
 import { Widget } from '@lumino/widgets';
 
-interface APODResponse {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+interface TVBResponse {
   copyright: string;
   date: string;
   explanation: string;
@@ -23,14 +24,14 @@ interface APODResponse {
   url: string;
 }
 
-class APODWidget extends Widget {
+class TVBWidget extends Widget {
   /**
-   * Construct a new APOD widget.
+   * Construct a new TVB Unicore widget.
    */
   constructor() {
     super();
 
-    this.addClass('my-apodWidget');
+    this.addClass('tvb-unicore-Widget');
 
     // Add an image element to the panel
     this.img = document.createElement('img');
@@ -69,7 +70,7 @@ class APODWidget extends Widget {
       return;
     }
 
-    const data = (await response.json()) as APODResponse;
+    const data = (await response.json()) as TVBResponse;
 
     if (data.media_type === 'image') {
       // Populate the image
@@ -98,29 +99,29 @@ class APODWidget extends Widget {
 }
 
 /**
- * Activate the APOD widget extension.
+ * Activate the TVB widget extension.
  */
 function activate(
   app: JupyterFrontEnd,
   palette: ICommandPalette,
   restorer: ILayoutRestorer
 ) {
-  console.log('JupyterLab extension jupyterlab_apod is activated!');
+  console.log('JupyterLab extension tvb-ext-unicore is activated!');
 
   // Declare a widget variable
-  let widget: MainAreaWidget<APODWidget>;
+  let widget: MainAreaWidget<TVBWidget>;
 
   // Add an application command
-  const command: string = 'apod:open';
+  const command = 'tvb:open';
   app.commands.addCommand(command, {
     label: 'Random Astronomy Picture',
     execute: () => {
       if (!widget || widget.isDisposed) {
         // Create a new widget if one does not exist
         // or if the previous one was disposed after closing the panel
-        const content = new APODWidget();
+        const content = new TVBWidget();
         widget = new MainAreaWidget({ content });
-        widget.id = 'apod-jupyterlab';
+        widget.id = 'tvb-jupyterlab';
         widget.title.label = 'Astronomy Picture';
         widget.title.closable = true;
       }
@@ -143,20 +144,20 @@ function activate(
   palette.addItem({ command, category: 'Tutorial' });
 
   // Track and restore the widget state
-  let tracker = new WidgetTracker<MainAreaWidget<APODWidget>>({
-    namespace: 'apod'
+  const tracker = new WidgetTracker<MainAreaWidget<TVBWidget>>({
+    namespace: 'tvb'
   });
   restorer.restore(tracker, {
     command,
-    name: () => 'apod'
+    name: () => 'tvb'
   });
 }
 
 /**
- * Initialization data for the jupyterlab_apod extension.
+ * Initialization data for the tvb-ext-unicore extension.
  */
 const extension: JupyterFrontEndPlugin<void> = {
-  id: 'jupyterlab_apod',
+  id: 'tvb-ext-unicore',
   autoStart: true,
   requires: [ICommandPalette, ILayoutRestorer],
   activate: activate
