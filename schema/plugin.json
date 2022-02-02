@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "tvb-ext-unicore",
+  "description": "tvb-ext-unicore settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
