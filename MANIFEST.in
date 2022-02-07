@@ -1,18 +1,18 @@
 include LICENSE
 include *.md
 include pyproject.toml
+recursive-include jupyter-config *.json
 
 include package.json
 include install.json
 include ts*.json
 include yarn.lock
 
-graft tvbextunicore/labextension
+graft tvb-ext-unicore/labextension
 
 # Javascript files
 graft src
 graft style
-graft schema
 prune **/node_modules
 prune lib
 prune binder

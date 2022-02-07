@@ -1,9 +1,13 @@
-# tvbextunicore
+# tvb-ext-unicore
 
-[![Github Actions Status](https://github.com/liadomide/tvb-ext-unicore/workflows/Build/badge.svg)](https://github.com/liadomide/tvb-ext-unicore/actions/workflows/build.yml)
+[![Github Actions Status](https://github.com/liadomide/tvb-ext-unicore.git/workflows/Build/badge.svg)](https://github.com/liadomide/tvb-ext-unicore.git/actions/workflows/build.yml)
 
 TVB Widgets - A Unicore Lab extension
 
+
+This extension is composed of a Python package named `tvb-ext-unicore`
+for the server extension and a NPM package named `tvb-ext-unicore`
+for the frontend extension.
 
 
 ## Requirements
@@ -15,7 +19,7 @@ TVB Widgets - A Unicore Lab extension
 To install the extension, execute:
 
 ```bash
-pip install tvbextunicore
+pip install tvb-ext-unicore
 ```
 
 ## Uninstall
@@ -23,7 +27,24 @@ pip install tvbextunicore
 To remove the extension, execute:
 
 ```bash
-pip uninstall tvbextunicore
+pip uninstall tvb-ext-unicore
+```
+
+
+## Troubleshoot
+
+If you are seeing the frontend extension, but it is not working, check
+that the server extension is enabled:
+
+```bash
+jupyter server extension list
+```
+
+If the server extension is installed and enabled, but you are not seeing
+the frontend extension, check the frontend extension is installed:
+
+```bash
+jupyter labextension list
 ```
 
 
@@ -39,11 +60,13 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the tvbextunicore directory
+# Change directory to the tvb-ext-unicore directory
 # Install package in development mode
 pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
+# Server extension must be manually installed in develop mode
+jupyter server extension enable tvb-ext-unicore
 # Rebuild extension Typescript source after making changes
 jlpm run build
 ```
@@ -68,7 +91,9 @@ jupyter lab build --minimize=False
 ### Development uninstall
 
 ```bash
-pip uninstall tvbextunicore
+# Server extension must be manually disabled in develop mode
+jupyter server extension disable tvb-ext-unicore
+pip uninstall tvb-ext-unicore
 ```
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
