@@ -1,10 +1,14 @@
 import {
+  ILayoutRestorer,
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import { ICommandPalette, MainAreaWidget } from '@jupyterlab/apputils';
-// todo: add WidgetTracker and ILayoutRestorer to monitor state
+import {
+  ICommandPalette,
+  MainAreaWidget,
+  WidgetTracker
+} from '@jupyterlab/apputils';
 
 import { PyunicoreWidget, DataType } from "./pyunicoreWidget";
 import { requestAPI } from './handler';
@@ -16,10 +20,10 @@ import { requestAPI } from './handler';
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'tvb-ext-unicore:plugin',
   autoStart: true,
-  requires: [ICommandPalette],
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+  requires: [ICommandPalette, ILayoutRestorer],
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette, restorer: ILayoutRestorer) => {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
-    console.log('ICommandPalette:', palette);
+    let widget: MainAreaWidget<PyunicoreWidget>;
     // todo: replace constant with api call (or add method to be called in constructor maybe tbd)
     const data: DataType = {
       rows: [
@@ -31,58 +35,61 @@ const plugin: JupyterFrontEndPlugin<void> = {
       ]
     }
 
-    const content = new PyunicoreWidget({cols: ["id", "name", "user", "time"]}, data);
-    const widget = new MainAreaWidget({ content });
-    widget.id = 'tvb-ext-unicore';
-    widget.title.label = 'PyUnicore Task Stream';
-    widget.title.closable = true;
-
-    function updateTasks():void {
-      //call api
-      requestAPI<any>('get_example')
-      .then(data => {
-        console.log(data);
-        //set data to table (currently mock data)
-        content.data = {
-          rows: [
-            {id: "updated_id", name: "updated_name", user: "updated_user", time: "mock_time"}
-          ]
-        };
-      })
-      .catch(reason => {
-        console.error(
-          `The tvb-ext-unicore server extension appears to be missing.\n${reason}`
-        );
-      });
-    }
-
-    //add a button to update tasks table
-    const btn = document.createElement("button");
-    btn.innerText = "Update Tasks";
-    btn.onclick = updateTasks;
-    content.node.prepend(btn);
-
     const command: string = 'tvb-ext-unicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
       execute: () => {
+        if (!widget || widget.isDisposed) {
+          const content = new PyunicoreWidget({cols: ["id", "name", "user", "time"]}, data);
+          widget = new MainAreaWidget({ content });
+          widget.id = 'tvb-ext-unicore';
+          widget.title.label = 'PyUnicore Task Stream';
+          widget.title.closable = true;
+
+          //add a button to update tasks table
+          function updateTasks():void {
+          //call api
+          requestAPI<any>('get_example')
+          .then(data => {
+            console.log(data);
+            //set data to table (currently mock data)
+            content.data = {
+              rows: [
+                {id: "updated_id", name: "updated_name", user: "updated_user", time: "mock_time"}
+              ]
+            };
+          })
+          .catch(reason => {
+            console.error(
+              `The tvb-ext-unicore server extension appears to be missing.\n${reason}`
+            );
+          });
+        }
+          const btn = document.createElement("button");
+          btn.innerText = "Update Tasks";
+          btn.onclick = updateTasks;
+          content.node.prepend(btn);
+        }
+        if (!tracker.has(widget)) {
+          //Track the state of the widget for later restore
+          tracker.add(widget);
+        }
         if (!widget.isAttached) {
           app.shell.add(widget, 'main');
         }
+        widget.content.update();
         app.shell.activateById(widget.id);
       }
-    })
+    });
 
     palette.addItem({command, category: 'PyUnicore'});
-    requestAPI<any>('get_example')
-      .then(data => {
-        console.log(data);
-      })
-      .catch(reason => {
-        console.error(
-          `The tvb-ext-unicore server extension appears to be missing.\n${reason}`
-        );
-      });
+    let tracker = new WidgetTracker<MainAreaWidget<PyunicoreWidget>>({
+      namespace: 'pyunicore'
+    });
+    restorer.restore(tracker, {
+      command,
+      name: () => 'pyunicore'
+    });
   }
 };
 
