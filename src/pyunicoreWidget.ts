@@ -5,7 +5,7 @@ export interface TableFormat {
 }
 
 export interface DataType {
-    rows: any[]
+    jobs: any[]
 }
 export class PyunicoreWidget extends Widget {
     constructor(format: TableFormat, data: DataType) {
@@ -61,7 +61,6 @@ export class PyunicoreWidget extends Widget {
     buildTable(): void {
         this.tHead.innerHTML = '';
         this.buildTHead();
-        this.tBody.innerHTML = '';
         this.buildTBody();
     }
 
@@ -70,7 +69,7 @@ export class PyunicoreWidget extends Widget {
         this.tHead.appendChild(tr);
         this.tableFormat.cols.forEach((colText)=> {
             let thCol = document.createElement("th");
-            thCol.innerText = colText;
+            thCol.innerText = colText.toUpperCase();
             tr.appendChild(thCol);
         })
         let th = document.createElement("th");
@@ -86,10 +85,10 @@ export class PyunicoreWidget extends Widget {
             console.log("cancelling job");
             const newData = this.data;
             // todo: api call to cancel job
-            newData.rows = newData.rows.filter((row)=>row.id!==id);
+            newData.jobs = newData.jobs.filter((row)=>row.id!==id);
             this.data = newData;
         }
-        this.data.rows.forEach((rowData: any)=>{
+        this.data.jobs.forEach((rowData: any)=>{
             let tr = document.createElement("tr");
             let id = rowData["id"]; //fixme: should be dynamic
             tr.id = id;
