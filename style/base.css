@@ -1,0 +1,17 @@
+.tvb-pyunicoreWidget {
+    background-color: whitesmoke;
+}
+
+.tvb-pyunicoreWidget table, tr {
+    width: 100%;
+    border: var(--jp-border-width) solid var(--jp-border-color1);
+    border-collapse: collapse;
+}
+.tvb-pyunicoreWidget td, th {
+    border: var(--jp-border-width) solid var(--jp-border-color1);
+}
+
+tr:nth-child(even){
+    background-color: gray;
+    color: whitesmoke;
+}
