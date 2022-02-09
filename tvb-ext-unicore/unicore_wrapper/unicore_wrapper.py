@@ -28,9 +28,9 @@ OWNER = 'owner'
 
 class UnicoreWrapper(object):
 
-    def __init__(self, site):
+    def __init__(self):
         token = self.__retrieve_token()
-        self.client = self.__build_client(site, token)
+        self.transport = self.__build_transport(token)
 
     def __retrieve_token(self):
         try:
@@ -43,32 +43,44 @@ class UnicoreWrapper(object):
             if token is None:
                 LOGGER.error("No auth token defined as environment variable AUTH_TOKEN! Please define one!")
                 raise TVBExtUnicoreException("Cannot connect to EBRAINS HPC without an auth token! Either run this on "
-                                          "Collab, or define the AUTH_TOKEN environment variable!")
+                                             "Collab, or define the AUTH_TOKEN environment variable!")
 
             LOGGER.info("Successfully retrieved the auth token from environment variable AUTH_TOKEN!")
         return token
 
-    def __build_client(self, site, token):
+    def __build_transport(self, token):
         transport = unicore_client.Transport(token, oidc=True)
-        sites = unicore_client.get_sites(transport)
+        return transport
+
+    def __build_client(self, site):
+        sites = self.get_sites()
         site_url = sites.get(site)
 
         if site_url is None:
             raise AttributeError(f'Requested HPC site: {site}, does not exist!')
 
-        client = unicore_client.Client(transport, site_url)
+        client = unicore_client.Client(self.transport, site_url)
 
         return client
 
-    def get_jobs(self):
+    def get_sites(self):
         # type: () -> list
         """
-        Retrieve the all jobs started by the current user at the selected site and return them in a list.
+        Retrieve all sites available via Unicore.
+        """
+        all_sites = unicore_client.get_sites(self.transport)
+        return all_sites
+
+    def get_jobs(self, site):
+        # type: (str) -> list
+        """
+        Retrieve the jobs started by the current user at the selected site and return them in a list.
         """
         jobs_list = list()
 
+        client = self.__build_client(site)
         # TODO: use pagination
-        all_jobs = self.client.get_jobs()
+        all_jobs = client.get_jobs()
 
         for job in all_jobs:
             jobs_list.append(JobDTO(job.job_id,
@@ -91,7 +103,7 @@ class UnicoreWrapper(object):
             LOGGER.error("Cannot abort job as URL has not been provided!")
             return False
 
-        job = unicore_client.Job(self.client.transport, job_url)
+        job = unicore_client.Job(self.transport, job_url)
         if job.is_running():
             job.abort()
             LOGGER.info(f"Aborted job {job.job_id} from URL: {job_url}")

@@ -7,32 +7,27 @@ import tornado
 from .unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from .logger.builder import get_logger
 
-
 LOGGER = get_logger(__name__)
+
 
 class SitesHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
-        self.finish(json.dumps(['DAINT-CSCS', 'JUSUF', 'JURECA']))
+        sites = UnicoreWrapper().get_sites()
+        self.finish(json.dumps([site_name for site_name in sites]))
 
 
 class JobsHandler(APIHandler):
-class SitesHandler(APIHandler):
-    pass
-
-class JobsHandler(APIHandler):
-    CURRENT_JOBS = UnicoreWrapper('DAINT-CSCS').get_jobs()
-
     # The following decorator should be present on all verb methods (head, get, post,
     # patch, put, delete, options) to ensure only authorized user can request the
     # Jupyter server
     @tornado.web.authenticated
     def get(self):
         """
-        Retrieve all jobs for current user.
+        Retrieve all jobs for current user, launched at site given as POST param.
         """
-        all_jobs = UnicoreWrapper('DAINT-CSCS').get_jobs()
-        self.CURRENT_JOBS = all_jobs
+        # TODO: get site from request
+        all_jobs = UnicoreWrapper().get_jobs('DAINT-CSCS')
         self.finish(json.dumps({'jobs': [job.to_json() for job in all_jobs]}))
 
     @tornado.web.authenticated
@@ -41,18 +36,10 @@ class JobsHandler(APIHandler):
         Cancel the job corresponding to the id sent as post param.
         """
         post_params = self.get_json_body()
-        job_id = post_params["id"]
+        job_url = post_params["job_url"]
 
-        current_job = None
-
-        unicore_wrapper = UnicoreWrapper('DAINT-CSCS')
-        all_jobs = self.CURRENT_JOBS
-        for job in all_jobs:
-            if job.id == job_id:
-                current_job = job
-
-        LOGGER.info(f"Cancelling job at URL: {job_id}")
-        is_canceled = unicore_wrapper.cancel_job(current_job.resource_url)
+        LOGGER.info(f"Cancelling job at URL: {job_url}")
+        is_canceled = UnicoreWrapper().cancel_job(current_job.resource_url)
 
         if not is_canceled:
             self.finish(json.dumps({'message': f'Job {job_id} could not be cancelled!'}))
