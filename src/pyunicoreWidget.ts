@@ -1,4 +1,4 @@
-import {Widget} from '@lumino/widgets';
+import { Widget } from '@lumino/widgets';
 import {requestAPI} from "./handler";
 
 export interface TableFormat {

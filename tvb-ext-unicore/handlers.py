@@ -11,7 +11,10 @@ from .logger.builder import get_logger
 LOGGER = get_logger(__name__)
 
 class SitesHandler(APIHandler):
-    pass
+    @tornado.web.authenticated
+    def get(self):
+        self.finish(json.dumps(['DAINT-CSCS', 'JUSUF', 'JURECA']))
+
 
 class JobsHandler(APIHandler):
     CURRENT_JOBS = UnicoreWrapper('DAINT-CSCS').get_jobs()
