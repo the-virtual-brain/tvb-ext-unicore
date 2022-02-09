@@ -1,4 +1,4 @@
-import { Widget } from '@lumino/widgets';
+import {Widget} from '@lumino/widgets';
 import {requestAPI} from "./handler";
 
 export interface TableFormat {
@@ -13,6 +13,7 @@ export interface Job {
 export interface DataType {
     jobs: Job[]
 }
+
 
 export interface ButtonConfig {
     name: string,
@@ -78,10 +79,10 @@ export class PyunicoreWidget extends Widget {
         this.buildTBody();
     }
 
-    buildTHead(): void {
+    buildTHead(): void{
         const tr = document.createElement('tr');
         this.tHead.appendChild(tr);
-        this.tableFormat.cols.forEach((colText) => {
+        this.tableFormat.cols.forEach((colText)=> {
             let thCol = document.createElement('th');
             thCol.innerText = colText.toUpperCase();
             tr.appendChild(thCol);
@@ -112,9 +113,9 @@ export class PyunicoreWidget extends Widget {
             let id = rowData[this.tableFormat.idField];
             tr.id = id;
             this.tableFormat.cols.forEach((colName: string) => {
-                let td = document.createElement("td");
-                td.innerText = rowData[colName];
-                tr.appendChild(td);
+               let td = document.createElement('td');
+               td.innerText = rowData[colName];
+               tr.appendChild(td);
             });
 
             // add button to cancel job
