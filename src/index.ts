@@ -24,7 +24,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
 
-    const data = await requestAPI<any>('get_example') as DataType;
+    const data = await requestAPI<any>('jobs') as DataType;
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command: string = 'tvb-ext-unicore:open';
     app.commands.addCommand(command, {
@@ -40,7 +40,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           //add a button to update tasks table
           function updateTasks():void {
           //call api
-          requestAPI<any>('get_example')
+          requestAPI<any>('jobs')
           .then(data => {
             console.log(data);
             //set data to table (currently mock data)
