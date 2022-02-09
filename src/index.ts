@@ -10,9 +10,8 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
-import { PyunicoreWidget } from "./pyunicoreWidget";
+import { PyunicoreWidget, DataType } from "./pyunicoreWidget";
 import { requestAPI } from './handler';
-// todo: create an interface for API response
 
 /**
  * Initialization data for the tvb-ext-unicore extension.
@@ -25,14 +24,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
 
-    const data = await requestAPI<any>('get_example');
+    const data = await requestAPI<any>('get_example') as DataType;
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command: string = 'tvb-ext-unicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
       execute: () => {
         if (!widget || widget.isDisposed) {
-          const content = new PyunicoreWidget({cols: columns}, data);
+          const content = new PyunicoreWidget({cols: columns, idField: 'id'}, data);
           widget = new MainAreaWidget({ content });
           widget.id = 'tvb-ext-unicore';
           widget.title.label = 'PyUnicore Task Stream';
@@ -74,6 +73,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let tracker = new WidgetTracker<MainAreaWidget<PyunicoreWidget>>({
       namespace: 'pyunicore'
     });
+
     restorer.restore(tracker, {
       command,
       name: () => 'pyunicore'
