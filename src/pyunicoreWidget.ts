@@ -1,4 +1,5 @@
-import { Widget } from '@lumino/widgets';
+import {Widget} from '@lumino/widgets';
+import {requestAPI} from "./handler";
 
 export interface TableFormat {
     cols: Array<string>
@@ -7,6 +8,7 @@ export interface TableFormat {
 export interface DataType {
     jobs: any[]
 }
+
 export class PyunicoreWidget extends Widget {
     constructor(format: TableFormat, data: DataType) {
         // todo: see if there is a better way to use element creation in widgets (maybe a template?)
@@ -30,6 +32,7 @@ export class PyunicoreWidget extends Widget {
     public get data() {
         return this._data;
     }
+
     public set data(data: DataType) {
         this._data = data;
         this.buildTBody();
@@ -64,10 +67,10 @@ export class PyunicoreWidget extends Widget {
         this.buildTBody();
     }
 
-    buildTHead(): void{
+    buildTHead(): void {
         const tr = document.createElement("tr");
         this.tHead.appendChild(tr);
-        this.tableFormat.cols.forEach((colText)=> {
+        this.tableFormat.cols.forEach((colText) => {
             let thCol = document.createElement("th");
             thCol.innerText = colText.toUpperCase();
             tr.appendChild(thCol);
@@ -80,22 +83,29 @@ export class PyunicoreWidget extends Widget {
     buildTBody(): void {
         console.log("build tbody");
         this.tBody.innerHTML = "";
+
         // function to cancel a job fixme: have it passed down as param for a more dynamic widget
-        const cancelJob = (id: string): void => {
-            console.log("cancelling job");
-            const newData = this.data;
-            // todo: api call to cancel job
-            newData.jobs = newData.jobs.filter((row)=>row.id!==id);
-            this.data = newData;
+        function cancelJob(id: string): void {
+            console.log("Cancelling job");
+            const dataToSend = {id: id};
+            try {
+                requestAPI<any>('jobs', {method: 'POST', body: JSON.stringify(dataToSend)});
+            } catch (reason) {
+                console.error('Error on POST.\n${reason}')
+            }
+            // TODO: refresh table after cancel
+            // newData.jobs = newData.jobs.filter((row)=>row.id!==id);
+            // this.data = newData;
         }
-        this.data.jobs.forEach((rowData: any)=>{
+
+        this.data.jobs.forEach((rowData: any) => {
             let tr = document.createElement("tr");
             let id = rowData["id"]; //fixme: should be dynamic
             tr.id = id;
             this.tableFormat.cols.forEach((colName: string) => {
-               let td = document.createElement("td");
-               td.innerText = rowData[colName];
-               tr.appendChild(td);
+                let td = document.createElement("td");
+                td.innerText = rowData[colName];
+                tr.appendChild(td);
             });
 
             // add button to cancel job

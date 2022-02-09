@@ -5,7 +5,13 @@ from jupyter_server.utils import url_path_join
 import tornado
 
 
-class RouteHandler(APIHandler):
+class SitesHandler(APIHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.finish(json.dumps(['DAINT-CSCS', 'JUSUF', 'JURECA']))
+
+
+class JobsHandler(APIHandler):
     # The following decorator should be present on all verb methods (head, get, post,
     # patch, put, delete, options) to ensure only authorized user can request the
     # Jupyter server
@@ -93,11 +99,21 @@ class RouteHandler(APIHandler):
             ]
         }))
 
+    @tornado.web.authenticated
+    def post(self):
+        """
+        Cancel the job corresponding to the id sent as post param.
+        """
+        post_params = self.get_json_body()
+        job_id = post_params["id"]
+        self.finish(json.dumps({'message': f'Job {job_id} has been cancelled!'}))
+
 
 def setup_handlers(web_app):
     host_pattern = ".*$"
 
     base_url = web_app.settings["base_url"]
-    route_pattern = url_path_join(base_url, "tvb-ext-unicore", "get_example")
-    handlers = [(route_pattern, RouteHandler)]
+    sites_pattern = url_path_join(base_url, "tvb-ext-unicore", "sites")
+    jobs_pattern = url_path_join(base_url, "tvb-ext-unicore", "jobs")
+    handlers = [(jobs_pattern, JobsHandler), (sites_pattern, SitesHandler)]
     web_app.add_handlers(host_pattern, handlers)
