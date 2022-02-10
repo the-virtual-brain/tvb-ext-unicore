@@ -45,12 +45,12 @@ class MockPyUnicoreClient(object):
 def test_get_jobs(mocker):
     os.environ['AUTH_TOKEN'] = "test_auth_token"
 
-    def mockk(self, site='', token=''):
+    def mockk(self, site=''):
         return MockPyUnicoreClient()
 
-    mocker.patch('tvbwidgets.pyunicore_handler.hpc_jobs_handler.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
-    job_handler = UnicoreWrapper('TEST_SITE')
-    jobs = job_handler.get_jobs()
+    mocker.patch('tvb_ext_unicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
+    unicore_wrapper = UnicoreWrapper()
+    jobs = unicore_wrapper.get_jobs('TEST_SITE')
 
     assert len(jobs) == 1
     assert isinstance(jobs[0], JobDTO)
@@ -61,10 +61,10 @@ def test_get_jobs(mocker):
 def test_get_jobs_failed_auth():
     os.environ.pop('AUTH_TOKEN')
     with pytest.raises(TVBExtUnicoreException):
-        UnicoreWrapper('TEST_SITE')
+        UnicoreWrapper()
 
 
 def test_get_jobs_wrong_site():
     os.environ['AUTH_TOKEN'] = "test_auth_token"
     with pytest.raises(AttributeError):
-        UnicoreWrapper('TEST_SITE')
+        UnicoreWrapper().get_jobs('TEST_SITE')
