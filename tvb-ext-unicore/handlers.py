@@ -36,15 +36,15 @@ class JobsHandler(APIHandler):
         Cancel the job corresponding to the id sent as post param.
         """
         post_params = self.get_json_body()
-        job_url = post_params["job_url"]
+        job_url = post_params["resource_url"]
 
         LOGGER.info(f"Cancelling job at URL: {job_url}")
-        is_canceled = UnicoreWrapper().cancel_job(current_job.resource_url)
+        is_canceled = UnicoreWrapper().cancel_job(job_url)
 
         if not is_canceled:
-            self.finish(json.dumps({'message': f'Job {job_id} could not be cancelled!'}))
+            self.finish(json.dumps({'message': 'Job could not be cancelled!'}))
 
-        self.finish(json.dumps({'message': f'Job {job_id} has been cancelled!'}))
+        self.finish(json.dumps({'message': 'Job has been cancelled!'}))
 
 
 def setup_handlers(web_app):
