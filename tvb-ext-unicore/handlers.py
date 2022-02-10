@@ -105,7 +105,7 @@ class JobsHandler(APIHandler):
         Cancel the job corresponding to the id sent as post param.
         """
         post_params = self.get_json_body()
-        job_id = post_params["id"]
+        job_id = post_params["resource_url"]
         self.finish(json.dumps({'message': f'Job {job_id} has been cancelled!'}))
 
 
