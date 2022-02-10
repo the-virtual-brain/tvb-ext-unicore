@@ -1,41 +1,42 @@
-import {Widget} from '@lumino/widgets';
-import {Message} from '@lumino/messaging';
+import { Widget } from '@lumino/widgets';
+import { Message } from '@lumino/messaging';
 
-export interface TableFormat {
-  cols: Array<string>,
-  idField: string
+export interface ITableFormat {
+  cols: Array<string>;
+  idField: string;
 }
 
-export interface Job {
+export interface IJob {
   [propName: string]: any;
 }
 
-export interface DataType {
-  jobs: Job[]
+export interface IDataType {
+  jobs: IJob[];
 }
 
-export interface ButtonSettings {
-  name: string,
-  onClick(...args: string[]): void,
-  onClickFieldArgs: string[]
+export interface IButtonSettings {
+  name: string;
+  onClick(...args: string[]): void;
+  onClickFieldArgs: string[];
 }
 
-export interface DataRetriever {
-  (): Promise<DataType>
+export interface IDataTypeRetriever {
+  (): Promise<IDataType>;
 }
 
 export class PyunicoreWidget extends Widget {
   constructor(
-    tableFormat: TableFormat,
-    data: DataType,
-    buttonSettings: ButtonSettings,
-    updateHandler: DataRetriever) {
+    tableFormat: ITableFormat,
+    data: IDataType,
+    buttonSettings: IButtonSettings,
+    dataTypeRetriever: IDataTypeRetriever
+  ) {
     // todo: see if there is a better way to use element creation in widgets (maybe a template?)
     //  maybe splitting in more widgets?
     super();
     this.addClass('tvb-pyunicoreWidget');
     this.buttonSettings = buttonSettings;
-    this.handleUpdate = updateHandler;
+    this.handleUpdate = dataTypeRetriever;
     this.table = document.createElement('table');
     this.tHead = document.createElement('thead');
     this.tBody = document.createElement('tbody');
@@ -51,17 +52,17 @@ export class PyunicoreWidget extends Widget {
    * button configuration for button that is showed in table row
    * @private
    */
-  private readonly buttonSettings: ButtonSettings;
+  private readonly buttonSettings: IButtonSettings;
 
   /**
    *  Data for table
    */
-  private _data: DataType;
+  private _data: IDataType;
   public get data() {
     return this._data;
   }
 
-  public set data(data: DataType) {
+  public set data(data: IDataType) {
     this._data = data;
     this.buildTBody();
   }
@@ -84,12 +85,12 @@ export class PyunicoreWidget extends Widget {
   /**
    * Table format
    */
-  readonly tableFormat: TableFormat;
+  readonly tableFormat: ITableFormat;
 
   /**
    * Function to fetch data from server
    */
-  readonly handleUpdate: DataRetriever;
+  readonly handleUpdate: IDataTypeRetriever;
 
   /**
    * builder function for table
@@ -100,18 +101,18 @@ export class PyunicoreWidget extends Widget {
     this.buildTBody();
   }
 
-  buildTHead(): void{
+  buildTHead(): void {
     const tr = document.createElement('tr');
     this.tHead.appendChild(tr);
-    this.tableFormat.cols.forEach((colText) => {
-      let thCol = document.createElement('th');
+    this.tableFormat.cols.forEach(colText => {
+      const thCol = document.createElement('th');
       thCol.innerText = colText.toUpperCase();
-        tr.appendChild(thCol);
-      })
-      let th = document.createElement('th');
-      th.innerText = 'Actions';
-      tr.appendChild(th);
-    }
+      tr.appendChild(thCol);
+    });
+    const th = document.createElement('th');
+    th.innerText = 'Actions';
+    tr.appendChild(th);
+  }
 
   buildTBody(): void {
     console.log('build tbody');
@@ -124,7 +125,6 @@ export class PyunicoreWidget extends Widget {
         td.innerText = rowData[colName];
         tr.appendChild(td);
       });
-
       // add button for a table row
       const btn = document.createElement('button');
       btn.innerText = this.buttonSettings.name;
@@ -139,9 +139,8 @@ export class PyunicoreWidget extends Widget {
       td.appendChild(btn);
       tr.appendChild(td);
       this.tBody.appendChild(tr);
-      });
+    });
   }
-
   /**
    * lifecycle method triggered on update()
    * @param msg

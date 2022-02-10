@@ -10,7 +10,7 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
-import { PyunicoreWidget, DataType } from './pyunicoreWidget';
+import { PyunicoreWidget, IDataType } from './pyunicoreWidget';
 import { requestAPI } from './handler';
 
 function cancelJob(resource_url: string): void {
@@ -22,8 +22,8 @@ function cancelJob(resource_url: string): void {
   }).catch(reason => console.error('Error on POST:', reason));
 }
 
-async function updateHandler(): Promise<DataType> {
-  const data: DataType = await requestAPI('jobs');
+async function updateHandler(): Promise<IDataType> {
+  const data: IDataType = await requestAPI<any>('jobs');
   return data;
 }
 /**
@@ -41,7 +41,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
 
-    const data = (await requestAPI<any>('jobs')) as DataType;
+    const data = (await requestAPI<any>('jobs')) as IDataType;
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvb-ext-unicore:open';
     app.commands.addCommand(command, {
