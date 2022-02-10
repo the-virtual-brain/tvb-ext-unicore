@@ -10,7 +10,7 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
-import { PyunicoreWidget, IDataType } from './pyunicoreWidget';
+import { PyunicoreWidget, IDataType, PyunicoreSites } from './pyunicoreWidget';
 import { requestAPI } from './handler';
 
 function cancelJob(resource_url: string): void {
@@ -22,10 +22,10 @@ function cancelJob(resource_url: string): void {
   }).catch(reason => console.error('Error on POST:', reason));
 }
 
-async function updateHandler(): Promise<IDataType> {
-  const data: IDataType = await requestAPI<any>('jobs');
-  return data;
-}
+// async function fetchJobs(): Promise<IDataType> {
+//   const data: IDataType = await requestAPI<any>('jobs');
+//   return data;
+// }
 /**
  * Initialization data for the tvb-ext-unicore extension.
  */
@@ -42,46 +42,43 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let widget: MainAreaWidget<PyunicoreWidget>;
 
     const data = (await requestAPI<any>('jobs')) as IDataType;
+    const sites = await requestAPI<any>('sites');
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvb-ext-unicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
       execute: () => {
         if (!widget || widget.isDisposed) {
+          const sitesWidget = new PyunicoreSites(sites);
+          // eslint-disable-next-line no-inner-declarations
+          async function fetchJobs(): Promise<IDataType> {
+            const endPoint = `jobs?site=${sitesWidget.activeSite}`;
+            const data: IDataType = await requestAPI<any>(endPoint);
+            return data;
+          }
           const content = new PyunicoreWidget(
             { cols: columns, idField: 'id' },
             data,
             {
               name: 'Cancel Job',
               onClick: cancelJob,
-              onClickFieldArgs: ['resource_url'] // must be a field in a Job from jobs array
+              onClickFieldArgs: ['resource_url'] // args for onClick function
             },
-            updateHandler
+            fetchJobs
           );
+
+          content.node.prepend(sitesWidget.node);
           widget = new MainAreaWidget({ content });
           widget.id = 'tvb-ext-unicore';
           widget.title.label = 'PyUnicore Task Stream';
           widget.title.closable = true;
 
           //add a button to update tasks table
-          // eslint-disable-next-line no-inner-declarations
-          function updateTasks(): void {
-            //call api
-            requestAPI<any>('jobs')
-              .then(data => {
-                console.log(data);
-                //set data to table -> triggers a rebuild of table body
-                content.data = data;
-              })
-              .catch(reason => {
-                console.error(
-                  `The tvb-ext-unicore server extension appears to be missing.\n${reason}`
-                );
-              });
-          }
           const btn = document.createElement('button');
           btn.innerText = 'Update Tasks';
-          btn.onclick = updateTasks;
+          btn.onclick = () => {
+            fetchJobs().then(data => (content.data = data));
+          };
           content.node.prepend(btn);
         }
         if (!tracker.has(widget)) {

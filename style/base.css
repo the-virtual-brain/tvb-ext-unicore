@@ -9,9 +9,19 @@
 }
 .tvb-pyunicoreWidget td, th {
     border: var(--jp-border-width) solid var(--jp-border-color1);
+    text-align: center;
 }
 
 tr:nth-child(even){
     background-color: gray;
     color: whitesmoke;
+}
+
+.pyunicoreSites {
+    display: inline;
+}
+.pyunicoreSites span {
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-left: 1rem;
 }

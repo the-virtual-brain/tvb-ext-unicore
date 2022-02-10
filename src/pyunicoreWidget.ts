@@ -31,8 +31,6 @@ export class PyunicoreWidget extends Widget {
     buttonSettings: IButtonSettings,
     dataTypeRetriever: IDataTypeRetriever
   ) {
-    // todo: see if there is a better way to use element creation in widgets (maybe a template?)
-    //  maybe splitting in more widgets?
     super();
     this.addClass('tvb-pyunicoreWidget');
     this.buttonSettings = buttonSettings;
@@ -149,5 +147,56 @@ export class PyunicoreWidget extends Widget {
     super.onUpdateRequest(msg);
     const newData = await this.handleUpdate();
     this.data = newData;
+  }
+}
+
+export class PyunicoreSites extends Widget {
+  constructor(sites: string[]) {
+    super();
+    this.addClass('pyunicoreSites');
+    this.sites = sites;
+    this._label = document.createElement('span');
+    this._label.innerText = 'Site:';
+    this.node.appendChild(this._label);
+    this._activeSite = sites.length > 0 ? sites[0] : '';
+    this._select = document.createElement('select');
+    this.node.appendChild(this._select);
+    this._select.onchange = ev => {
+      this._activeSite = this._select.value;
+    };
+    this._buildSelection();
+  }
+
+  /**
+   * list of sites
+   */
+  readonly sites: string[];
+
+  /**
+   * site for which jobs will be fetched
+   * @private
+   */
+  private _activeSite: string;
+  public get activeSite() {
+    return this._activeSite;
+  }
+  private readonly _select: HTMLSelectElement;
+
+  /**
+   * label for selection
+   */
+  readonly _label: HTMLSpanElement;
+  /**
+   * function to build the select options
+   * @private
+   */
+  private _buildSelection() {
+    this.sites.forEach(site => {
+      const option = document.createElement('option');
+      option.id = site;
+      option.value = site;
+      option.innerText = site;
+      this._select.appendChild(option);
+    });
   }
 }
