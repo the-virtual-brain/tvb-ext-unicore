@@ -4,6 +4,8 @@ import os
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
 import tornado
+from tornado.web import MissingArgumentError
+
 from .unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from .logger.builder import get_logger
 
@@ -26,8 +28,14 @@ class JobsHandler(APIHandler):
         """
         Retrieve all jobs for current user, launched at site given as POST param.
         """
-        # TODO: get site from request
-        all_jobs = UnicoreWrapper().get_jobs('DAINT-CSCS')
+        try:
+            site = self.get_argument("site")
+            LOGGER.info(f"Retrieving jobs for site {site}...")
+        except MissingArgumentError:
+            site = 'DAINT-CSCS'
+            LOGGER.warn(f"No site has been found in query params, defaulting to {site}...")
+
+        all_jobs = UnicoreWrapper().get_jobs(site)
         self.finish(json.dumps({'jobs': [job.to_json() for job in all_jobs]}))
 
     @tornado.web.authenticated

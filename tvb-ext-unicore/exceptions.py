@@ -13,3 +13,9 @@ class TVBExtUnicoreException(Exception):
 
     def __str__(self):
         return self.message
+
+
+class ClientAuthException(TVBExtUnicoreException):
+    """
+    Throw if the current user does not have access to chosen client site.
+    """

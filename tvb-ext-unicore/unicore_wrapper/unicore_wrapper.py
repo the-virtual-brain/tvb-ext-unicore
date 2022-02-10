@@ -11,7 +11,7 @@ import clb_nb_utils.oauth as clb_oauth
 import pyunicore.client as unicore_client
 from requests.exceptions import ConnectionError
 
-from ..exceptions import TVBExtUnicoreException
+from ..exceptions import TVBExtUnicoreException, ClientAuthException
 from ..logger.builder import get_logger
 from .job_dto import JobDTO
 
@@ -57,9 +57,13 @@ class UnicoreWrapper(object):
         site_url = sites.get(site)
 
         if site_url is None:
-            raise AttributeError(f'Requested HPC site: {site}, does not exist!')
+            raise AttributeError(f"Requested HPC site: {site}, does not exist!")
 
-        client = unicore_client.Client(self.transport, site_url)
+        try:
+            client = unicore_client.Client(self.transport, site_url)
+        except Exception as e:
+            LOGGER.warn(f"Could not connect to client: {e}")
+            raise ClientAuthException(e)
 
         return client
 
@@ -78,7 +82,11 @@ class UnicoreWrapper(object):
         """
         jobs_list = list()
 
-        client = self.__build_client(site)
+        try:
+            client = self.__build_client(site)
+        except ClientAuthException:
+            return jobs_list
+
         # TODO: use pagination
         all_jobs = client.get_jobs()
 
