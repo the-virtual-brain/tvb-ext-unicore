@@ -36,7 +36,7 @@ class UnicoreWrapper(object):
         try:
             token = clb_oauth.get_token()
         except ConnectionError as e:
-            LOGGER.warn(f"Could not connect to EBRAINS to retrieve an auth token: {e}")
+            LOGGER.warning(f"Could not connect to EBRAINS to retrieve an auth token: {e}")
             LOGGER.info("Will try to use the auth token defined by environment variable AUTH_TOKEN...")
 
             token = os.environ.get('AUTH_TOKEN')
@@ -62,7 +62,7 @@ class UnicoreWrapper(object):
         try:
             client = unicore_client.Client(self.transport, site_url)
         except Exception as e:
-            LOGGER.warn(f"Could not connect to client: {e}")
+            LOGGER.warning(f"Could not connect to client: {e}")
             raise ClientAuthException(e)
 
         return client
