@@ -37,8 +37,8 @@ class JobDTO(object):
 
     def to_json(self):
         attrs = vars(self)
-        attrs['start_time'] = str(self.start_time)
-        attrs['finish_time'] = str(self.finish_time)
+        attrs['start_time'] = self.start_time.strftime("%m.%d.%Y, %H:%M:%S")
+        attrs['finish_time'] = self.finish_time.strftime("%m.%d.%Y, %H:%M:%S")
         return attrs
 
     @property
