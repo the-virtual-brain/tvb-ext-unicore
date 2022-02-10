@@ -41,13 +41,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
 
-    const data = (await requestAPI<any>('jobs')) as IDataType;
     const sites = await requestAPI<any>('sites');
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvb-ext-unicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
-      execute: () => {
+      execute: async () => {
         if (!widget || widget.isDisposed) {
           const sitesWidget = new PyunicoreSites(sites);
           // eslint-disable-next-line no-inner-declarations
@@ -56,6 +55,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             const data: IDataType = await requestAPI<any>(endPoint);
             return data;
           }
+          const data = await fetchJobs();
           const content = new PyunicoreWidget(
             { cols: columns, idField: 'id' },
             data,
