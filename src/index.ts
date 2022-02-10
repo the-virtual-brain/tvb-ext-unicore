@@ -88,7 +88,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (!widget.isAttached) {
           app.shell.add(widget, 'main');
         }
-        widget.content.update();
         app.shell.activateById(widget.id);
       }
     });
