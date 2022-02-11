@@ -62,6 +62,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
             fetchJobs
           );
 
+          // hack to update jobs list on select change
+          sitesWidget.changeHandler = () => content.update();
+
           content.node.prepend(sitesWidget.node);
           widget = new MainAreaWidget({ content });
           widget.id = 'tvb-ext-unicore';
@@ -69,12 +72,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
           widget.title.closable = true;
 
           //add a button to update tasks table
-          const btn = document.createElement('button');
-          btn.innerText = 'Update Tasks';
-          btn.onclick = () => {
-            content.update();
-          };
-          content.node.prepend(btn);
+          // const btn = document.createElement('button');
+          // btn.innerText = 'Update Tasks';
+          // btn.onclick = () => {
+          //   content.update();
+          // };
+          // content.node.prepend(btn);
         }
         if (!tracker.has(widget)) {
           //Track the state of the widget for later restore

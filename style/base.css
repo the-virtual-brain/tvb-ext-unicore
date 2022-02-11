@@ -70,9 +70,10 @@ tr:nth-child(even){
     border-radius: 7px;
     border: none;
     box-shadow: 0 0 7px 0 rgba(185,185,185, .4);
+    cursor: pointer;
 }
 
 .unicoreModal button:hover {
-    box-shadow: 0 0 14px 0 rgba(185,185,185, .4);
+    box-shadow: 0 0 14px 0 rgba(0,0,0, .4);
 }
 /* end modal style */

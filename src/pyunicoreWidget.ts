@@ -46,8 +46,14 @@ export class PyunicoreWidget extends Widget {
     this.buildTable();
     this._modal = new ModalWidget(ModalType.Error, 'Unknown Error');
     this.node.appendChild(this._modal.node);
+    this._updateIntervalId = setInterval(() => this.update(), 30000); // trigger an update on widget every 30 seconds
   }
 
+  /**
+   * the id of the interval that triggers an update
+   * @private
+   */
+  private _updateIntervalId: number;
   /**
    * button configuration for button that is showed in table row
    * @private
@@ -159,6 +165,7 @@ export class PyunicoreWidget extends Widget {
    * @param msg
    */
   async onUpdateRequest(msg: Message): Promise<void> {
+    console.log('update!');
     super.onUpdateRequest(msg);
     this.handleUpdate()
       .then(data => (this.data = data))
@@ -166,6 +173,16 @@ export class PyunicoreWidget extends Widget {
         console.log(error);
         this.showModal(ModalType.Error, error);
       });
+  }
+
+  /**
+   * lifecycle method override to clear interval on detaching widget (stop update requests)
+   * @param msg
+   * @protected
+   */
+  protected onAfterDetach(msg: Message) {
+    super.onAfterDetach(msg);
+    clearInterval(this._updateIntervalId);
   }
 }
 
@@ -182,6 +199,7 @@ export class PyunicoreSites extends Widget {
     this.node.appendChild(this._select);
     this._select.onchange = ev => {
       this._activeSite = this._select.value;
+      this.changeHandler();
     };
     this._buildSelection();
   }
@@ -217,6 +235,16 @@ export class PyunicoreSites extends Widget {
       option.innerText = site;
       this._select.appendChild(option);
     });
+  }
+
+  /**
+   *  this function is called every time the value of the selection is changed,
+   *  after assigning the new value to this._activeSite
+   *  !!! for now it is reassigned from exterior as a hack - should find better solution!
+   * @private
+   */
+  changeHandler(): void {
+    return;
   }
 }
 
@@ -274,6 +302,7 @@ export class ModalWidget extends Widget {
    * @private
    */
   private _buildModal(): void {
+    this.node.style.display = 'none'; // modal is invisible initially
     const modalBox = document.createElement('div');
     modalBox.appendChild(this._modalHeader);
     this._buildModalHeader();
