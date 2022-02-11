@@ -25,3 +25,54 @@ tr:nth-child(even){
     font-weight: bold;
     margin-left: 1rem;
 }
+
+/* modal styling */
+.unicoreModal {
+    position: absolute;
+    background-color: rgba(0,0,0,0.2);
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.unicoreModal > div {
+    width: 40%;
+    min-height: 5rem;
+    background-color: whitesmoke;
+    border-radius: 7px;
+    /*padding: 1rem;*/
+    box-shadow: 0 0 10px 0 rgba(185,185,185, .4);
+}
+.unicoreModal > div h3 {
+    padding: 0;
+    margin: 0;
+}
+
+.unicoreModal > div > div:first-child {
+    background-color: var(--jp-error-color1);
+    border-radius: 7px 7px 0 0;
+    color: whitesmoke;
+}
+.unicoreModal > div > div {
+    padding: 1rem;
+    margin: 0;
+}
+
+.unicoreModal button {
+    background-color: var(--jp-error-color1);
+    color: whitesmoke;
+    padding: 0.5rem 1rem;
+    border-radius: 7px;
+    border: none;
+    box-shadow: 0 0 7px 0 rgba(185,185,185, .4);
+}
+
+.unicoreModal button:hover {
+    box-shadow: 0 0 14px 0 rgba(185,185,185, .4);
+}
+/* end modal style */

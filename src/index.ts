@@ -22,10 +22,6 @@ function cancelJob(resource_url: string): void {
   }).catch(reason => console.error('Error on POST:', reason));
 }
 
-// async function fetchJobs(): Promise<IDataType> {
-//   const data: IDataType = await requestAPI<any>('jobs');
-//   return data;
-// }
 /**
  * Initialization data for the tvb-ext-unicore extension.
  */
@@ -55,10 +51,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
             const data: IDataType = await requestAPI<any>(endPoint);
             return data;
           }
-          const data = await fetchJobs();
           const content = new PyunicoreWidget(
             { cols: columns, idField: 'id' },
-            data,
+            { jobs: [] }, // initialize with an empty DataType object
             {
               name: 'Cancel Job',
               onClick: cancelJob,
@@ -77,7 +72,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           const btn = document.createElement('button');
           btn.innerText = 'Update Tasks';
           btn.onclick = () => {
-            fetchJobs().then(data => (content.data = data));
+            content.update();
           };
           content.node.prepend(btn);
         }
