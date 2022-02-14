@@ -88,8 +88,8 @@ tr:nth-child(even){
   }
 }
 .unicoreLoading {
-    width: 0.6rem;
-    height: 0.6rem;
+    width: 0.7rem;
+    height: 0.7rem;
     display: inline-block;
     border-radius: 50%;
     border: 3px solid var(--jp-border-color1);
