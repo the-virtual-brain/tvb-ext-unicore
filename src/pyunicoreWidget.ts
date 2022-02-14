@@ -4,6 +4,7 @@ import { Message } from '@lumino/messaging';
 export interface ITableFormat {
   cols: Array<string>;
   idField: string;
+  buttonRenderConditionField: string; // the field which dictates if the button is visible
 }
 
 export interface IJob {
@@ -14,10 +15,15 @@ export interface IDataType {
   jobs: IJob[];
 }
 
+/**
+ * describes the table row button functionality
+ * if isAsync is true the button will be replaced by a loading animation while the job is performed
+ */
 export interface IButtonSettings {
   name: string;
-  onClick(...args: string[]): void;
+  onClick(...args: string[]): any;
   onClickFieldArgs: string[];
+  isAsync: boolean;
 }
 
 export interface IDataTypeRetriever {
@@ -34,7 +40,7 @@ export class PyunicoreWidget extends Widget {
     super();
     this.addClass('tvb-pyunicoreWidget');
     this.buttonSettings = buttonSettings;
-    this.handleUpdate = dataTypeRetriever;
+    this.getData = dataTypeRetriever;
     this.table = document.createElement('table');
     this.tHead = document.createElement('thead');
     this.tBody = document.createElement('tbody');
@@ -53,7 +59,7 @@ export class PyunicoreWidget extends Widget {
    * the id of the interval that triggers an update
    * @private
    */
-  private _updateIntervalId: number;
+  private readonly _updateIntervalId: number;
   /**
    * button configuration for button that is showed in table row
    * @private
@@ -96,7 +102,7 @@ export class PyunicoreWidget extends Widget {
   /**
    * Function to fetch data from server
    */
-  readonly handleUpdate: IDataTypeRetriever;
+  readonly getData: IDataTypeRetriever;
 
   private readonly _modal: ModalWidget;
 
@@ -131,23 +137,50 @@ export class PyunicoreWidget extends Widget {
       this.tableFormat.cols.forEach((colName: string) => {
         const td = document.createElement('td');
         td.innerText = rowData[colName];
+        td.classList.add(colName); // add class of column name for easier identification in a later rerender
         tr.appendChild(td);
       });
       // add button for a table row
-      const btn = document.createElement('button');
-      btn.innerText = this.buttonSettings.name;
-      const onClickArgs = this.buttonSettings.onClickFieldArgs.map(
-        field => rowData[field]
-      );
-      btn.onclick = () => {
-        this.buttonSettings.onClick(...onClickArgs);
-        this.update();
-      };
+      const btn = this._getBuiltButton(rowData);
       const td = document.createElement('td');
-      td.appendChild(btn);
+      td.id = `action-${rowData[this.tableFormat.idField]}`;
+      td.classList.add('actions');
+      if (rowData[this.tableFormat.buttonRenderConditionField]) {
+        td.appendChild(btn);
+      }
+
       tr.appendChild(td);
       this.tBody.appendChild(tr);
     });
+  }
+
+  private _getBuiltButton(rowData: IJob): HTMLButtonElement {
+    const btn = document.createElement('button');
+    btn.innerText = this.buttonSettings.name;
+    const onClickArgs = this.buttonSettings.onClickFieldArgs.map(
+      field => rowData[field]
+    );
+    btn.onclick = () => {
+      if (this.buttonSettings.isAsync) {
+        this._showBtnLoader(`action-${rowData[this.tableFormat.idField]}`);
+        this.buttonSettings
+          .onClick(...onClickArgs)
+          .then((res: IJob): void => {
+            // reload row data
+            this._reRenderRowWithData(rowData[this.tableFormat.idField], res);
+          })
+          .catch((error: any) => {
+            this.showModal(ModalType.Error, error);
+            this._reRenderRowWithData(
+              rowData[this.tableFormat.idField],
+              rowData
+            );
+          });
+      } else {
+        this.buttonSettings.onClick(...onClickArgs);
+      }
+    };
+    return btn;
   }
 
   /**
@@ -160,6 +193,48 @@ export class PyunicoreWidget extends Widget {
     this._modal.message = msg;
     this._modal.showModal();
   }
+
+  /**
+   * function to show loader while the button onclick is performed
+   */
+  private _showBtnLoader(parentId: string) {
+    const parent = document.getElementById(parentId);
+    const loader = "<div class='unicoreLoading'></div>";
+    if (parent) {
+      parent.innerHTML = loader;
+    }
+  }
+
+  /**
+   * finds a row by given rowId and repopulates the row with given data
+   * @param rowId
+   * @param data
+   * @private
+   */
+  private _reRenderRowWithData(rowId: string, data: IJob): void {
+    console.log('re-render');
+    const row = document.getElementById(rowId);
+    if (!row) {
+      return;
+    }
+    this.tableFormat.cols.forEach(col => {
+      const td = row.querySelector(`.${col}`); // get child td with col class
+      if (td) {
+        td.innerHTML = data[col];
+      }
+    });
+    const actionTd = row.querySelector('.actions');
+    console.log('actionTd: ', actionTd);
+    if (actionTd) {
+      actionTd.innerHTML = '';
+    }
+    if (data[this.tableFormat.buttonRenderConditionField]) {
+      if (actionTd) {
+        actionTd.appendChild(this._getBuiltButton(data));
+      }
+    }
+  }
+
   /**
    * lifecycle method triggered on update()
    * @param msg
@@ -167,7 +242,7 @@ export class PyunicoreWidget extends Widget {
   async onUpdateRequest(msg: Message): Promise<void> {
     console.log('update!');
     super.onUpdateRequest(msg);
-    this.handleUpdate()
+    this.getData()
       .then(data => (this.data = data))
       .catch(error => {
         console.log(error);
@@ -180,7 +255,7 @@ export class PyunicoreWidget extends Widget {
    * @param msg
    * @protected
    */
-  protected onAfterDetach(msg: Message) {
+  protected onAfterDetach(msg: Message): void {
     super.onAfterDetach(msg);
     clearInterval(this._updateIntervalId);
   }

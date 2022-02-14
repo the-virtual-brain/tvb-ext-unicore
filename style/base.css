@@ -77,3 +77,22 @@ tr:nth-child(even){
     box-shadow: 0 0 14px 0 rgba(0,0,0, .4);
 }
 /* end modal style */
+
+/* loading animation */
+@keyframes circle{
+  0%{
+    transform:rotate(0deg);
+  }
+  100%{
+    transform:rotate(360deg);
+  }
+}
+.unicoreLoading {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    border-radius: 50%;
+    border: 3px solid var(--jp-border-color1);
+    border-top: 3px solid var(--jp-cell-editor-active-border-color);
+    animation: circle 0.5s linear infinite;
+}

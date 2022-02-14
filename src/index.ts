@@ -13,13 +13,14 @@ import {
 import { PyunicoreWidget, IDataType, PyunicoreSites } from './pyunicoreWidget';
 import { requestAPI } from './handler';
 
-function cancelJob(resource_url: string): void {
+async function cancelJob(resource_url: string): Promise<any> {
   console.log('Cancelling job');
   const dataToSend = { resource_url: resource_url };
-  requestAPI<any>('jobs', {
+  const response = requestAPI<any>('jobs', {
     method: 'POST',
     body: JSON.stringify(dataToSend)
-  }).catch(reason => console.error('Error on POST:', reason));
+  });
+  return response;
 }
 
 /**
@@ -45,21 +46,24 @@ const plugin: JupyterFrontEndPlugin<void> = {
       execute: async () => {
         if (!widget || widget.isDisposed) {
           const sitesWidget = new PyunicoreSites(sites);
-          // eslint-disable-next-line no-inner-declarations
-          async function fetchJobs(): Promise<IDataType> {
-            const endPoint = `jobs?site=${sitesWidget.activeSite}`;
-            const data: IDataType = await requestAPI<any>(endPoint);
-            return data;
-          }
           const content = new PyunicoreWidget(
-            { cols: columns, idField: 'id' },
+            {
+              cols: columns,
+              idField: 'id',
+              buttonRenderConditionField: 'is_cancelable' // button will be rendered if 'is_cancelable' is true
+            },
             { jobs: [] }, // initialize with an empty DataType object
             {
               name: 'Cancel Job',
               onClick: cancelJob,
-              onClickFieldArgs: ['resource_url'] // args for onClick function
+              onClickFieldArgs: ['resource_url'], // args for onClick function
+              isAsync: true
             },
-            fetchJobs
+            async () => {
+              const endPoint = `jobs?site=${sitesWidget.activeSite}`;
+              const data: IDataType = await requestAPI<any>(endPoint);
+              return data;
+            }
           );
 
           // hack to update jobs list on select change
@@ -70,14 +74,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
           widget.id = 'tvb-ext-unicore';
           widget.title.label = 'PyUnicore Task Stream';
           widget.title.closable = true;
-
-          //add a button to update tasks table
-          // const btn = document.createElement('button');
-          // btn.innerText = 'Update Tasks';
-          // btn.onclick = () => {
-          //   content.update();
-          // };
-          // content.node.prepend(btn);
         }
         if (!tracker.has(widget)) {
           //Track the state of the widget for later restore
