@@ -38,6 +38,9 @@ export class PyunicoreWidget extends Widget {
     dataTypeRetriever: IDataTypeRetriever
   ) {
     super();
+    const loadingRoot = document.createElement('span');
+    loadingRoot.id = 'loadingRoot';
+    this.node.appendChild(loadingRoot);
     this.addClass('tvb-pyunicoreWidget');
     this.buttonSettings = buttonSettings;
     this.getData = dataTypeRetriever;
@@ -242,12 +245,29 @@ export class PyunicoreWidget extends Widget {
   async onUpdateRequest(msg: Message): Promise<void> {
     console.log('update!');
     super.onUpdateRequest(msg);
+    this._showBtnLoader('loadingRoot');
     this.getData()
-      .then(data => (this.data = data))
+      .then(data => {
+        this.data = data;
+        this._clearInnerHtmlById('loadingRoot');
+      })
       .catch(error => {
         console.log(error);
         this.showModal(ModalType.Error, error);
+        this._clearInnerHtmlById('loadingRoot');
       });
+  }
+
+  /**
+   * empties innerHtml of the element with provided ID
+   * @param id
+   * @private
+   */
+  private _clearInnerHtmlById(id: string): void {
+    const element = document.getElementById(id);
+    if (element) {
+      element.innerHTML = '';
+    }
   }
 
   /**
