@@ -12,6 +12,7 @@ export interface IJob {
 }
 
 export interface IDataType {
+  message: string;
   jobs: IJob[];
 }
 
@@ -170,7 +171,15 @@ export class PyunicoreWidget extends Widget {
           .onClick(...onClickArgs)
           .then((res: IJob): void => {
             // reload row data
-            this._reRenderRowWithData(rowData[this.tableFormat.idField], res);
+            if (res.job) {
+              this._reRenderRowWithData(
+                rowData[this.tableFormat.idField],
+                res.job
+              );
+            }
+            if (res.message) {
+              this._showMessage('loadingRoot', res.message);
+            }
           })
           .catch((error: any) => {
             this.showModal(ModalType.Error, error);
@@ -205,6 +214,20 @@ export class PyunicoreWidget extends Widget {
     const loader = "<div class='unicoreLoading'></div>";
     if (parent) {
       parent.innerHTML = loader;
+    }
+  }
+
+  /**
+   * function to show a danger colored text inside an element withe the provided ID
+   * @param parentId
+   * @param message
+   * @private
+   */
+  private _showMessage(parentId: string, message: string) {
+    const parent = document.getElementById(parentId);
+    const shownMessage = `<span class="unicoreMessage">${message}</span>`;
+    if (parent) {
+      parent.innerHTML = shownMessage;
     }
   }
 
@@ -250,6 +273,9 @@ export class PyunicoreWidget extends Widget {
       .then(data => {
         this.data = data;
         this._clearInnerHtmlById('loadingRoot');
+        if (data.message) {
+          this._showMessage('loadingRoot', data.message);
+        }
       })
       .catch(error => {
         console.log(error);

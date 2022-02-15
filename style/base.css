@@ -123,3 +123,8 @@ thead {
     border-top: 3px solid var(--jp-cell-editor-active-border-color);
     animation: circle 0.5s linear infinite;
 }
+
+.unicoreMessage {
+    color: var(--jp-error-color1);
+    margin-left: 1rem;
+}

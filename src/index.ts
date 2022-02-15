@@ -52,7 +52,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               idField: 'id',
               buttonRenderConditionField: 'is_cancelable' // button will be rendered if 'is_cancelable' is true
             },
-            { jobs: [] }, // initialize with an empty DataType object
+            { jobs: [], message: '' }, // initialize with an empty DataType object
             {
               name: 'Cancel Job',
               onClick: cancelJob,
