@@ -66,7 +66,7 @@ pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
 # Server extension must be manually installed in develop mode
-jupyter server extension enable tvb-ext-unicore
+jupyter server extension enable tvbextunicore
 # Rebuild extension Typescript source after making changes
 jlpm run build
 ```
@@ -92,7 +92,7 @@ jupyter lab build --minimize=False
 
 ```bash
 # Server extension must be manually disabled in develop mode
-jupyter server extension disable tvb-ext-unicore
+jupyter server extension disable tvbextunicore
 pip uninstall tvb-ext-unicore
 ```
 

@@ -35,7 +35,7 @@
     "build:lib": "tsc",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
-    "clean:labextension": "rimraf tvb-ext-unicore/labextension",
+    "clean:labextension": "rimraf tvbextunicore/labextension",
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
@@ -83,7 +83,7 @@
       }
     },
     "extension": true,
-    "outputDir": "tvb-ext-unicore/labextension"
+    "outputDir": "tvbextunicore/labextension"
   },
   "jupyter-releaser": {
     "hooks": {

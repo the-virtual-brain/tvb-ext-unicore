@@ -28,7 +28,7 @@ async function cancelJob(resource_url: string): Promise<any> {
  * Initialization data for the tvb-ext-unicore extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'tvb-ext-unicore:plugin',
+  id: 'tvbextunicore:plugin',
   autoStart: true,
   requires: [ICommandPalette, ILayoutRestorer],
   activate: async (
@@ -41,7 +41,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     const sites = await requestAPI<any>('sites');
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
-    const command = 'tvb-ext-unicore:open';
+    const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
       execute: async () => {
@@ -78,7 +78,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           (content.layout as PanelLayout).addWidget(sitesWidget);
           widget = new MainAreaWidget({ content });
-          widget.id = 'tvb-ext-unicore';
+          widget.id = 'tvbextunicore';
           widget.title.label = 'PyUnicore Task Stream';
           widget.title.closable = true;
         }

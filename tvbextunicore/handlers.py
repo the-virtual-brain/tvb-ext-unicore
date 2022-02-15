@@ -63,7 +63,7 @@ def setup_handlers(web_app):
     host_pattern = ".*$"
 
     base_url = web_app.settings["base_url"]
-    sites_pattern = url_path_join(base_url, "tvb-ext-unicore", "sites")
-    jobs_pattern = url_path_join(base_url, "tvb-ext-unicore", "jobs")
+    sites_pattern = url_path_join(base_url, "tvbextunicore", "sites")
+    jobs_pattern = url_path_join(base_url, "tvbextunicore", "jobs")
     handlers = [(jobs_pattern, JobsHandler), (sites_pattern, SitesHandler)]
     web_app.add_handlers(host_pattern, handlers)
