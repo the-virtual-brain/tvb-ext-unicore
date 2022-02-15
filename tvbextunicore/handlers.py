@@ -6,8 +6,8 @@ from jupyter_server.utils import url_path_join
 import tornado
 from tornado.web import MissingArgumentError
 
-from .unicore_wrapper.unicore_wrapper import UnicoreWrapper
-from .logger.builder import get_logger
+from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
+from tvbextunicore.logger.builder import get_logger
 
 LOGGER = get_logger(__name__)
 

@@ -11,9 +11,9 @@ import clb_nb_utils.oauth as clb_oauth
 import pyunicore.client as unicore_client
 from requests.exceptions import ConnectionError
 
-from ..exceptions import TVBExtUnicoreException, ClientAuthException
-from ..logger.builder import get_logger
-from .job_dto import JobDTO
+from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException
+from tvbextunicore.logger.builder import get_logger
+from tvbextunicore.unicore_wrapper.job_dto import JobDTO
 
 LOGGER = get_logger(__name__)
 

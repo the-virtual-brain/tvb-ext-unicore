@@ -9,9 +9,9 @@ import os
 import pytest
 from datetime import datetime
 
-from ..exceptions import TVBExtUnicoreException
-from ..unicore_wrapper.unicore_wrapper import UnicoreWrapper
-from ..unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, TERMINATION_TIME, \
+from tvbextunicore.exceptions import TVBExtUnicoreException
+from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
+from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, TERMINATION_TIME, \
     MOUNT_POINT
 
 

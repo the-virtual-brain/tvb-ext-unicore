@@ -10,9 +10,9 @@ import setuptools
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
-name = "tvbextunicore"
+name = "tvb-ext-unicore"
 
-lab_path = (HERE / name / "labextension")
+lab_path = (HERE / name.replace("-", "") / "labextension")
 
 # Representative files that should exist after a successful build
 ensured_targets = [
