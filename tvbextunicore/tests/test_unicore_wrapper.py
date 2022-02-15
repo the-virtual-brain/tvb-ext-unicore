@@ -48,11 +48,12 @@ def test_get_jobs(mocker):
     def mockk(self, site=''):
         return MockPyUnicoreClient()
 
-    mocker.patch('tvb_ext_unicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
+    mocker.patch('tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
     unicore_wrapper = UnicoreWrapper()
-    jobs = unicore_wrapper.get_jobs('TEST_SITE')
+    jobs, msg = unicore_wrapper.get_jobs('TEST_SITE')
 
     assert len(jobs) == 1
+    assert len(msg) == 0
     assert isinstance(jobs[0], JobDTO)
     assert isinstance(jobs[0].start_time, datetime)
     assert isinstance(jobs[0].finish_time, datetime)
