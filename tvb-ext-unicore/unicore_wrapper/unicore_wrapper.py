@@ -100,7 +100,7 @@ class UnicoreWrapper(object):
                                     job.properties.get(TERMINATION_TIME),
                                     job.working_dir.properties.get(MOUNT_POINT),
                                     job.resource_url))
-        return jobs_list, None
+        return jobs_list, ""
 
     def cancel_job(self, job_url):
         # type: (str) -> bool

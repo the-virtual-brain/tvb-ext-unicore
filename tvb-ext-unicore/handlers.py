@@ -36,10 +36,8 @@ class JobsHandler(APIHandler):
             LOGGER.warn(f"No site has been found in query params, defaulting to {site}...")
 
         all_jobs, message = UnicoreWrapper().get_jobs(site)
-        if message:
-            self.finish(json.dumps({'jobs': [job.to_json() for job in all_jobs], 'message': message}))
 
-        self.finish(json.dumps({'jobs': [job.to_json() for job in all_jobs]}))
+        self.finish(json.dumps({'jobs': [job.to_json() for job in all_jobs], 'message': message}))
 
     @tornado.web.authenticated
     def post(self):
@@ -53,9 +51,11 @@ class JobsHandler(APIHandler):
         is_canceled, job = UnicoreWrapper().cancel_job(job_url)
 
         if not is_canceled:
-            self.finish(json.dumps({'message': 'Job could not be cancelled!'}))
+            resp = {'message': 'Job could not be cancelled!'}
+        else:
+            resp = {'job': job.to_json()}
 
-        self.finish(json.dumps({'message': 'Job has been cancelled!', 'job': job.to_json()}))
+        self.finish(json.dumps(resp))
 
 
 def setup_handlers(web_app):
