@@ -39,7 +39,13 @@ class JobDTO(object):
         attrs = vars(self)
         attrs['start_time'] = self.start_time.strftime("%m.%d.%Y, %H:%M:%S")
         attrs['finish_time'] = self.finish_time.strftime("%m.%d.%Y, %H:%M:%S")
+        attrs['is_cancelable'] = self.is_cancelable
         return attrs
+
+    @property
+    def is_cancelable(self):
+        finished_status = ['SUCCESSFUL', 'FAILED']
+        return self.status not in finished_status
 
     @property
     def execution_time(self):

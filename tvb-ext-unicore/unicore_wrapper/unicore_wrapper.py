@@ -76,7 +76,7 @@ class UnicoreWrapper(object):
         return all_sites
 
     def get_jobs(self, site):
-        # type: (str) -> list
+        # type: (str) -> (list, str)
         """
         Retrieve the jobs started by the current user at the selected site and return them in a list.
         """
@@ -85,7 +85,7 @@ class UnicoreWrapper(object):
         try:
             client = self.__build_client(site)
         except ClientAuthException:
-            return jobs_list
+            return jobs_list, f"You do not have access to {site}"
 
         # TODO: use pagination
         all_jobs = client.get_jobs()
@@ -100,7 +100,7 @@ class UnicoreWrapper(object):
                                     job.properties.get(TERMINATION_TIME),
                                     job.working_dir.properties.get(MOUNT_POINT),
                                     job.resource_url))
-        return jobs_list
+        return jobs_list, None
 
     def cancel_job(self, job_url):
         # type: (str) -> bool
@@ -109,7 +109,7 @@ class UnicoreWrapper(object):
         """
         if job_url is None:
             LOGGER.error("Cannot abort job as URL has not been provided!")
-            return False
+            return False, None
 
         job = unicore_client.Job(self.transport, job_url)
         if job.is_running():
@@ -117,4 +117,4 @@ class UnicoreWrapper(object):
             LOGGER.info(f"Aborted job {job.job_id} from URL: {job_url}")
         else:
             LOGGER.info(f"Job {job.job_id} already finished, no need to abort, URL: {job_url}")
-        return True
+        return True, job

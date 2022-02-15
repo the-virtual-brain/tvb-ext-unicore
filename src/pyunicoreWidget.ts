@@ -182,7 +182,7 @@ export class PyunicoreWidget extends Widget {
       tr.appendChild(thCol);
     });
     const th = document.createElement('th');
-    th.innerText = 'Actions';
+    th.innerText = 'ACTIONS';
     tr.appendChild(th);
   }
 
