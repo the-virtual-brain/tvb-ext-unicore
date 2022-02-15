@@ -177,9 +177,7 @@ export class PyunicoreWidget extends Widget {
                 res.job
               );
             }
-            if (res.message) {
-              this._showMessage('loadingRoot', res.message);
-            }
+            this._showMessage('loadingRoot', res.message);
           })
           .catch((error: any) => {
             this.showModal(ModalType.Error, error);
@@ -273,9 +271,7 @@ export class PyunicoreWidget extends Widget {
       .then(data => {
         this.data = data;
         this._clearInnerHtmlById('loadingRoot');
-        if (data.message) {
-          this._showMessage('loadingRoot', data.message);
-        }
+        this._showMessage('loadingRoot', data.message);
       })
       .catch(error => {
         console.log(error);
