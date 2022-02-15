@@ -38,7 +38,7 @@ class MockPyUnicoreClient(object):
 
         return jobs
 
-    def get_jobs(self):
+    def get_jobs(self, offset, num):
         return self.__generate_list_of_jobs()
 
 

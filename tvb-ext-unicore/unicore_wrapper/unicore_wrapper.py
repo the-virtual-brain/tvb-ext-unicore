@@ -75,11 +75,14 @@ class UnicoreWrapper(object):
         all_sites = unicore_client.get_sites(self.transport)
         return all_sites
 
-    def get_jobs(self, site):
-        # type: (str) -> (list, str)
+    def get_jobs(self, site, page=0):
+        # type: (str, int) -> (list, str)
         """
         Retrieve the jobs started by the current user at the selected site and return them in a list.
         """
+        jobs_per_page = 10
+        jobs_offset = page * jobs_per_page
+
         jobs_list = list()
 
         try:
@@ -87,8 +90,7 @@ class UnicoreWrapper(object):
         except ClientAuthException:
             return jobs_list, f"You do not have access to {site}"
 
-        # TODO: use pagination
-        all_jobs = client.get_jobs()
+        all_jobs = client.get_jobs(offset=jobs_offset, num=jobs_per_page)
 
         for job in all_jobs:
             jobs_list.append(JobDTO(job.job_id,
