@@ -11,10 +11,11 @@ import {
 } from '@jupyterlab/apputils';
 
 import { PyunicoreWidget, IDataType, PyunicoreSites } from './pyunicoreWidget';
+
 import { requestAPI } from './handler';
+import { PanelLayout } from '@lumino/widgets';
 
 async function cancelJob(resource_url: string): Promise<any> {
-  console.log('Cancelling job');
   const dataToSend = { resource_url: resource_url };
   const response = requestAPI<any>('jobs', {
     method: 'POST',
@@ -59,17 +60,23 @@ const plugin: JupyterFrontEndPlugin<void> = {
               onClickFieldArgs: ['resource_url'], // args for onClick function
               isAsync: true
             },
-            async () => {
-              const endPoint = `jobs?site=${sitesWidget.activeSite}`;
+            async (page?: string) => {
+              let endPoint = `jobs?site=${sitesWidget.activeSite}`;
+              if (page) {
+                endPoint += `&page=${page}`;
+              }
               const data: IDataType = await requestAPI<any>(endPoint);
               return data;
             }
           );
 
-          // hack to update jobs list on select change
-          sitesWidget.changeHandler = () => content.update();
+          // hack to update jobs list on select change and reset page number
+          sitesWidget.changeHandler = () => {
+            content.pagination.page = 1;
+            content.update();
+          };
 
-          content.node.prepend(sitesWidget.node);
+          (content.layout as PanelLayout).addWidget(sitesWidget);
           widget = new MainAreaWidget({ content });
           widget.id = 'tvb-ext-unicore';
           widget.title.label = 'PyUnicore Task Stream';

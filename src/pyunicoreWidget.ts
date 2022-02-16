@@ -1,16 +1,27 @@
-import { Widget } from '@lumino/widgets';
+import { PanelLayout, Widget } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
+import { caretLeftIcon, caretRightIcon } from '@jupyterlab/ui-components';
 
+/**
+ * interface to describe how a table shoul look like, what field from the cols array represents
+ * the id of each row, what field if evaluated to true allows rendering of a button in the table
+ */
 export interface ITableFormat {
   cols: Array<string>;
   idField: string;
   buttonRenderConditionField: string; // the field which dictates if the button is visible
 }
 
+/**
+ * interface to describe how a job ( a row in a table) should look like - a dict of any number of string:any pair
+ */
 export interface IJob {
   [propName: string]: any;
 }
 
+/**
+ * Interface to describe how the response from api cals to populate the table should look like
+ */
 export interface IDataType {
   message: string;
   jobs: IJob[];
@@ -18,7 +29,7 @@ export interface IDataType {
 
 /**
  * describes the table row button functionality
- * if isAsync is true the button will be replaced by a loading animation while the job is performed
+ * if isAsync is true the button will be replaced by a loading animation while the onClick is performed
  */
 export interface IButtonSettings {
   name: string;
@@ -27,10 +38,17 @@ export interface IButtonSettings {
   isAsync: boolean;
 }
 
+/**
+ * interface describing how a function that gets data from server should behave,
+ * should take an optional 'page' parameter and should return a promise with DataType
+ */
 export interface IDataTypeRetriever {
-  (): Promise<IDataType>;
+  (page?: string): Promise<IDataType>;
 }
 
+/**
+ * main class for the PyUnicore integration, extends Widget to render a table and other custom behaviour
+ */
 export class PyunicoreWidget extends Widget {
   constructor(
     tableFormat: ITableFormat,
@@ -39,9 +57,10 @@ export class PyunicoreWidget extends Widget {
     dataTypeRetriever: IDataTypeRetriever
   ) {
     super();
-    const loadingRoot = document.createElement('span');
-    loadingRoot.id = 'loadingRoot';
-    this.node.appendChild(loadingRoot);
+    this.layout = new PanelLayout();
+    this._loadingRoot = document.createElement('span');
+    this._loadingRoot.id = 'loadingRoot';
+    this.node.appendChild(this._loadingRoot);
     this.addClass('tvb-pyunicoreWidget');
     this.buttonSettings = buttonSettings;
     this.getData = dataTypeRetriever;
@@ -56,7 +75,25 @@ export class PyunicoreWidget extends Widget {
     this.buildTable();
     this._modal = new ModalWidget(ModalType.Error, 'Unknown Error');
     this.node.appendChild(this._modal.node);
-    this._updateIntervalId = setInterval(() => this.update(), 30000); // trigger an update on widget every 30 seconds
+    // trigger an update on widget every 60 seconds
+    this._updateIntervalId = setInterval(() => this.update(), 60000);
+    this._pagination = this._createPagination();
+    (this.layout as PanelLayout).addWidget(this._pagination);
+  }
+
+  /**
+   * root element for the loading wheel
+   * @private
+   */
+  private readonly _loadingRoot: HTMLSpanElement;
+
+  /**
+   * contains a pagination object
+   * @private
+   */
+  private readonly _pagination: UnicorePagination;
+  public get pagination(): UnicorePagination {
+    return this._pagination;
   }
 
   /**
@@ -111,6 +148,24 @@ export class PyunicoreWidget extends Widget {
   private readonly _modal: ModalWidget;
 
   /**
+   * defines pagiation and it's behaviour, returns the created pagination
+   * @private
+   */
+  private _createPagination(): UnicorePagination {
+    return new UnicorePagination(
+      () => {
+        // trigger update to query data for the next page
+        this.update();
+      },
+      () => {
+        // trigger update to query data for the previous page
+        this.update();
+      },
+      { node: document.createElement('span') } // make the pagination root be a span to be shown inline
+    );
+  }
+
+  /**
    * builder function for table
    */
   buildTable(): void {
@@ -133,7 +188,6 @@ export class PyunicoreWidget extends Widget {
   }
 
   buildTBody(): void {
-    console.log('build tbody');
     this.tBody.innerHTML = '';
     this.data.jobs.forEach((rowData: any) => {
       const tr = document.createElement('tr');
@@ -177,7 +231,7 @@ export class PyunicoreWidget extends Widget {
                 res.job
               );
             }
-            this._showMessage('loadingRoot', res.message);
+            this._showMessage(this._loadingRoot.id, res.message);
           })
           .catch((error: any) => {
             this.showModal(ModalType.Error, error);
@@ -236,7 +290,6 @@ export class PyunicoreWidget extends Widget {
    * @private
    */
   private _reRenderRowWithData(rowId: string, data: IJob): void {
-    console.log('re-render');
     const row = document.getElementById(rowId);
     if (!row) {
       return;
@@ -248,7 +301,6 @@ export class PyunicoreWidget extends Widget {
       }
     });
     const actionTd = row.querySelector('.actions');
-    console.log('actionTd: ', actionTd);
     if (actionTd) {
       actionTd.innerHTML = '';
     }
@@ -264,19 +316,27 @@ export class PyunicoreWidget extends Widget {
    * @param msg
    */
   async onUpdateRequest(msg: Message): Promise<void> {
-    console.log('update!');
     super.onUpdateRequest(msg);
-    this._showBtnLoader('loadingRoot');
-    this.getData()
+    // disable pagination buttons while data is loading
+    this._pagination.disableButtons();
+    // show loading wheel while data is loading to prevent multiple clicks
+    this._showBtnLoader(this._loadingRoot.id);
+    this.getData(String(this._pagination.page))
       .then(data => {
         this.data = data;
-        this._clearInnerHtmlById('loadingRoot');
-        this._showMessage('loadingRoot', data.message);
+        this._clearInnerHtmlById(this._loadingRoot.id);
+        this._showMessage(this._loadingRoot.id, data.message);
+        // if the length of jobs array is less than itemsPerPage don't enable nextButton
+        if (data.jobs.length < this._pagination.itemsPerPage) {
+          this._pagination.enablePrevBtn(); // prev button is enabled only if not on first page
+        } else {
+          this._pagination.enableButtons();
+        }
       })
       .catch(error => {
         console.log(error);
         this.showModal(ModalType.Error, error);
-        this._clearInnerHtmlById('loadingRoot');
+        this._clearInnerHtmlById(this._loadingRoot.id);
       });
   }
 
@@ -303,6 +363,10 @@ export class PyunicoreWidget extends Widget {
   }
 }
 
+/**
+ * builds a dropdown list with the provided list of strings,
+ * represented as a <select> element with <option> elements as children for each string
+ */
 export class PyunicoreSites extends Widget {
   constructor(sites: string[]) {
     super();
@@ -314,7 +378,8 @@ export class PyunicoreSites extends Widget {
     this._activeSite = sites.length > 0 ? sites[0] : '';
     this._select = document.createElement('select');
     this.node.appendChild(this._select);
-    this._select.onchange = ev => {
+    // when site is changed trigger changeHandler
+    this._select.onchange = () => {
       this._activeSite = this._select.value;
       this.changeHandler();
     };
@@ -340,8 +405,9 @@ export class PyunicoreSites extends Widget {
    * label for selection
    */
   readonly _label: HTMLSpanElement;
+
   /**
-   * function to build the select options
+   * function to build the select options (which sites can be chosen in dropdown)
    * @private
    */
   private _buildSelection() {
@@ -365,6 +431,9 @@ export class PyunicoreSites extends Widget {
   }
 }
 
+/**
+ * enum to describe possible modals
+ */
 export enum ModalType {
   Warning = 'WARNING',
   Error = 'ERROR',
@@ -372,6 +441,9 @@ export enum ModalType {
   Confirm = 'CONFIRM'
 }
 
+/**
+ * Widget to display a modal on screen
+ */
 export class ModalWidget extends Widget {
   constructor(type: ModalType, message: string) {
     super();
@@ -459,5 +531,136 @@ export class ModalWidget extends Widget {
 
   showModal(): void {
     this.node.style.display = 'flex';
+  }
+}
+
+/**
+ * simple implementation for a pagination, has two buttons for previous page and next page,
+ * between the buttons it is shown the current page
+ */
+export class UnicorePagination extends Widget {
+  constructor(
+    onNextPage: () => void,
+    onPreviousPage: () => void,
+    options?: Widget.IOptions
+  ) {
+    super(options);
+    this.addClass('unicorePagination');
+    this._page = 1;
+    this._currentPage = document.createElement('span');
+    this._currentPage.innerText = 'Page: ' + String(this._page);
+    this._onNextPage = onNextPage;
+    this._onPreviousPage = onPreviousPage;
+    this._buildUi();
+  }
+
+  /**
+   * container for the number of current page
+   * @private
+   */
+  private readonly _currentPage: HTMLSpanElement;
+  private _itemsPerPage = 10;
+  public get itemsPerPage(): number {
+    return this._itemsPerPage;
+  }
+  private readonly _prevButton = document.createElement('button');
+  private readonly _nextButton = document.createElement('button');
+  /**
+   * helper function to be called after increasing the page count
+   * @private
+   */
+  private readonly _onNextPage: () => void;
+
+  /**
+   * helper function to be called after decreasing the page count
+   * @private
+   */
+  private readonly _onPreviousPage: () => void;
+  private _page: number;
+  public get page(): number {
+    return this._page;
+  }
+  public set page(value: number) {
+    this._page = value;
+    this._currentPage.innerText = 'Page: ' + String(this._page);
+  }
+
+  /**
+   * builds pagination ui
+   * @private
+   */
+  private _buildUi() {
+    this.node.innerHTML = '';
+    this._prevButton.onclick = () => this.previousPage();
+    caretLeftIcon.render(this._prevButton); // render left caret icon inside prev button
+    this.node.appendChild(this._prevButton);
+    this.node.appendChild(this._currentPage);
+    this.node.appendChild(this._nextButton);
+    caretRightIcon.render(this._nextButton); // render right caret icon inside next button
+    this._nextButton.onclick = () => this.nextPage();
+    this.node.appendChild(this._nextButton);
+  }
+
+  /**
+   * method called when the _nextButton is clicked
+   */
+  nextPage(): void {
+    this.page += 1;
+    this._onNextPage();
+  }
+
+  /**
+   * method called when the _prevButton is called
+   */
+  previousPage(): void {
+    this.page -= 1;
+    this._onPreviousPage();
+  }
+
+  /**
+   * method to disable _prevButton
+   */
+  disablePrevBtn(): void {
+    this._prevButton.disabled = true;
+  }
+
+  /**
+   * method to enable _prevButton if current page is not the first page
+   */
+  enablePrevBtn(): void {
+    if (this._page === 1) {
+      return;
+    }
+    this._prevButton.disabled = false;
+  }
+
+  /**
+   * method to disable _nextButton
+   */
+  disableNextBtn(): void {
+    this._nextButton.disabled = true;
+  }
+
+  /**
+   * method to enable _nextButton
+   */
+  enableNextBtn(): void {
+    this._nextButton.disabled = false;
+  }
+
+  /**
+   * method to disable both buttons
+   */
+  disableButtons(): void {
+    this.disablePrevBtn();
+    this.disableNextBtn();
+  }
+
+  /**
+   * method to enable both buttons
+   */
+  enableButtons(): void {
+    this.enablePrevBtn();
+    this.enableNextBtn();
   }
 }

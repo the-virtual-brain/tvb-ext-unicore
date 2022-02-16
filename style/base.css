@@ -114,6 +114,7 @@ thead {
     transform:rotate(360deg);
   }
 }
+
 .unicoreLoading {
     width: 0.7rem;
     height: 0.7rem;
@@ -127,4 +128,23 @@ thead {
 .unicoreMessage {
     color: var(--jp-error-color1);
     margin-left: 1rem;
+}
+
+/**
+pagination buttons style
+ */
+.unicorePagination button {
+    padding: 0.2rem;
+    margin: 3px;
+}
+button:disabled,
+button[disabled]{
+    border: 1px solid #999999;
+    color: #666666;
+    box-shadow: none;
+}
+
+button:disabled:hover,
+button[disabled]:hover {
+    box-shadow: none;
 }
