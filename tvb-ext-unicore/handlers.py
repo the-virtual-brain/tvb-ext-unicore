@@ -30,12 +30,13 @@ class JobsHandler(APIHandler):
         """
         try:
             site = self.get_argument("site")
-            LOGGER.info(f"Retrieving jobs for site {site}...")
+            page = int(self.get_argument("page", "0")) - 1
+            LOGGER.info(f"Retrieving jobs (page {page}) for site {site}...")
         except MissingArgumentError:
             site = 'DAINT-CSCS'
             LOGGER.warn(f"No site has been found in query params, defaulting to {site}...")
 
-        all_jobs, message = UnicoreWrapper().get_jobs(site)
+        all_jobs, message = UnicoreWrapper().get_jobs(site, page)
 
         self.finish(json.dumps({'jobs': [job.to_json() for job in all_jobs], 'message': message}))
 
