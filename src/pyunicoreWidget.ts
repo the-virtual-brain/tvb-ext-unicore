@@ -560,7 +560,7 @@ export class PaginationWidget extends Widget {
    * @private
    */
   private readonly _currentPage: HTMLSpanElement;
-  private _itemsPerPage = 5;
+  private _itemsPerPage = 10;
   public get itemsPerPage(): number {
     return this._itemsPerPage;
   }
