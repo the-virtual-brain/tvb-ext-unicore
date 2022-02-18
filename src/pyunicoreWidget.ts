@@ -234,6 +234,11 @@ export class PyunicoreWidget extends Widget {
                 rowData[this.tableFormat.idField],
                 res.job
               );
+            } else {
+              this._reRenderRowWithData(
+                rowData[this.tableFormat.idField],
+                rowData
+              );
             }
             this._showMessage(this._loadingRoot.id, res.message);
           })
