@@ -54,7 +54,7 @@ class JobsHandler(APIHandler):
         if not is_canceled:
             resp = {'message': 'Job could not be cancelled!'}
         else:
-            resp = {'job': job.to_json()}
+            resp = {'job': job.to_json(), 'message': ''}
 
         self.finish(json.dumps(resp))
 
