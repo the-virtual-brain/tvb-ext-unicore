@@ -75,12 +75,17 @@ export class PyunicoreWidget extends Widget {
     this.buildTable();
     this._modal = new ModalWidget(ModalType.Error, 'Unknown Error');
     this.node.appendChild(this._modal.node);
-    // trigger an update on widget every 60 seconds
-    this._updateIntervalId = setInterval(() => this.update(), 60000);
+    // trigger method that checks if at least 60 seconds passed from last update and if so update
+    this._updateIntervalId = setInterval(
+      () => this._onTriggerUpdateInterval(),
+      10000
+    ); // check every 10 sec if widget should update - widget will update every 60 - 70 sec
     this._pagination = this._createPagination();
     (this.layout as PanelLayout).addWidget(this._pagination);
   }
 
+  private _awaitingOperation = false;
+  private _lastUpdateTime = new Date();
   /**
    * root element for the loading wheel
    * @private
@@ -316,26 +321,37 @@ export class PyunicoreWidget extends Widget {
    */
   async onUpdateRequest(msg: Message): Promise<void> {
     super.onUpdateRequest(msg);
+    if (this._awaitingOperation) {
+      return;
+    }
     // disable pagination buttons while data is loading
     this._pagination.disableButtons();
     // show loading wheel while data is loading to prevent multiple clicks
     this._showBtnLoader(this._loadingRoot.id);
+    this._awaitingOperation = true;
     this.getData(String(this._pagination.page))
       .then(data => {
         this.data = data;
         this._clearInnerHtmlById(this._loadingRoot.id);
         this._showMessage(this._loadingRoot.id, data.message);
+        // show last update time
+        const lastUpdate = document.createElement('span');
+        lastUpdate.innerHTML = `Last update: ${this._lastUpdateTime.toLocaleString()}`;
+        document.getElementById(this._loadingRoot.id)?.appendChild(lastUpdate);
         // if the length of jobs array is less than itemsPerPage don't enable nextButton
         if (data.jobs.length < this._pagination.itemsPerPage) {
           this._pagination.enablePrevBtn(); // prev button is enabled only if not on first page
         } else {
           this._pagination.enableButtons();
         }
+        this._awaitingOperation = false;
+        this._lastUpdateTime = new Date();
       })
       .catch(error => {
         console.log(error);
         this.showModal(ModalType.Error, error);
         this._clearInnerHtmlById(this._loadingRoot.id);
+        this._awaitingOperation = false;
       });
   }
 
@@ -351,6 +367,18 @@ export class PyunicoreWidget extends Widget {
     }
   }
 
+  /**
+   * triggers an update on widget if at least 50sec have passed since last successful update
+   * @private
+   */
+  private _onTriggerUpdateInterval(): void {
+    const now = new Date().valueOf();
+    const previous = this._lastUpdateTime.valueOf();
+    const diff = now - previous;
+    if (diff >= 60000) {
+      this.update();
+    }
+  }
   /**
    * lifecycle method override to clear interval on detaching widget (stop update requests)
    * @param msg
