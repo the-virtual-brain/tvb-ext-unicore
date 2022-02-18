@@ -1,6 +1,5 @@
 import { PanelLayout, Widget } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
-import { caretLeftIcon, caretRightIcon } from '@jupyterlab/ui-components';
 
 /**
  * interface to describe how a table shoul look like, what field from the cols array represents
@@ -58,8 +57,9 @@ export class PyunicoreWidget extends Widget {
   ) {
     super();
     this.layout = new PanelLayout();
-    this._loadingRoot = document.createElement('span');
+    this._loadingRoot = document.createElement('div');
     this._loadingRoot.id = 'loadingRoot';
+    this._loadingRoot.classList.add('lm-Widget', 'p-Widget', 'loadingRoot');
     this.node.appendChild(this._loadingRoot);
     this.addClass('tvb-pyunicoreWidget');
     this.buttonSettings = buttonSettings;
@@ -85,14 +85,14 @@ export class PyunicoreWidget extends Widget {
    * root element for the loading wheel
    * @private
    */
-  private readonly _loadingRoot: HTMLSpanElement;
+  private readonly _loadingRoot: HTMLDivElement;
 
   /**
    * contains a pagination object
    * @private
    */
-  private readonly _pagination: UnicorePagination;
-  public get pagination(): UnicorePagination {
+  private readonly _pagination: PaginationWidget;
+  public get pagination(): PaginationWidget {
     return this._pagination;
   }
 
@@ -151,8 +151,8 @@ export class PyunicoreWidget extends Widget {
    * defines pagiation and it's behaviour, returns the created pagination
    * @private
    */
-  private _createPagination(): UnicorePagination {
-    return new UnicorePagination(
+  private _createPagination(): PaginationWidget {
+    return new PaginationWidget(
       () => {
         // trigger update to query data for the next page
         this.update();
@@ -160,8 +160,7 @@ export class PyunicoreWidget extends Widget {
       () => {
         // trigger update to query data for the previous page
         this.update();
-      },
-      { node: document.createElement('span') } // make the pagination root be a span to be shown inline
+      }
     );
   }
 
@@ -374,10 +373,12 @@ export class PyunicoreSites extends Widget {
     this.sites = sites;
     this._label = document.createElement('span');
     this._label.innerText = 'Site:';
-    this.node.appendChild(this._label);
     this._activeSite = sites.length > 0 ? sites[0] : '';
+    const container = document.createElement('div');
+    container.appendChild(this._label);
     this._select = document.createElement('select');
-    this.node.appendChild(this._select);
+    container.appendChild(this._select);
+    this.node.appendChild(container);
     // when site is changed trigger changeHandler
     this._select.onchange = () => {
       this._activeSite = this._select.value;
@@ -538,7 +539,7 @@ export class ModalWidget extends Widget {
  * simple implementation for a pagination, has two buttons for previous page and next page,
  * between the buttons it is shown the current page
  */
-export class UnicorePagination extends Widget {
+export class PaginationWidget extends Widget {
   constructor(
     onNextPage: () => void,
     onPreviousPage: () => void,
@@ -559,7 +560,7 @@ export class UnicorePagination extends Widget {
    * @private
    */
   private readonly _currentPage: HTMLSpanElement;
-  private _itemsPerPage = 10;
+  private _itemsPerPage = 5;
   public get itemsPerPage(): number {
     return this._itemsPerPage;
   }
@@ -591,14 +592,24 @@ export class UnicorePagination extends Widget {
    */
   private _buildUi() {
     this.node.innerHTML = '';
+    const container = document.createElement('div');
+    const btnLeftContainer = document.createElement('div');
+    btnLeftContainer.classList.add('btnLeftContainer');
+    const currentPageContainer = document.createElement('div');
+    currentPageContainer.classList.add('currentPageContainer');
+    const btnRightContainer = document.createElement('div');
+    btnRightContainer.classList.add('btnRightContainer');
+    this.node.appendChild(container);
     this._prevButton.onclick = () => this.previousPage();
-    caretLeftIcon.render(this._prevButton); // render left caret icon inside prev button
-    this.node.appendChild(this._prevButton);
-    this.node.appendChild(this._currentPage);
-    this.node.appendChild(this._nextButton);
-    caretRightIcon.render(this._nextButton); // render right caret icon inside next button
+    container.appendChild(btnLeftContainer);
+    btnLeftContainer.appendChild(this._prevButton);
+    currentPageContainer.appendChild(this._currentPage);
+    container.appendChild(currentPageContainer);
+    btnRightContainer.appendChild(this._nextButton);
+    container.appendChild(btnRightContainer);
+    this._nextButton.innerHTML = '<i class="fa fa-arrow-right"></i>';
+    this._prevButton.innerHTML = '<i class="fa fa-arrow-left"></i>';
     this._nextButton.onclick = () => this.nextPage();
-    this.node.appendChild(this._nextButton);
   }
 
   /**
@@ -622,6 +633,7 @@ export class UnicorePagination extends Widget {
    */
   disablePrevBtn(): void {
     this._prevButton.disabled = true;
+    this._prevButton.style.display = 'none';
   }
 
   /**
@@ -632,6 +644,7 @@ export class UnicorePagination extends Widget {
       return;
     }
     this._prevButton.disabled = false;
+    this._prevButton.style.display = 'inline-block';
   }
 
   /**
@@ -639,6 +652,7 @@ export class UnicorePagination extends Widget {
    */
   disableNextBtn(): void {
     this._nextButton.disabled = true;
+    this._nextButton.style.display = 'none';
   }
 
   /**
@@ -646,6 +660,7 @@ export class UnicorePagination extends Widget {
    */
   enableNextBtn(): void {
     this._nextButton.disabled = false;
+    this._nextButton.style.display = 'inline-block';
   }
 
   /**

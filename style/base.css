@@ -1,5 +1,10 @@
 .tvb-pyunicoreWidget {
     background-color: whitesmoke;
+    font-family: var(--jp-ui-font-family);
+}
+
+.tvb-pyunicoreWidget > div {
+    margin-top: 0.2rem;
 }
 
 .tvb-pyunicoreWidget table {
@@ -25,7 +30,7 @@ tr:nth-child(even) {
 }
 
 .tvb-pyunicoreWidget table, body {
-    font-family: sans-serif;
+    font-family: var(--jp-ui-font-family);
 }
 
 thead {
@@ -44,14 +49,31 @@ thead {
     box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
+/**
+selection component (pyunicore sites)
+ */
 .pyunicoreSites {
-    display: inline;
+    display: inline-block;
+    margin: 0 1rem 0 0 ;
+}
+.pyunicoreSites div{
+    border: var(--jp-border-width) solid var(--jp-border-color1);
+    border-radius: 7px;
+    padding: 0.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pyunicoreSites select {
+    background-color: whitesmoke;
+    border: none;
 }
 .pyunicoreSites span {
     text-transform: uppercase;
     font-weight: bold;
     margin-left: 1rem;
 }
+/* end selection style */
 
 /* modal styling */
 .unicoreModal {
@@ -114,7 +136,16 @@ thead {
     transform:rotate(360deg);
   }
 }
+.loadingRoot {
+    display: inline-block;
+    text-align: center;
+    margin: 0 auto;
+}
 
+.loadingRoot span {
+    display: inline-block;
+    padding: 0.2rem;
+}
 .unicoreLoading {
     width: 0.7rem;
     height: 0.7rem;
@@ -127,24 +158,55 @@ thead {
 
 .unicoreMessage {
     color: var(--jp-error-color1);
-    margin-left: 1rem;
 }
 
 /**
-pagination buttons style
+pagination style
  */
-.unicorePagination button {
+.unicorePagination {
+    display: inline-block;
+    border: var(--jp-border-width) solid var(--jp-border-color1);
+    border-radius: 7px;
+    margin-right: 1rem;
+    /*margin-left: 0.5rem;*/
+}
+.unicorePagination div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.unicorePagination > div div {
+    min-width: 1rem;
     padding: 0.2rem;
-    margin: 3px;
+    height: 100%;
+}
+.unicorePagination button {
+    padding: 0;
+    border: none;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: whitesmoke;
+    color: var(--jp-border-color1);
+}
+button:hover {
+    cursor: pointer;
 }
 button:disabled,
 button[disabled]{
-    border: 1px solid #999999;
-    color: #666666;
+    color: #ababab;
     box-shadow: none;
 }
 
 button:disabled:hover,
 button[disabled]:hover {
     box-shadow: none;
+    cursor: initial;
+}
+
+.currentPageContainer {
+    border-left: var(--jp-border-width) solid var(--jp-border-color1);
+    border-right: var(--jp-border-width) solid var(--jp-border-color1);
+    padding: 0 0.2rem;
 }
