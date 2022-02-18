@@ -7,6 +7,14 @@
 
 from datetime import datetime
 
+NAME = 'name'
+MOUNT_POINT = 'mountPoint'
+TERMINATION_TIME = 'terminationTime'
+SUBMISSION_TIME = 'submissionTime'
+STATUS = 'status'
+SITE_NAME = 'siteName'
+OWNER = 'owner'
+
 
 class JobDTO(object):
 
@@ -47,7 +55,18 @@ class JobDTO(object):
         finished_status = ['SUCCESSFUL', 'FAILED']
         return self.status not in finished_status
 
-    @property
+    @staticmethod
+    def from_unicore_job(job):
+        return JobDTO(job.job_id,
+                      job.properties.get(NAME),
+                      job.properties.get(OWNER),
+                      job.properties.get(SITE_NAME),
+                      job.properties.get(STATUS),
+                      job.properties.get(SUBMISSION_TIME),
+                      job.properties.get(TERMINATION_TIME),
+                      job.working_dir.properties.get(MOUNT_POINT),
+                      job.resource_url)
+
     def execution_time(self):
         # TODO: Termination time is always the same, how to compute real execution time?
         pass

@@ -17,14 +17,6 @@ from .job_dto import JobDTO
 
 LOGGER = get_logger(__name__)
 
-NAME = 'name'
-MOUNT_POINT = 'mountPoint'
-TERMINATION_TIME = 'terminationTime'
-SUBMISSION_TIME = 'submissionTime'
-STATUS = 'status'
-SITE_NAME = 'siteName'
-OWNER = 'owner'
-
 
 class UnicoreWrapper(object):
 
@@ -93,19 +85,12 @@ class UnicoreWrapper(object):
         all_jobs = client.get_jobs(offset=jobs_offset, num=jobs_per_page)
 
         for job in all_jobs:
-            jobs_list.append(JobDTO(job.job_id,
-                                    job.properties.get(NAME),
-                                    job.properties.get(OWNER),
-                                    job.properties.get(SITE_NAME),
-                                    job.properties.get(STATUS),
-                                    job.properties.get(SUBMISSION_TIME),
-                                    job.properties.get(TERMINATION_TIME),
-                                    job.working_dir.properties.get(MOUNT_POINT),
-                                    job.resource_url))
+            jobs_list.append(JobDTO.from_unicore_job(job))
+
         return jobs_list, ""
 
     def cancel_job(self, job_url):
-        # type: (str) -> bool
+        # type: (str) -> (bool, JobDTO)
         """
         Abort HPC job accessible at the given URL.
         """
@@ -119,4 +104,4 @@ class UnicoreWrapper(object):
             LOGGER.info(f"Aborted job {job.job_id} from URL: {job_url}")
         else:
             LOGGER.info(f"Job {job.job_id} already finished, no need to abort, URL: {job_url}")
-        return True, job
+        return True, JobDTO.from_unicore_job(job)

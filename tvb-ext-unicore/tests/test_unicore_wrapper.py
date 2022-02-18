@@ -10,9 +10,9 @@ import pytest
 from datetime import datetime
 
 from ..exceptions import TVBExtUnicoreException
-from ..unicore_wrapper.unicore_wrapper import UnicoreWrapper, NAME, OWNER, SITE_NAME, STATUS, \
-    SUBMISSION_TIME, TERMINATION_TIME, MOUNT_POINT
-from ..unicore_wrapper.job_dto import JobDTO
+from ..unicore_wrapper.unicore_wrapper import UnicoreWrapper
+from ..unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, TERMINATION_TIME, \
+    MOUNT_POINT
 
 
 class MockPyUnicoreResource(object):
