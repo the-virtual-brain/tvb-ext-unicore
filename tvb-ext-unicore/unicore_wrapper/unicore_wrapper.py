@@ -104,4 +104,6 @@ class UnicoreWrapper(object):
             LOGGER.info(f"Aborted job {job.job_id} from URL: {job_url}")
         else:
             LOGGER.info(f"Job {job.job_id} already finished, no need to abort, URL: {job_url}")
+
+        job = unicore_client.Job(self.transport, job_url)
         return True, JobDTO.from_unicore_job(job)
