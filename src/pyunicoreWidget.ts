@@ -331,6 +331,7 @@ export class PyunicoreWidget extends Widget {
     }
     // disable pagination buttons while data is loading
     this._pagination.disableButtons();
+    this._disableSelection(); // disable select elements until update is done
     // show loading wheel while data is loading to prevent multiple clicks
     this._showBtnLoader(this._loadingRoot.id);
     this._awaitingOperation = true;
@@ -351,13 +352,39 @@ export class PyunicoreWidget extends Widget {
         }
         this._awaitingOperation = false;
         this._lastUpdateTime = new Date();
+        this._enableSelection(); // enable select after update is done
       })
       .catch(error => {
         console.log(error);
         this.showModal(ModalType.Error, error);
         this._clearInnerHtmlById(this._loadingRoot.id);
         this._awaitingOperation = false;
+        this._enableSelection(); // make sure select elements are enabled
       });
+  }
+
+  /**
+   * method to disable all select elements from the pyunicore widget node
+   * - used in combination with _enableSelection()
+   * @private
+   */
+  private _disableSelection(): void {
+    const select = this.node.querySelectorAll('select');
+    if (select) {
+      select.forEach(el => el.setAttribute('disabled', 'disabled'));
+    }
+  }
+
+  /**
+   * method to enable all select elements from the pyunicore widget node
+   * - used in combination with _disableSelection()
+   * @private
+   */
+  private _enableSelection(): void {
+    const select = this.node.querySelectorAll('select');
+    if (select) {
+      select.forEach(el => el.removeAttribute('disabled'));
+    }
   }
 
   /**
