@@ -1,5 +1,11 @@
+# -*- coding: utf-8 -*-
+#
+# "TheVirtualBrain - Widgets" package
+#
+# (c) 2022-2023, TVB Widgets Team
+#
+
 import json
-import os
 
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
