@@ -375,7 +375,6 @@ export class PyunicoreWidget extends Widget {
     this._awaitingOperation = true;
     this.getData(String(this._pagination.page))
       .then(data => {
-        console.log('data: ', data);
         this.data = data;
         this._clearInnerHtmlById(this._loadingRoot.id);
         this._showMessage(this._loadingRoot.id, data.message);
