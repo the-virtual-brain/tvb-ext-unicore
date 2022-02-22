@@ -43,7 +43,7 @@ class MockPyUnicoreClient(object):
 
 
 def test_get_jobs(mocker):
-    os.environ['AUTH_TOKEN'] = "test_auth_token"
+    os.environ['CLB_AUTH'] = "test_auth_token"
 
     def mockk(self, site=''):
         return MockPyUnicoreClient()
@@ -60,12 +60,12 @@ def test_get_jobs(mocker):
 
 
 def test_get_jobs_failed_auth():
-    os.environ.pop('AUTH_TOKEN')
+    os.environ.pop('CLB_AUTH')
     with pytest.raises(TVBExtUnicoreException):
         UnicoreWrapper()
 
 
 def test_get_jobs_wrong_site():
-    os.environ['AUTH_TOKEN'] = "test_auth_token"
+    os.environ['CLB_AUTH'] = "test_auth_token"
     with pytest.raises(AttributeError):
         UnicoreWrapper().get_jobs('TEST_SITE')

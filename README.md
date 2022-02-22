@@ -20,7 +20,7 @@ There are 2 options to use this extension:
 1. Directly in [EBRAINS Lab](https://lab.ebrains.eu/): in this case, your token 
 will be retrieved automatically.
 2. Outside EBRAINS Lab: you will need to manually copy your authentication token from 
-EBRAINS Lab and keep it in an environment variable called **AUTH_TOKEN**.
+EBRAINS Lab and keep it in an environment variable called **CLB_AUTH**.
 
 ## Requirements
 
@@ -88,8 +88,8 @@ jupyter labextension develop . --overwrite
 # Server extension must be manually installed in develop mode
 jupyter server extension enable tvb-ext-unicore
 
-# Define AUTH_TOKEN environment variable holding your EBRAINS token
-export AUTH_TOKEN=${ebrains_token}
+# Define CLB_AUTH environment variable holding your EBRAINS token
+export CLB_AUTH=${ebrains_token}
 
 # Rebuild extension Typescript source after making changes
 jlpm run build

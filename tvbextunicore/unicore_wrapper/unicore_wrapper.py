@@ -29,15 +29,15 @@ class UnicoreWrapper(object):
             token = clb_oauth.get_token()
         except ConnectionError as e:
             LOGGER.warning(f"Could not connect to EBRAINS to retrieve an auth token: {e}")
-            LOGGER.info("Will try to use the auth token defined by environment variable AUTH_TOKEN...")
+            LOGGER.info("Will try to use the auth token defined by environment variable CLB_AUTH...")
 
-            token = os.environ.get('AUTH_TOKEN')
+            token = os.environ.get('CLB_AUTH')
             if token is None:
-                LOGGER.error("No auth token defined as environment variable AUTH_TOKEN! Please define one!")
+                LOGGER.error("No auth token defined as environment variable CLB_AUTH! Please define one!")
                 raise TVBExtUnicoreException("Cannot connect to EBRAINS HPC without an auth token! Either run this on "
-                                             "Collab, or define the AUTH_TOKEN environment variable!")
+                                             "Collab, or define the CLB_AUTH environment variable!")
 
-            LOGGER.info("Successfully retrieved the auth token from environment variable AUTH_TOKEN!")
+            LOGGER.info("Successfully retrieved the auth token from environment variable CLB_AUTH!")
         return token
 
     def __build_transport(self, token):

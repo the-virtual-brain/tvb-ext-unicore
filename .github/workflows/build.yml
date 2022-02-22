@@ -23,7 +23,7 @@ jobs:
 
     - name: Build the extension
       env:
-        AUTH_TOKEN: 'TEST_TOKEN'
+        CLB_AUTH: 'TEST_TOKEN'
       run: |
         set -eux
         jlpm
