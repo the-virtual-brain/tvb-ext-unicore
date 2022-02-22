@@ -14,11 +14,12 @@ SUBMISSION_TIME = 'submissionTime'
 STATUS = 'status'
 SITE_NAME = 'siteName'
 OWNER = 'owner'
+LOGS = 'log'
 
 
 class JobDTO(object):
 
-    def __init__(self, id, name, user, site, status, start_time, finish_time, working_dir, resource_url):
+    def __init__(self, id, name, user, site, status, start_time, finish_time, working_dir, resource_url, logs):
         self.id = id
         self.name = name
         self.owner = self.__strip_prefix(user)
@@ -28,6 +29,7 @@ class JobDTO(object):
         self.finish_time = self.__format_datetime(finish_time)
         self.working_dir = working_dir
         self.resource_url = resource_url
+        self.logs = logs
 
     def __str__(self):
         return f"{type(self)}: id={self.id}, name={self.name}, owner={self.owner}, site={self.site}, " \
@@ -65,7 +67,8 @@ class JobDTO(object):
                       job.properties.get(SUBMISSION_TIME),
                       job.properties.get(TERMINATION_TIME),
                       job.working_dir.properties.get(MOUNT_POINT),
-                      job.resource_url)
+                      job.resource_url,
+                      job.properties.get(LOGS))
 
     def execution_time(self):
         # TODO: Termination time is always the same, how to compute real execution time?
