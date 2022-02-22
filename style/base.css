@@ -21,7 +21,13 @@ tr {
     border-bottom: 1px solid black;
 }
 
-tr:nth-child(even) {
+/* hint that table rows that aren't with details are clickable */
+tr:not(.detailsRow) {
+    cursor: pointer;
+}
+
+/* alternate bg taking into account the hidden row with details */
+tbody tr:nth-child(4n+1) {
     background-color: whitesmoke;
 }
 
@@ -48,6 +54,26 @@ thead {
 .tvb-pyunicoreWidget button:hover {
     box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
+/**
+details section style
+ */
+/*.detailsRow {*/
+/*    width: 100%;*/
+/*    height: 10rem;*/
+/*}*/
+.detailsRow td {
+    column-span: all;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 0;
+    width: 100%;
+}
+.detailsRow textarea {
+    width: 100%;
+    height: 10rem;
+    border: none;
+}
+/* end details section style */
 
 /**
 selection component (pyunicore sites)
