@@ -1,28 +1,6 @@
 import { PanelLayout, Widget } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 
-const DUMMY_LOG = [
-  'Fri Feb 18 10:11:21 CET 2022: Created with ID 12242ef1-5731-4372-b7fb-9789ed2bf5db',
-  "Fri Feb 18 10:11:21 CET 2022: Created with type 'JSON'",
-  "Fri Feb 18 10:11:21 CET 2022: Client: Name: UID=david.bacter@codemart.ro\nXlogin: uid: [bacter1], gids: [icei-hbp-2021-0007, addingOSgroups: true]\nRole: user: role from attribute source\nSecurity tokens: User: UID=david.bacter@codemart.ro\nClient's original IP: 134.94.88.93",
-  'Fri Feb 18 10:11:23 CET 2022: No staging in needed.',
-  'Fri Feb 18 10:11:23 CET 2022: Status set to READY.',
-  'Fri Feb 18 10:11:23 CET 2022: Status set to PENDING.',
-  'Fri Feb 18 10:11:23 CET 2022: Requesting resources: [Queue=batch, Runtime=3600, Nodes=1]',
-  'Fri Feb 18 10:11:24 CET 2022: Command is:',
-  'Fri Feb 18 10:11:24 CET 2022: #!/bin/bash -l \n. /etc/profile > /dev/null 2>&1 \nACTIVE_PROJECT=$(id -gn); export ACTIVE_PROJECT \njutil env activate -p $ACTIVE_PROJECT > /dev/null 2>&1 \n#TSI_SUBMIT\n \n\n#TSI_OUTCOME_DIR /p/scratch/icei-hbp-2021-0007/unicore-jobs//12242ef1-5731-4372-b7fb-9789ed2bf5db/\n#TSI_USPACE_DIR /p/scratch/icei-hbp-2021-0007/unicore-jobs//12242ef1-5731-4372-b7fb-9789ed2bf5db/\n#TSI_STDOUT stdout\n#TSI_STDERR stderr\n#TSI_JOBNAME UNICORE_Job\n#TSI_EMAIL NONE\n#TSI_TIME 3600\n#TSI_NODES 1\n#TSI_PROCESSORS_PER_NODE -1\n#TSI_TOTAL_PROCESSORS -1\n#TSI_QUEUE batch\nUC_NODES=1; export UC_NODES;\nUC_PROCESSORS_PER_NODE=-1; export UC_PROCESSORS_PER_NODE;\nUC_TOTAL_PROCESSORS=-1; export UC_TOTAL_PROCESSORS;\nUC_RUNTIME=3600; export UC_RUNTIME;\nUC_MEMORY_PER_NODE=-1; export UC_MEMORY_PER_NODE;\n \n#TSI_SCRIPT\n#TSI_UMASK 77\numask 77\nUC_USERDN="UID=david.bacter@codemart.ro"; export UC_USERDN\nPATH=$PATH:. ; export PATH\ncd /p/scratch/icei-hbp-2021-0007/unicore-jobs//12242ef1-5731-4372-b7fb-9789ed2bf5db/\nUC_EXECUTABLE=\'sleep 2\'; export UC_EXECUTABLE\nchmod u+x sleep 2> /dev/null \nrm -f /p/scratch/icei-hbp-2021-0007/unicore-jobs//12242ef1-5731-4372-b7fb-9789ed2bf5db//UNICORE_SCRIPT_EXIT_CODE\nsleep 2\n\necho $? > /p/scratch/icei-hbp-2021-0007/unicore-jobs//12242ef1-5731-4372-b7fb-9789ed2bf5db//UNICORE_SCRIPT_EXIT_CODE\n',
-  'Fri Feb 18 10:11:24 CET 2022: TSI reply: FAILED.',
-  "Fri Feb 18 10:11:24 CET 2022: Submit attempt 1 (of 3) failed: de.fzj.unicore.xnjs.ems.ExecutionException: Submission to TSI failed. Reply was <TSI_FAILED: Submit failed? Submission result:sbatch: error: QOSMaxNodePerUserLimit:sbatch: error: Batch job submission failed: Job violates accounting/QOS policy (job submit limit, user's size and/or time limits):\n>",
-  'Fri Feb 18 10:11:35 CET 2022: Requesting resources: [Queue=batch, Runtime=3600, Nodes=1]',
-  'Fri Feb 18 10:11:35 CET 2022: TSI reply: FAILED.',
-  "Fri Feb 18 10:11:35 CET 2022: Submit attempt 2 (of 3) failed: de.fzj.unicore.xnjs.ems.ExecutionException: Submission to TSI failed. Reply was <TSI_FAILED: Submit failed? Submission result:sbatch: error: QOSMaxNodePerUserLimit:sbatch: error: Batch job submission failed: Job violates accounting/QOS policy (job submit limit, user's size and/or time limits):\n>",
-  'Fri Feb 18 10:11:45 CET 2022: Requesting resources: [Queue=batch, Runtime=3600, Nodes=1]',
-  'Fri Feb 18 10:11:46 CET 2022: TSI reply: FAILED.',
-  "Fri Feb 18 10:11:46 CET 2022: Submit attempt 3 (of 3) failed: de.fzj.unicore.xnjs.ems.ExecutionException: Submission to TSI failed. Reply was <TSI_FAILED: Submit failed? Submission result:sbatch: error: QOSMaxNodePerUserLimit:sbatch: error: Batch job submission failed: Job violates accounting/QOS policy (job submit limit, user's size and/or time limits):\n>",
-  "Fri Feb 18 10:11:49 CET 2022: Could not abort action on BSS: java.lang.IllegalArgumentException Can't abort: no batch system ID.",
-  'Fri Feb 18 10:11:49 CET 2022: Job was aborted by the user.',
-  'Fri Feb 18 10:11:49 CET 2022: Job was aborted by the user.'
-];
 /**
  * interface to describe how a table shoul look like, what field from the cols array represents
  * the id of each row, what field if evaluated to true allows rendering of a button in the table
@@ -240,7 +218,6 @@ export class PyunicoreWidget extends Widget {
       const details = PyunicoreWidget._getBuiltDetailsSection(rowData);
       this.tBody.appendChild(details);
       tr.onclick = () => PyunicoreWidget._toggleDisplay(details);
-      // details.onclick = () => this._toggleDisplay(details);
     });
   }
 
@@ -267,10 +244,10 @@ export class PyunicoreWidget extends Widget {
     const td = document.createElement('td');
     row.appendChild(td);
     let dataToShow = '';
-    if (rowData?.log) {
-      dataToShow = rowData.log.join('\n'); // assume the log is a list of strings and show them on separate lines
+    if (rowData?.logs) {
+      dataToShow = rowData.logs.join('\n'); // assume the log is a list of strings and show them on separate lines
     } else {
-      dataToShow = DUMMY_LOG.join('\n');
+      dataToShow = 'No logs for this job!';
     }
     td.innerHTML = `<textarea>${dataToShow}</textarea>`;
     td.colSpan = 100;
@@ -398,6 +375,7 @@ export class PyunicoreWidget extends Widget {
     this._awaitingOperation = true;
     this.getData(String(this._pagination.page))
       .then(data => {
+        console.log('data: ', data);
         this.data = data;
         this._clearInnerHtmlById(this._loadingRoot.id);
         this._showMessage(this._loadingRoot.id, data.message);
