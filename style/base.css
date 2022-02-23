@@ -1,6 +1,8 @@
 .tvb-pyunicoreWidget {
     background-color: whitesmoke;
     font-family: var(--jp-ui-font-family);
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
 .tvb-pyunicoreWidget > div {
@@ -17,17 +19,20 @@
     vertical-align: middle;
 }
 
-tr {
+.tvb-pyunicoreWidget tr {
     border-bottom: 1px solid black;
 }
 
 /* hint that table rows that aren't with details are clickable */
-tr:not(.detailsRow) {
+.tvb-pyunicoreWidget tbody tr:not(.detailsRow) {
     cursor: pointer;
+}
+.tvb-pyunicoreWidget tbody tr:not(.detailsRow):hover {
+    box-shadow: 0 0 7px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* alternate bg taking into account the hidden row with details */
-tbody tr:nth-child(4n+1) {
+.tvb-pyunicoreWidget tbody tr:nth-child(4n+1) {
     background-color: whitesmoke;
 }
 
@@ -39,7 +44,7 @@ tbody tr:nth-child(4n+1) {
     font-family: var(--jp-ui-font-family);
 }
 
-thead {
+.tvb-pyunicoreWidget thead {
     background-color: lightgray;
 }
 
@@ -57,18 +62,14 @@ thead {
 /**
 details section style
  */
-/*.detailsRow {*/
-/*    width: 100%;*/
-/*    height: 10rem;*/
-/*}*/
-.detailsRow td {
+.tvb-pyunicoreWidget .detailsRow td {
     column-span: all;
     padding-top: 0;
     padding-bottom: 0;
     padding-right: 0;
     width: 100%;
 }
-.detailsRow textarea {
+.tvb-pyunicoreWidget .detailsRow textarea {
     width: 100%;
     height: 10rem;
     border: none;
@@ -216,7 +217,7 @@ pagination style
     background-color: whitesmoke;
     color: var(--jp-border-color1);
 }
-button:hover {
+.tvb-pyunicoreWidget button:hover {
     cursor: pointer;
 }
 button:disabled,
