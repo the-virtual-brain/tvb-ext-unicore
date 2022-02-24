@@ -197,10 +197,10 @@ export class PyunicoreWidget extends Widget {
       const tr = document.createElement('tr');
       tr.id = rowData[this.tableFormat.idField];
       this.tableFormat.cols.forEach((colName: string) => {
-        const td = document.createElement('td');
-        td.innerText = rowData[colName];
-        td.classList.add(colName); // add class of column name for easier identification in a later rerender
-        tr.appendChild(td);
+        const tableData = document.createElement('td');
+        tableData.innerText = rowData[colName];
+        tableData.classList.add(colName); // add class of column name for easier identification in a later rerender
+        tr.appendChild(tableData);
       });
       // add button for a table row
       const btn = this._getBuiltButton(rowData);

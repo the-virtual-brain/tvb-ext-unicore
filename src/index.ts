@@ -17,11 +17,10 @@ import { PanelLayout } from '@lumino/widgets';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
-  const response = requestAPI<any>('jobs', {
+  return requestAPI<any>('jobs', {
     method: 'POST',
     body: JSON.stringify(dataToSend)
   });
-  return response;
 }
 
 /**
