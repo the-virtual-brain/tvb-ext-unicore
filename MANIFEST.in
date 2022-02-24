@@ -7,8 +7,9 @@ include package.json
 include install.json
 include ts*.json
 include yarn.lock
+include tvbextunicore/logger/logging.conf
 
-graft tvb-ext-unicore/labextension
+graft tvbextunicore/labextension
 
 # Javascript files
 graft src

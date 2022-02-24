@@ -35,7 +35,7 @@
     "build:lib": "tsc",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
-    "clean:labextension": "rimraf tvb-ext-unicore/labextension",
+    "clean:labextension": "rimraf tvbextunicore/labextension",
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
@@ -45,10 +45,10 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyterlab/application": "^3.1.0",
+    "@jupyterlab/application": "^3.2.9",
+    "@jupyterlab/apputils": "^3.2.9",
     "@jupyterlab/coreutils": "^5.1.0",
     "@jupyterlab/services": "^6.1.0"
-
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.1.0",
@@ -71,19 +71,19 @@
   "publishConfig": {
     "access": "public"
   },
-  "jupyterlab": { 
+  "jupyterlab": {
     "discovery": {
-        "server": {
-          "managers": [
-            "pip"
-          ],
-          "base": {
-            "name": "tvb-ext-unicore"
-          }
+      "server": {
+        "managers": [
+          "pip"
+        ],
+        "base": {
+          "name": "tvb-ext-unicore"
         }
+      }
     },
     "extension": true,
-    "outputDir": "tvb-ext-unicore/labextension"
+    "outputDir": "tvbextunicore/labextension"
   },
   "jupyter-releaser": {
     "hooks": {

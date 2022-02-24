@@ -4,15 +4,29 @@
 
 TVB Widgets - A Unicore Lab extension
 
+This extension offers a UI component to monitor HPC jobs. It allows users 
+to easily switch between computing sites, retrieve details about the jobs, 
+and also cancel them.
 
-This extension is composed of a Python package named `tvb-ext-unicore`
+The package is composed of a Python module named `tvbextunicore`
 for the server extension and a NPM package named `tvb-ext-unicore`
 for the frontend extension.
 
+As the extension provides access to different EBRAINS HPC sites, it needs 
+your EBRAINS authentication token in order to work.
+
+There are 2 options to use this extension:
+
+1. Directly in [EBRAINS Lab](https://lab.ebrains.eu/): in this case, your token 
+will be retrieved automatically.
+2. Outside EBRAINS Lab: you will need to manually copy your authentication token from 
+EBRAINS Lab and keep it in an environment variable called **CLB_AUTH**.
 
 ## Requirements
 
 * JupyterLab >= 3.0
+* pyunicore >= 0.9.15
+* [clb_nb_utils](https://github.com/HumanBrainProject/clb-nb-utils.git)
 
 ## Install
 
@@ -59,14 +73,24 @@ The `jlpm` command is JupyterLab's pinned version of
 `yarn` or `npm` in lieu of `jlpm` below.
 
 ```bash
-# Clone the repo to your local environment
+# Install external dependencies
+git clone https://github.com/HumanBrainProject/clb-nb-utils.git
+cd clb-nb-utils && python setup.py install && cd ..
+pip install pyunicore
+
+# Clone the tvb-ext-unicore repo to your local environment
 # Change directory to the tvb-ext-unicore directory
+cd tvb-ext-unicore
 # Install package in development mode
 pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
 # Server extension must be manually installed in develop mode
 jupyter server extension enable tvb-ext-unicore
+
+# Define CLB_AUTH environment variable holding your EBRAINS token
+export CLB_AUTH=${ebrains_token}
+
 # Rebuild extension Typescript source after making changes
 jlpm run build
 ```
@@ -92,7 +116,7 @@ jupyter lab build --minimize=False
 
 ```bash
 # Server extension must be manually disabled in develop mode
-jupyter server extension disable tvb-ext-unicore
+jupyter server extension disable tvbextunicore
 pip uninstall tvb-ext-unicore
 ```
 
