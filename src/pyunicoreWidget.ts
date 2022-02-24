@@ -227,9 +227,8 @@ export class PyunicoreWidget extends Widget {
    * @private
    */
   private static _toggleDisplay(element: HTMLElement): void {
-    element.style.display === 'none'
-      ? (element.style.display = 'revert')
-      : (element.style.display = 'none');
+    element.style.display =
+      element.style.display === 'none' ? 'revert' : 'none';
   }
 
   /**
