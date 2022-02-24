@@ -1,6 +1,8 @@
 # tvb-ext-unicore
 
-[![Github Actions Status](https://github.com/liadomide/tvb-ext-unicore.git/workflows/Build/badge.svg)](https://github.com/liadomide/tvb-ext-unicore.git/actions/workflows/build.yml)
+[![Github Actions Status](https://github.com/the-virtual-brain/tvb-ext-unicore/workflows/Build/badge.svg)](https://github.com/the-virtual-brain/tvb-ext-unicore/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=the-virtual-brain_tvb-ext-unicore&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=the-virtual-brain_tvb-ext-unicore) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=the-virtual-brain_tvb-ext-unicore&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=the-virtual-brain_tvb-ext-unicore)
+ [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=the-virtual-brain_tvb-ext-unicore&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=the-virtual-brain_tvb-ext-unicore)
+
 
 TVB Widgets - A Unicore Lab extension
 
