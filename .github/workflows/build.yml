@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: main
-  pull_request:
     branches: '*'
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install -U jupyterlab~=3.1 check-manifest pyunicore pytest pytest-mock
+        python -m pip install -U jupyterlab~=3.1 check-manifest pyunicore pytest pytest-mock pytest-cov
         git clone https://github.com/HumanBrainProject/clb-nb-utils.git && cd clb-nb-utils && python setup.py install && cd ..
 
     - name: Build the extension
@@ -35,8 +35,6 @@ jobs:
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
         python -m jupyterlab.browser_check
 
-        pytest tvbextunicore -r ap
-
         check-manifest -v
 
         pip install build
@@ -44,6 +42,20 @@ jobs:
         cp dist/*.tar.gz myextension.tar.gz
         pip uninstall -y "tvb-ext-unicore" jupyterlab
         rm -rf myextension
+
+    - name: Run tests
+      run: |
+        pytest tvbextunicore -r ap
+
+    - name: Compute coverage
+      run: |
+        pytest -v  --cov --cov-report=xml
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     - uses: actions/upload-artifact@v2
       with:
