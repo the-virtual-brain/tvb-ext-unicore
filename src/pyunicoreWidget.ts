@@ -2,7 +2,7 @@ import { PanelLayout, Widget } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 
 /**
- * interface to describe how a table shoul look like, what field from the cols array represents
+ * interface to describe how a table should look like, what field from the cols array represents
  * the id of each row, what field if evaluated to true allows rendering of a button in the table
  */
 export interface ITableFormat {
@@ -197,10 +197,10 @@ export class PyunicoreWidget extends Widget {
       const tr = document.createElement('tr');
       tr.id = rowData[this.tableFormat.idField];
       this.tableFormat.cols.forEach((colName: string) => {
-        const td = document.createElement('td');
-        td.innerText = rowData[colName];
-        td.classList.add(colName); // add class of column name for easier identification in a later rerender
-        tr.appendChild(td);
+        const tableData = document.createElement('td');
+        tableData.innerText = rowData[colName];
+        tableData.classList.add(colName); // add class of column name for easier identification in a later rerender
+        tr.appendChild(tableData);
       });
       // add button for a table row
       const btn = this._getBuiltButton(rowData);
@@ -213,9 +213,53 @@ export class PyunicoreWidget extends Widget {
 
       tr.appendChild(td);
       this.tBody.appendChild(tr);
+
+      // build hidden data for job
+      const details = this._getBuiltDetailsSection(rowData);
+      this.tBody.appendChild(details);
+      tr.onclick = () => PyunicoreWidget._toggleDisplay(details);
     });
   }
 
+  /**
+   * method to toggle visibility of an HTML element
+   * @param element
+   * @private
+   */
+  private static _toggleDisplay(element: HTMLElement): void {
+    element.style.display =
+      element.style.display === 'none' ? 'revert' : 'none';
+  }
+
+  /**
+   * method to build details section of a table row.
+   * By default, the built row will have display=none.
+   * @param rowData
+   * @private
+   */
+  private _getBuiltDetailsSection(rowData: IJob): HTMLElement {
+    const row = document.createElement('tr');
+    row.id = `details-${rowData[this.tableFormat.idField]}`;
+    row.classList.add('detailsRow');
+    const td = document.createElement('td');
+    row.appendChild(td);
+    let dataToShow = '';
+    if (rowData?.logs) {
+      dataToShow = rowData.logs.join('\n'); // assume the log is a list of strings and show them on separate lines
+    } else {
+      dataToShow = 'No logs for this job!';
+    }
+    td.innerHTML = `<textarea>${dataToShow}</textarea>`;
+    td.colSpan = 100;
+    row.style.display = 'none';
+    return row;
+  }
+
+  /**
+   * method to build a button for an IJob object (rowData)
+   * @param rowData
+   * @private
+   */
   private _getBuiltButton(rowData: IJob): HTMLButtonElement {
     const btn = document.createElement('button');
     btn.innerText = this.buttonSettings.name;
@@ -232,6 +276,10 @@ export class PyunicoreWidget extends Widget {
             if (res.job) {
               this._reRenderRowWithData(
                 rowData[this.tableFormat.idField],
+                res.job
+              );
+              this._reRenderRowDetailsSection(
+                `details-${rowData[this.tableFormat.idField]}`,
                 res.job
               );
             } else {
@@ -254,6 +302,22 @@ export class PyunicoreWidget extends Widget {
       }
     };
     return btn;
+  }
+
+  /**
+   * function to re-render the html of the hidden details of jobs with new data
+   * it's main purpose is to be used when a job is canceled to update the log for that job
+   * @param rowId
+   * @param rowData
+   * @private
+   */
+  private _reRenderRowDetailsSection(rowId: string, rowData: IJob): void {
+    const details = this.node.querySelector(`#${rowId}`);
+    if (details) {
+      details.innerHTML = `<td colspan="100"><textarea>${rowData.logs.join(
+        '\n'
+      )}</textarea></td>`;
+    }
   }
 
   /**
