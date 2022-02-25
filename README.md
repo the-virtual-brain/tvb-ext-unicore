@@ -4,9 +4,9 @@
  [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=the-virtual-brain_tvb-ext-unicore&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=the-virtual-brain_tvb-ext-unicore)
 
 
-TVB Widgets - A Unicore Lab extension
+### TVB Widgets - A Unicore Lab extension
 
-This extension offers a UI component to monitor HPC jobs. It allows users 
+This jupyter extension offers a UI component to monitor HPC jobs through Unicore interface. It allows users 
 to easily switch between computing sites, retrieve details about the jobs, 
 and also cancel them.
 
@@ -20,7 +20,7 @@ your EBRAINS authentication token in order to work.
 There are 2 options to use this extension:
 
 1. Directly in [EBRAINS Lab](https://lab.ebrains.eu/): in this case, your token 
-will be retrieved automatically.
+will be retrieved automatically (as you had to login for accessing the extension).
 2. Outside EBRAINS Lab: you will need to manually copy your authentication token from 
 EBRAINS Lab and keep it in an environment variable called **CLB_AUTH**.
 
