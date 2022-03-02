@@ -7,7 +7,6 @@
 
 import os
 
-import clb_nb_utils.oauth as clb_oauth
 import pyunicore.client as unicore_client
 from requests.exceptions import ConnectionError
 
@@ -27,7 +26,7 @@ class UnicoreWrapper(object):
     def __retrieve_token(self):
         try:
             token = clb_oauth.get_token()
-        except ConnectionError as e:
+        except (NameError, ConnectionError) as e:
             LOGGER.warning(f"Could not connect to EBRAINS to retrieve an auth token: {e}")
             LOGGER.info("Will try to use the auth token defined by environment variable CLB_AUTH...")
 

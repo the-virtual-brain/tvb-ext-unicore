@@ -28,7 +28,6 @@ EBRAINS Lab and keep it in an environment variable called **CLB_AUTH**.
 
 * JupyterLab >= 3.0
 * pyunicore >= 0.9.15
-* [clb_nb_utils](https://github.com/HumanBrainProject/clb-nb-utils.git)
 
 ## Install
 
@@ -76,8 +75,6 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Install external dependencies
-git clone https://github.com/HumanBrainProject/clb-nb-utils.git
-cd clb-nb-utils && python setup.py install && cd ..
 pip install pyunicore
 
 # Clone the tvb-ext-unicore repo to your local environment
