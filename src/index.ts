@@ -10,12 +10,12 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
-import { PyunicoreWidget, IDataType, PyunicoreSites } from './pyunicoreWidget';
+import { PyunicoreWidget } from './pyunicoreWidget';
 
 import { requestAPI } from './handler';
-import { PanelLayout } from '@lumino/widgets';
 
 async function cancelJob(resource_url: string): Promise<any> {
+  console.log('cancel job args: ', resource_url);
   const dataToSend = { resource_url: resource_url };
   return requestAPI<any>('jobs', {
     method: 'POST',
@@ -45,37 +45,22 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'PyUnicore Task Stream',
       execute: async () => {
         if (!widget || widget.isDisposed) {
-          const sitesWidget = new PyunicoreSites(sites);
-          const content = new PyunicoreWidget(
-            {
+          const content = new PyunicoreWidget({
+            tableFormat: {
               cols: columns,
               idField: 'id',
-              buttonRenderConditionField: 'is_cancelable' // button will be rendered if 'is_cancelable' is true
+              buttonRenderConditionField: 'is_cancelable'
             },
-            { jobs: [], message: '' }, // initialize with an empty DataType object
-            {
-              name: 'Cancel Job',
+            data: { message: '', jobs: [] },
+            buttonSettings: {
               onClick: cancelJob,
-              onClickFieldArgs: ['resource_url'], // args for onClick function
-              isAsync: true
+              onClickFieldArgs: ['resource_url'],
+              isAsync: false,
+              name: 'Cancel Job'
             },
-            async (page?: string) => {
-              let endPoint = `jobs?site=${sitesWidget.activeSite}`;
-              if (page) {
-                endPoint += `&page=${page}`;
-              }
-              const data: IDataType = await requestAPI<any>(endPoint);
-              return data;
-            }
-          );
+            sites: sites
+          });
 
-          // hack to update jobs list on select change and reset page number
-          sitesWidget.changeHandler = () => {
-            content.pagination.page = 1;
-            content.update();
-          };
-
-          (content.layout as PanelLayout).addWidget(sitesWidget);
           widget = new MainAreaWidget({ content });
           widget.id = 'tvbextunicore';
           widget.title.label = 'PyUnicore Task Stream';
