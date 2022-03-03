@@ -34,7 +34,10 @@
 }
 
 /* alternate bg taking into account the hidden row with details */
-.tvb-pyunicoreWidget tbody tr:nth-child(4n+1) {
+/*.tvb-pyunicoreWidget tbody tr:nth-child(4n+1) {*/
+/*    background-color: whitesmoke;*/
+/*}*/
+.tvb-pyunicoreWidget tbody tr:nth-child(even) {
     background-color: whitesmoke;
 }
 
@@ -182,18 +185,15 @@ selection component (pyunicore sites)
   }
 }
 .loadingRoot {
-    display: inline-block;
-    text-align: center;
-    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.loadingRoot span {
-    display: inline-block;
-    padding: 0.2rem;
-}
+
 .unicoreLoading {
-    width: 0.7rem;
-    height: 0.7rem;
+    width: 0.9rem;
+    height: 0.9rem;
     display: inline-block;
     border-radius: 50%;
     border: 3px solid var(--jp-border-color1);

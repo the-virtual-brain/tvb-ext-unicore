@@ -43,7 +43,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
-      execute: async () => {
+      execute: () => {
         if (!widget || widget.isDisposed) {
           const content = new PyunicoreWidget({
             tableFormat: {
@@ -58,7 +58,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
               isAsync: false,
               name: 'Cancel Job'
             },
-            sites: sites
+            sites: sites,
+            reloadRate: 60000
           });
 
           widget = new MainAreaWidget({ content });

@@ -13,7 +13,7 @@ import { ReactWidget } from '@jupyterlab/apputils';
 export interface ITableFormat {
   cols: Array<string>;
   idField: string;
-  buttonRenderConditionField: string; // the field which dictates if the button is visible
+  buttonRenderConditionField: string; // the IJob field which dictates if the button is visible
 }
 
 /**
@@ -48,6 +48,7 @@ namespace types {
     data: IDataType;
     buttonSettings: IButtonSettings;
     sites: string[];
+    reloadRate: number;
   };
 
   export type State = {
@@ -65,6 +66,7 @@ namespace types {
     renderLeftArrow: boolean;
     renderRightArrow: boolean;
     disableSitesSelection: boolean;
+    updateIntervalId?: number;
   };
 }
 
@@ -103,6 +105,7 @@ export class PyunicoreWidget extends ReactWidget {
         data={this.props.data}
         buttonSettings={this.props.buttonSettings}
         sites={this.props.sites}
+        reloadRate={60000}
       /> // see how we can wrap this to use signal
     );
   }
@@ -122,6 +125,7 @@ export class PyunicoreComponent extends React.Component<
     // bind helper methods to pass them as props to children
     this.setPageState = this.setPageState.bind(this);
     this.setSiteState = this.setSiteState.bind(this);
+    this.getData = this.getData.bind(this);
 
     this.state = {
       jobs: [],
@@ -137,7 +141,8 @@ export class PyunicoreComponent extends React.Component<
       lastUpdate: new Date(),
       renderLeftArrow: false,
       renderRightArrow: false,
-      disableSitesSelection: true
+      disableSitesSelection: true,
+      updateIntervalId: 0 // set when component mounts
     };
   }
 
@@ -173,9 +178,17 @@ export class PyunicoreComponent extends React.Component<
         renderRightArrow: data.jobs.length >= this.state.itemsPerPage,
         disableSitesSelection: false
       });
-      console.log('state: ', this.state);
     });
   }
+
+  private _triggerUpdate = (): void => {
+    const now = new Date().valueOf();
+    const previous = this.state.lastUpdate.valueOf();
+    const diff = now - previous;
+    if (diff >= this.state.reloadRate) {
+      this.getData().catch(reason => console.log(reason));
+    }
+  };
 
   /**
    * helper method to set page state from a child component
@@ -196,6 +209,11 @@ export class PyunicoreComponent extends React.Component<
     this.setState({ ...this.state, page: 1, site: site });
   }
 
+  /**
+   * if page or site changed reload data
+   * @param prevProps
+   * @param prevState
+   */
   componentDidUpdate(
     prevProps: Readonly<types.Props>,
     prevState: Readonly<types.State>
@@ -209,10 +227,19 @@ export class PyunicoreComponent extends React.Component<
   }
 
   /**
+   * clear interval to avoid unnecessary reloads
+   */
+  componentWillUnmount(): void {
+    clearInterval(this.state.updateIntervalId);
+  }
+
+  /**
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
     this.getData().then(() => console.log('data loaded'));
+    const updateIntervalId = setInterval(this._triggerUpdate, 10000);
+    this.setState({ ...this.state, updateIntervalId: updateIntervalId });
   }
 
   /**
@@ -234,16 +261,18 @@ export class PyunicoreComponent extends React.Component<
             disableSelection={this.state.disableSitesSelection}
           />
           {this.state.loading ? (
-            <span className={'loadingRoot'}>
-              <span className={'unicoreLoading'} />
-            </span>
+            <div>
+              <div className={'loadingRoot'}>
+                <span className={'unicoreLoading'} />
+              </div>
+            </div>
           ) : (
-            <span>
+            <div>
               {this.state.message}
               <span className={'lastUpdate'}>
                 Last update: {this.state.lastUpdate.toLocaleTimeString()}
               </span>
-            </span>
+            </div>
           )}
         </div>
 
