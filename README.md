@@ -85,7 +85,7 @@ pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
 # Server extension must be manually installed in develop mode
-jupyter server extension enable tvb-ext-unicore
+jupyter server extension enable tvbextunicore
 
 # Define CLB_AUTH environment variable holding your EBRAINS token
 export CLB_AUTH=${ebrains_token}
