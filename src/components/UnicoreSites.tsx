@@ -20,7 +20,6 @@ export const UnicoreSites = (props: types.Props): JSX.Element => {
    * @param event
    */
   function handleSiteChange(event: React.ChangeEvent<HTMLSelectElement>): void {
-    console.log('site change event: ', event.target.value);
     props.onChangeSite(event.target.value);
   }
 

@@ -3,6 +3,11 @@ import React, { ReactElement } from 'react';
 import { UnicoreJobsTable } from './components/UnicoreJobsTable';
 import { PaginationComponent } from './components/PaginationComponent';
 import { UnicoreSites } from './components/UnicoreSites';
+import {
+  ModalType,
+  ModalWidget,
+  types as modalTypes
+} from './components/ModalComponent';
 import { requestAPI } from './handler';
 import { ReactWidget } from '@jupyterlab/apputils';
 
@@ -67,6 +72,7 @@ namespace types {
     renderRightArrow: boolean;
     disableSitesSelection: boolean;
     updateIntervalId?: number;
+    modalState: modalTypes.Props;
   };
 }
 
@@ -74,27 +80,10 @@ namespace types {
  * React Widget wrapper over the React component to add the @lumino widget functionality
  */
 export class PyunicoreWidget extends ReactWidget {
-  readonly state: types.State;
   readonly props: types.Props;
   constructor(props: types.Props) {
     super();
     this.addClass('tvb-pyunicoreWidget');
-    this.state = {
-      jobs: [],
-      message: '',
-      site: props.sites[0],
-      buttonSettings: props.buttonSettings,
-      tableFormat: props.tableFormat,
-      reloadRate: 60000,
-      loading: true,
-      sites: props.sites,
-      page: 1,
-      itemsPerPage: 10,
-      lastUpdate: new Date(),
-      renderLeftArrow: false,
-      renderRightArrow: false,
-      disableSitesSelection: true
-    };
     this.props = props;
   }
 
@@ -125,8 +114,9 @@ export class PyunicoreComponent extends React.Component<
     // bind helper methods to pass them as props to children
     this.setPageState = this.setPageState.bind(this);
     this.setSiteState = this.setSiteState.bind(this);
+    this.setModalSateVisible = this.setModalSateVisible.bind(this);
     this.getData = this.getData.bind(this);
-
+    const lastUpdate = new Date();
     this.state = {
       jobs: [],
       message: '',
@@ -138,10 +128,16 @@ export class PyunicoreComponent extends React.Component<
       sites: props.sites,
       page: 1,
       itemsPerPage: 10,
-      lastUpdate: new Date(),
+      lastUpdate: lastUpdate,
       renderLeftArrow: false,
       renderRightArrow: false,
       disableSitesSelection: true,
+      modalState: {
+        modalType: ModalType.Error,
+        message: '',
+        visible: false,
+        setVisible: this.setModalSateVisible
+      },
       updateIntervalId: 0 // set when component mounts
     };
   }
@@ -167,26 +163,37 @@ export class PyunicoreComponent extends React.Component<
       renderRightArrow: false,
       disableSitesSelection: true
     });
-    requestAPI<any>(this._getEndpoint()).then(data => {
-      this.setState({
-        ...this.state,
-        jobs: data.jobs,
-        message: data.message,
-        loading: false,
-        lastUpdate: new Date(),
-        renderLeftArrow: this.state.page > 1,
-        renderRightArrow: data.jobs.length >= this.state.itemsPerPage,
-        disableSitesSelection: false
-      });
+    const data = await requestAPI<any>(this._getEndpoint());
+
+    this.setState({
+      ...this.state,
+      jobs: data.jobs,
+      message: data.message,
+      loading: false,
+      lastUpdate: new Date(),
+      renderLeftArrow: this.state.page > 1,
+      renderRightArrow: data.jobs.length >= this.state.itemsPerPage,
+      disableSitesSelection: false
     });
+
+    return data;
   }
 
   private _triggerUpdate = (): void => {
     const now = new Date().valueOf();
     const previous = this.state.lastUpdate.valueOf();
     const diff = now - previous;
-    if (diff >= this.state.reloadRate) {
-      this.getData().catch(reason => console.log(reason));
+    if (diff >= this.state.reloadRate && !this.state.loading) {
+      this.getData().catch(reason => {
+        this.setState({
+          ...this.state,
+          modalState: {
+            ...this.state.modalState,
+            visible: true,
+            message: reason
+          }
+        });
+      });
     }
   };
 
@@ -199,6 +206,21 @@ export class PyunicoreComponent extends React.Component<
     this.setState({ ...this.state, page: page });
   }
 
+  /**
+   * helper method to set modal visibility from modal component
+   * @param visible
+   * @protected
+   */
+  protected setModalSateVisible(visible: boolean): void {
+    this.setState({
+      ...this.state,
+      loading: false,
+      renderLeftArrow: true,
+      renderRightArrow: true,
+      disableSitesSelection: false,
+      modalState: { ...this.state.modalState, visible: visible }
+    });
+  }
   /**
    * helper method to set site state from a child component
    * @param site
@@ -222,7 +244,16 @@ export class PyunicoreComponent extends React.Component<
       prevState.page !== this.state.page ||
       prevState.site !== this.state.site
     ) {
-      this.getData().catch(reason => console.log(reason));
+      this.getData().catch(reason => {
+        this.setState({
+          ...this.state,
+          modalState: {
+            ...this.state.modalState,
+            visible: true,
+            message: reason
+          }
+        });
+      });
     }
   }
 
@@ -237,7 +268,16 @@ export class PyunicoreComponent extends React.Component<
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
-    this.getData().then(() => console.log('data loaded'));
+    this.getData().catch(reason => {
+      this.setState({
+        ...this.state,
+        modalState: {
+          ...this.state.modalState,
+          visible: true,
+          message: reason
+        }
+      });
+    });
     const updateIntervalId = setInterval(this._triggerUpdate, 10000);
     this.setState({ ...this.state, updateIntervalId: updateIntervalId });
   }
@@ -248,6 +288,12 @@ export class PyunicoreComponent extends React.Component<
   render(): ReactElement {
     return (
       <>
+        <ModalWidget
+          modalType={this.state.modalState.modalType}
+          message={this.state.modalState.message}
+          visible={this.state.modalState.visible}
+          setVisible={this.state.modalState.setVisible}
+        />
         <div className={'unicoreTopBar'}>
           <PaginationComponent
             setPageState={this.setPageState}

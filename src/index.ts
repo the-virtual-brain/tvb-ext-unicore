@@ -15,7 +15,6 @@ import { PyunicoreWidget } from './pyunicoreWidget';
 import { requestAPI } from './handler';
 
 async function cancelJob(resource_url: string): Promise<any> {
-  console.log('cancel job args: ', resource_url);
   const dataToSend = { resource_url: resource_url };
   return requestAPI<any>('jobs', {
     method: 'POST',
