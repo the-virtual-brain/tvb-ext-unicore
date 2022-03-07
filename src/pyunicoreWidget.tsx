@@ -1,4 +1,3 @@
-// import { Message } from '@lumino/messaging';
 import React, { ReactElement } from 'react';
 import { UnicoreJobsTable } from './components/UnicoreJobsTable';
 import { PaginationComponent } from './components/PaginationComponent';

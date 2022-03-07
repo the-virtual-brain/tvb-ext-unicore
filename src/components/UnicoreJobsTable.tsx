@@ -1,5 +1,3 @@
-// import { ReactWidget } from '@jupyterlab/apputils';
-
 import React, { useState } from 'react';
 import { IButtonSettings, IJob } from '../pyunicoreWidget';
 
@@ -14,10 +12,6 @@ export namespace types {
   export type ThProps = {
     columns: string[];
   };
-
-  // export type TBodyProps = {
-  //   data: Array<IJob>;
-  // };
 
   export type JobRowProps = {
     buttonSettings: IButtonSettings;
