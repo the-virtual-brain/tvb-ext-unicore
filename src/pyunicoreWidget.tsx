@@ -115,6 +115,7 @@ export class PyunicoreComponent extends React.Component<
     this.setSiteState = this.setSiteState.bind(this);
     this.setModalSateVisible = this.setModalSateVisible.bind(this);
     this.getData = this.getData.bind(this);
+    this.catchError = this.catchError.bind(this);
     const lastUpdate = new Date();
     this.state = {
       jobs: [],
@@ -183,16 +184,7 @@ export class PyunicoreComponent extends React.Component<
     const previous = this.state.lastUpdate.valueOf();
     const diff = now - previous;
     if (diff >= this.state.reloadRate && !this.state.loading) {
-      this.getData().catch(reason => {
-        this.setState({
-          ...this.state,
-          modalState: {
-            ...this.state.modalState,
-            visible: true,
-            message: reason
-          }
-        });
-      });
+      this.getData().catch(this.catchError);
     }
   };
 
@@ -243,19 +235,25 @@ export class PyunicoreComponent extends React.Component<
       prevState.page !== this.state.page ||
       prevState.site !== this.state.site
     ) {
-      this.getData().catch(reason => {
-        this.setState({
-          ...this.state,
-          modalState: {
-            ...this.state.modalState,
-            visible: true,
-            message: reason
-          }
-        });
-      });
+      this.getData().catch(this.catchError);
     }
   }
 
+  /**
+   * helper function to catch an error and update the state to show modal with error
+   * @param reason
+   * @private
+   */
+  private catchError(reason?: any): void {
+    this.setState({
+      ...this.state,
+      modalState: {
+        ...this.state.modalState,
+        visible: true,
+        message: reason
+      }
+    });
+  }
   /**
    * clear interval to avoid unnecessary reloads
    */
@@ -267,16 +265,7 @@ export class PyunicoreComponent extends React.Component<
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
-    this.getData().catch(reason => {
-      this.setState({
-        ...this.state,
-        modalState: {
-          ...this.state.modalState,
-          visible: true,
-          message: reason
-        }
-      });
-    });
+    this.getData().catch(this.catchError);
     const updateIntervalId = setInterval(this._triggerUpdate, 10000);
     this.setState({ ...this.state, updateIntervalId: updateIntervalId });
   }
