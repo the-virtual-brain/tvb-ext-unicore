@@ -302,7 +302,7 @@ export class PyunicoreComponent extends React.Component<
             </div>
           ) : (
             <div>
-              {this.state.message}
+              <span className={'unicoreMessage'}>{this.state.message}</span>
               <span className={'lastUpdate'}>
                 Last update: {this.state.lastUpdate.toLocaleTimeString()}
               </span>
@@ -315,6 +315,9 @@ export class PyunicoreComponent extends React.Component<
           cancelJob={this.state.buttonSettings.onClick}
           columns={this.state.tableFormat.cols}
           data={this.state.jobs}
+          setMessageState={(message: string) => {
+            this.setState({ ...this.state, message: message });
+          }}
         />
       </>
     );

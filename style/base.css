@@ -33,10 +33,6 @@
     box-shadow: 0 0 7px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* alternate bg taking into account the hidden row with details */
-/*.tvb-pyunicoreWidget tbody tr:nth-child(4n+1) {*/
-/*    background-color: whitesmoke;*/
-/*}*/
 .tvb-pyunicoreWidget tbody tr:nth-child(even) {
     background-color: whitesmoke;
 }

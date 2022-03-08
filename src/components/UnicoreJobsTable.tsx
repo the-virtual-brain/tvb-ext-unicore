@@ -7,6 +7,7 @@ export namespace types {
     columns: string[];
     data: Array<IJob>;
     cancelJob: (url: string) => Promise<void>;
+    setMessageState: (message: string) => void;
   };
 
   export type ThProps = {
@@ -18,6 +19,7 @@ export namespace types {
     cols: string[];
     job: IJob;
     cancelJob: (url: string) => Promise<any>; // async action for button
+    setMessageState: (message: string) => void;
   };
 }
 
@@ -30,6 +32,7 @@ export const UnicoreJobsTable = (props: types.JobsTableProps): JSX.Element => {
         columns={props.columns}
         data={props.data}
         cancelJob={props.cancelJob}
+        setMessageState={props.setMessageState}
       />
     </table>
   );
@@ -60,6 +63,7 @@ export const TableBody = (props: types.JobsTableProps): JSX.Element => {
           job={job}
           cancelJob={props.cancelJob}
           buttonSettings={props.buttonSettings}
+          setMessageState={props.setMessageState}
         />
       ))}
     </tbody>
@@ -81,6 +85,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
       .then(r => {
         setLoading(false);
         setJob(r.job);
+        props.setMessageState(r.message);
       });
   }
   return (
