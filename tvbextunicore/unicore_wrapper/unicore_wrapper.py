@@ -107,3 +107,10 @@ class UnicoreWrapper(object):
 
         job = unicore_client.Job(self.transport, job_url)
         return True, JobDTO.from_unicore_job(job)
+
+    def get_job(self, job_url):
+        # type: (str) -> unicore.Job
+        """
+        Get an unicore job from a job url and return the instantiated Job object
+        """
+        return unicore_client.Job(self.transport, job_url)

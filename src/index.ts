@@ -1,4 +1,5 @@
 import {
+  ILabShell,
   ILayoutRestorer,
   JupyterFrontEnd,
   JupyterFrontEndPlugin
@@ -10,9 +11,13 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
+import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
+
 import { PyunicoreWidget } from './pyunicoreWidget';
 
 import { requestAPI } from './handler';
+import { Kernel } from '@jupyterlab/services';
+import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
@@ -28,11 +33,20 @@ async function cancelJob(resource_url: string): Promise<any> {
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'tvbextunicore:plugin',
   autoStart: true,
-  requires: [ICommandPalette, ILayoutRestorer],
+  requires: [
+    ICommandPalette,
+    ILayoutRestorer,
+    IConsoleTracker,
+    ILabShell,
+    INotebookTracker
+  ],
   activate: async (
     app: JupyterFrontEnd,
     palette: ICommandPalette,
-    restorer: ILayoutRestorer
+    restorer: ILayoutRestorer,
+    consoleTracker: IConsoleTracker,
+    labShell: ILabShell,
+    notebookTracker: INotebookTracker
   ) => {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
@@ -41,7 +55,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
-      execute: async () => {
+      execute: async (): Promise<any> => {
         if (!widget || widget.isDisposed) {
           const sites = await requestAPI<any>('sites');
           const content = new PyunicoreWidget({
@@ -58,7 +72,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
               name: 'Cancel Job'
             },
             sites: sites,
-            reloadRate: 60000
+            reloadRate: 60000,
+            getKernel: async () => {
+              const kernel = Private.getCurrentKernel(
+                labShell,
+                notebookTracker,
+                consoleTracker
+              );
+              return (await Private.shouldUseKernel(kernel)) ? kernel : null; // make sure kernel is usable
+            },
+            getJob: Private.getJobCode
           });
 
           widget = new MainAreaWidget({ content });
@@ -90,3 +113,54 @@ const plugin: JupyterFrontEndPlugin<void> = {
 };
 
 export default plugin;
+
+namespace Private {
+  /**
+   * Whether a kernel should be used. Only evaluates to true
+   * if it is valid and in python.
+   */
+  export async function shouldUseKernel(
+    kernel: Kernel.IKernelConnection | null | undefined
+  ): Promise<boolean> {
+    if (!kernel) {
+      return false;
+    }
+    const spec = await kernel.spec;
+    return !!spec && spec.language.toLowerCase().indexOf('python') !== -1;
+  }
+
+  /**
+   * Get the currently focused kernel in the application,
+   * checking both notebooks and consoles.
+   */
+  export function getCurrentKernel(
+    shell: ILabShell,
+    notebookTracker: INotebookTracker,
+    consoleTracker: IConsoleTracker
+  ): Kernel.IKernelConnection | null | undefined {
+    // Get a handle on the most relevant kernel,
+    // whether it is attached to a notebook or a console.
+    const current = shell.currentWidget;
+    let kernel: Kernel.IKernelConnection | null | undefined;
+    if (current && notebookTracker.has(current)) {
+      kernel = (current as NotebookPanel).sessionContext.session?.kernel;
+    } else if (current && consoleTracker.has(current)) {
+      kernel = (current as ConsolePanel).sessionContext.session?.kernel;
+    } else if (notebookTracker.currentWidget) {
+      const current = notebookTracker.currentWidget;
+      kernel = current.sessionContext.session?.kernel;
+    } else if (consoleTracker.currentWidget) {
+      const current = consoleTracker.currentWidget;
+      kernel = current.sessionContext.session?.kernel;
+    }
+    return kernel;
+  }
+
+  export function getJobCode(job_url: string): string {
+    return `
+from tvbextunicore.unicore_wrapper import unicore_wrapper
+unicore = unicore_wrapper.UnicoreWrapper()
+job = unicore.get_job('${job_url}')
+job`;
+  }
+}
