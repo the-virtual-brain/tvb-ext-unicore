@@ -115,12 +115,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
 export default plugin;
 
 namespace Private {
+  export type NullableIKernelConnection =
+    | Kernel.IKernelConnection
+    | null
+    | undefined;
+
   /**
    * Whether a kernel should be used. Only evaluates to true
    * if it is valid and in python.
    */
   export async function shouldUseKernel(
-    kernel: Kernel.IKernelConnection | null | undefined
+    kernel: NullableIKernelConnection
   ): Promise<boolean> {
     if (!kernel) {
       return false;
@@ -137,21 +142,21 @@ namespace Private {
     shell: ILabShell,
     notebookTracker: INotebookTracker,
     consoleTracker: IConsoleTracker
-  ): Kernel.IKernelConnection | null | undefined {
+  ): NullableIKernelConnection {
     // Get a handle on the most relevant kernel,
     // whether it is attached to a notebook or a console.
-    const current = shell.currentWidget;
+    let current = shell.currentWidget;
     let kernel: Kernel.IKernelConnection | null | undefined;
     if (current && notebookTracker.has(current)) {
       kernel = (current as NotebookPanel).sessionContext.session?.kernel;
     } else if (current && consoleTracker.has(current)) {
       kernel = (current as ConsolePanel).sessionContext.session?.kernel;
     } else if (notebookTracker.currentWidget) {
-      const current = notebookTracker.currentWidget;
-      kernel = current.sessionContext.session?.kernel;
+      current = notebookTracker.currentWidget;
+      kernel = (current as NotebookPanel).sessionContext.session?.kernel;
     } else if (consoleTracker.currentWidget) {
-      const current = consoleTracker.currentWidget;
-      kernel = current.sessionContext.session?.kernel;
+      current = consoleTracker.currentWidget;
+      kernel = (current as ConsolePanel).sessionContext.session?.kernel;
     }
     return kernel;
   }
