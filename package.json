@@ -40,6 +40,8 @@
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
     "install:extension": "jlpm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w",
     "watch:labextension": "jupyter labextension watch ."
@@ -49,20 +51,27 @@
     "@jupyterlab/apputils": "^3.3.0",
     "@jupyterlab/console": "^3.3.0",
     "@jupyterlab/coreutils": "^5.1.0",
-    "@jupyterlab/services": "^6.1.0"
+    "@jupyterlab/services": "^6.1.0",
+    "@testing-library/jest-dom": "^5.16.2",
+    "@testing-library/react": "^12.1.4"
   },
   "devDependencies": {
+    "@babel/core": "^7",
+    "@babel/preset-env": "^7",
     "@jupyterlab/builder": "^3.1.0",
     "@jupyterlab/notebook": "^3.3.0",
+    "@types/jest": "^27.4.1",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^27.5.1",
     "mkdirp": "^1.0.3",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
+    "ts-jest": "^27.1.3",
     "typescript": "~4.1.3"
   },
   "sideEffects": [

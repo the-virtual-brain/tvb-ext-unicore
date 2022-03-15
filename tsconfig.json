@@ -22,6 +22,8 @@
   },
   "include": [
     "src/*",
-    "src/components/*.tsx"
+    "src/components/*.tsx",
+    "src/__tests__/*.tsx",
+    "node_modules/@types/jest/index.d.ts"
   ]
 }

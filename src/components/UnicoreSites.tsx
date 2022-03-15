@@ -24,10 +24,14 @@ export const UnicoreSites = (props: types.Props): JSX.Element => {
   }
 
   return (
-    <div className={'pyunicoreSites'}>
+    <div className={'pyunicoreSites'} data-testid={'pyunicore-sites'}>
       <div>
         <span>SITE:</span>
-        <select onChange={handleSiteChange} disabled={props.disableSelection}>
+        <select
+          onChange={handleSiteChange}
+          disabled={props.disableSelection}
+          data-testid={'select'}
+        >
           {props.sites.map(site => (
             <option key={site} id={site} value={site}>
               {site}
