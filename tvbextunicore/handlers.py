@@ -21,6 +21,8 @@ LOGGER = get_logger(__name__)
 class SitesHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
+        LOGGER.info(f"Retrieving sites...")
+
         sites = UnicoreWrapper().get_sites()
         self.finish(json.dumps([site_name for site_name in sites]))
 
