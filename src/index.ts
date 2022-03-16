@@ -38,13 +38,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
 
-    const sites = await requestAPI<any>('sites');
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
       execute: async () => {
         if (!widget || widget.isDisposed) {
+          const sites = await requestAPI<any>('sites');
           const sitesWidget = new PyunicoreSites(sites);
           const content = new PyunicoreWidget(
             {
