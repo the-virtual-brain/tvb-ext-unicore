@@ -1,12 +1,13 @@
 import { PaginationComponent } from '../components/PaginationComponent';
-import { findByText, queryAllByTestId, render } from '@testing-library/react';
+import {findByText, fireEvent, queryAllByTestId, render} from '@testing-library/react';
 import React from 'react';
 
+const mockSetPage = jest.fn((page: number) => {
+  return;
+});
 function renderPagination(showPrev: boolean, showNext: boolean) {
   const props = {
-    setPageState: (page: number) => {
-      return;
-    },
+    setPageState: mockSetPage,
     showPrevButton: showPrev,
     showNextButton: showNext,
     currentPage: 1
@@ -26,6 +27,12 @@ describe('<PaginationComponent />', () => {
     expect(right).toBeTruthy();
     const page = await findByText(pagination, 'Page: 1');
     expect(page).toBeTruthy();
+    // test click right
+    fireEvent.click(left);
+    expect(mockSetPage).toBeCalledTimes(1);
+    // test click left
+    fireEvent.click(right);
+    expect(mockSetPage).toBeCalledTimes(2);
   });
 
   it('renders pagination without left button and with right button visible', async () => {
