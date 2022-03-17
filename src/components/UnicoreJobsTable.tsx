@@ -11,7 +11,6 @@ export namespace types {
     buttonSettings: IButtonSettings;
     columns: string[];
     data: Array<IJob>;
-    cancelJob: (url: string) => Promise<void>;
     setMessageState: (message: string) => void;
     getKernel: () => Promise<Kernel.IKernelConnection | null | undefined>;
     getJob: (job_url: string) => string;
@@ -26,7 +25,6 @@ export namespace types {
     buttonSettings: IButtonSettings;
     cols: string[];
     job: IJob;
-    cancelJob: (url: string) => Promise<any>; // async action for button
     setMessageState: (message: string) => void;
     getKernel: () => Promise<Kernel.IKernelConnection | null | undefined>;
     getJob: (job_url: string) => string;
@@ -43,7 +41,6 @@ export const UnicoreJobsTable = (props: types.JobsTableProps): JSX.Element => {
         buttonSettings={props.buttonSettings}
         columns={props.columns}
         data={props.data}
-        cancelJob={props.cancelJob}
         setMessageState={props.setMessageState}
         getKernel={props.getKernel}
         getJob={props.getJob}
@@ -77,7 +74,6 @@ export const TableBody = (props: types.JobsTableProps): JSX.Element => {
           id={job.id}
           cols={props.columns}
           job={job}
-          cancelJob={props.cancelJob}
           buttonSettings={props.buttonSettings}
           setMessageState={props.setMessageState}
           getKernel={props.getKernel}
@@ -142,9 +138,10 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
         onClick={() => setLogsVisible(!logsVisible)}
         draggable={'true'}
         onDragStart={handleDragStart}
+        data-testid={`table-row-${props.job.id}`}
       >
-        {props.cols.map(col => (
-          <td>{job[col]}</td>
+        {props.cols.map((col, index) => (
+          <td key={`${job.id}-${index}`}>{job[col]}</td>
         ))}
         {loading ? (
           <td>
@@ -163,7 +160,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
       {logsVisible && (
         <tr className={'detailsRow'}>
           <td colSpan={100}>
-            <textarea>{job.logs.join('\n')}</textarea>
+            <textarea value={job.logs.join('\n')} readOnly={true} />
           </td>
         </tr>
       )}

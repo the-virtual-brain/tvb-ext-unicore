@@ -270,6 +270,9 @@ export class PyunicoreComponent extends React.Component<
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
+    if (!this.state.sites) {
+      return;
+    }
     this.getData().catch(this.catchError);
     const updateIntervalId = setInterval(this._triggerUpdate, 10000);
     this.setState({ ...this.state, updateIntervalId: updateIntervalId });
@@ -317,7 +320,6 @@ export class PyunicoreComponent extends React.Component<
 
         <UnicoreJobsTable
           buttonSettings={this.state.buttonSettings}
-          cancelJob={this.state.buttonSettings.onClick}
           columns={this.state.tableFormat.cols}
           data={this.state.jobs}
           setMessageState={(message: string) => {

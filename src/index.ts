@@ -50,6 +50,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
   ) => {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
+    let sites: string[] = [];
+    let message = '';
+    try {
+      sites = await requestAPI<any>('sites');
+    } catch (e) {
+      message = 'Could not retrieve sites from HBP!';
+      console.log(e);
+    }
 
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvbextunicore:open';
@@ -64,7 +72,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               idField: 'id',
               buttonRenderConditionField: 'is_cancelable'
             },
-            data: { message: '', jobs: [] },
+            data: { message: message, jobs: [] },
             buttonSettings: {
               onClick: cancelJob,
               onClickFieldArgs: ['resource_url'],
