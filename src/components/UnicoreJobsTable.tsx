@@ -109,6 +109,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
    * @param event
    */
   async function handleDragStart(event: React.DragEvent): Promise<void> {
+    // make sure we have a kernel that can handle python code
     const kernel = await props.getKernel();
     if (!kernel) {
       // show error modal
