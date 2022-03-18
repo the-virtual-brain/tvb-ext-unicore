@@ -1,5 +1,10 @@
 import { PaginationComponent } from '../components/PaginationComponent';
-import {findByText, fireEvent, queryAllByTestId, render} from '@testing-library/react';
+import {
+  findByText,
+  fireEvent,
+  queryAllByTestId,
+  render
+} from '@testing-library/react';
 import React from 'react';
 
 const mockSetPage = jest.fn((page: number) => {
