@@ -25,8 +25,9 @@ class UnicoreWrapper(object):
 
     def __retrieve_token(self):
         try:
+            from clb_nb_utils import oauth as clb_oauth
             token = clb_oauth.get_token()
-        except (NameError, ConnectionError) as e:
+        except (ModuleNotFoundError, ConnectionError) as e:
             LOGGER.warning(f"Could not connect to EBRAINS to retrieve an auth token: {e}")
             LOGGER.info("Will try to use the auth token defined by environment variable CLB_AUTH...")
 
