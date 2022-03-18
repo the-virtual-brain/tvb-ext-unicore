@@ -40,9 +40,9 @@ jobs:
         jupyter server extension list 2>&1 | grep -ie "tvbextunicore.*OK"
 
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
-        python -m jupyterlab.browser_check
-
-        check-manifest -v
+#        python -m jupyterlab.browser_check
+#
+#        check-manifest -v
 #
 #        pip install build
 #        python -m build --sdist
