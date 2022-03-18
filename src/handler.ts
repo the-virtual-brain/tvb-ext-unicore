@@ -20,7 +20,6 @@ export async function requestAPI<T>(
     'tvbextunicore', // API Namespace
     endPoint
   );
-
   let response: Response;
   try {
     response = await ServerConnection.makeRequest(requestUrl, init, settings);

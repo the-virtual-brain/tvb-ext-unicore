@@ -53,6 +53,14 @@ jobs:
       run: |
         pytest -v  --cov --cov-report=xml
 
+    - name: Run JS tests
+      run: |
+        yarn test
+
+    - name: Compute JS coverage
+      run: |
+        yarn test --coverage
+
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
       env:

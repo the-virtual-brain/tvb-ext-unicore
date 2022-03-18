@@ -27,6 +27,7 @@ export const ModalWidget = (props: types.Props): JSX.Element => {
     <div
       className={'unicoreModal'}
       style={{ display: props.visible ? 'flex' : 'none' }}
+      data-testid={'modal-widget'}
     >
       <div>
         <div>

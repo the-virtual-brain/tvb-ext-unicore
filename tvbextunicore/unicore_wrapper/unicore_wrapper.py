@@ -98,7 +98,7 @@ class UnicoreWrapper(object):
             LOGGER.error("Cannot abort job as URL has not been provided!")
             return False, None
 
-        job = unicore_client.Job(self.transport, job_url)
+        job = self.get_job(job_url)
         if job.is_running():
             job.abort()
             LOGGER.info(f"Aborted job {job.job_id} from URL: {job_url}")
@@ -107,3 +107,10 @@ class UnicoreWrapper(object):
 
         job = unicore_client.Job(self.transport, job_url)
         return True, JobDTO.from_unicore_job(job)
+
+    def get_job(self, job_url):
+        # type: (str) -> unicore.Job
+        """
+        Get an unicore job from a job url and return the instantiated Job object
+        """
+        return unicore_client.Job(self.transport, job_url)

@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import { IButtonSettings, IJob } from '../pyunicoreWidget';
+import { Kernel } from '@jupyterlab/services';
+import { Drag } from '@lumino/dragdrop';
+import { MimeData } from '@lumino/coreutils';
+
+const TEXT_PLAIN_MIME = 'text/plain';
 
 export namespace types {
   export type JobsTableProps = {
     buttonSettings: IButtonSettings;
     columns: string[];
     data: Array<IJob>;
-    cancelJob: (url: string) => Promise<void>;
     setMessageState: (message: string) => void;
+    getKernel: () => Promise<Kernel.IKernelConnection | null | undefined>;
+    getJob: (job_url: string) => string;
+    handleError: (reason: any) => void;
   };
 
   export type ThProps = {
@@ -18,8 +25,11 @@ export namespace types {
     buttonSettings: IButtonSettings;
     cols: string[];
     job: IJob;
-    cancelJob: (url: string) => Promise<any>; // async action for button
     setMessageState: (message: string) => void;
+    getKernel: () => Promise<Kernel.IKernelConnection | null | undefined>;
+    getJob: (job_url: string) => string;
+    id: string;
+    handleError: (reason: any) => void; // function to handle error (set modal state)
   };
 }
 
@@ -31,8 +41,10 @@ export const UnicoreJobsTable = (props: types.JobsTableProps): JSX.Element => {
         buttonSettings={props.buttonSettings}
         columns={props.columns}
         data={props.data}
-        cancelJob={props.cancelJob}
         setMessageState={props.setMessageState}
+        getKernel={props.getKernel}
+        getJob={props.getJob}
+        handleError={props.handleError}
       />
     </table>
   );
@@ -59,11 +71,14 @@ export const TableBody = (props: types.JobsTableProps): JSX.Element => {
       {props.data.map(job => (
         <JobRow
           key={job.id}
+          id={job.id}
           cols={props.columns}
           job={job}
-          cancelJob={props.cancelJob}
           buttonSettings={props.buttonSettings}
           setMessageState={props.setMessageState}
+          getKernel={props.getKernel}
+          getJob={props.getJob}
+          handleError={props.handleError}
         />
       ))}
     </tbody>
@@ -88,16 +103,51 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
         props.setMessageState(r.message);
       });
   }
+
+  /**
+   * instantiate and start the Drag event with the cell and code to be injected
+   * @param event
+   */
+  async function handleDragStart(event: React.DragEvent): Promise<void> {
+    // make sure we have a kernel that can handle python code
+    const kernel = await props.getKernel();
+    if (!kernel) {
+      // show error modal
+      props.handleError(
+        "Current kernel can't be used to handle this operation!"
+      );
+      return;
+    }
+    const code = props.getJob(job.resource_url);
+    const drag = new Drag({
+      mimeData: new MimeData(),
+      supportedActions: 'copy',
+      proposedAction: 'copy',
+      dragImage: document
+        .getElementById(`${job.id}`)
+        ?.cloneNode(true) as HTMLElement,
+      source: job
+    });
+
+    // set data for copy in an existing cell
+    drag.mimeData.setData(TEXT_PLAIN_MIME, code);
+    drag.start(event.clientX, event.clientY).then(r => console.log('r: ', r));
+  }
   return (
     <>
-      <tr onClick={() => setLogsVisible(!logsVisible)}>
-        {props.cols.map(col => (
-          <td>{job[col]}</td>
+      <tr
+        onClick={() => setLogsVisible(!logsVisible)}
+        draggable={'true'}
+        onDragStart={handleDragStart}
+        data-testid={`table-row-${props.job.id}`}
+      >
+        {props.cols.map((col, index) => (
+          <td key={`${job.id}-${index}`}>{job[col]}</td>
         ))}
         {loading ? (
           <td>
             <div className={'loadingRoot'}>
-              <span className={'unicoreLoading'}></span>
+              <span className={'unicoreLoading'} />
             </div>
           </td>
         ) : (
@@ -111,7 +161,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
       {logsVisible && (
         <tr className={'detailsRow'}>
           <td colSpan={100}>
-            <textarea>{job.logs.join('\n')}</textarea>
+            <textarea value={job.logs.join('\n')} readOnly={true} />
           </td>
         </tr>
       )}

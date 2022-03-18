@@ -5,6 +5,8 @@ recursive-include jupyter-config *.json
 
 include package.json
 include install.json
+include babel.config.js
+include jest.config.js
 include ts*.json
 include yarn.lock
 include tvbextunicore/logger/logging.conf

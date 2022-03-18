@@ -9,6 +9,7 @@ import {
 } from './components/ModalComponent';
 import { requestAPI } from './handler';
 import { ReactWidget } from '@jupyterlab/apputils';
+import { Kernel } from '@jupyterlab/services';
 
 /**
  * interface to describe how a table should look like, what field from the cols array represents
@@ -53,6 +54,8 @@ namespace types {
     buttonSettings: IButtonSettings;
     sites: string[];
     reloadRate: number;
+    getKernel: () => Promise<Kernel.IKernelConnection | null | undefined>;
+    getJob: (job_url: string) => string;
   };
 
   export type State = {
@@ -94,6 +97,8 @@ export class PyunicoreWidget extends ReactWidget {
         buttonSettings={this.props.buttonSettings}
         sites={this.props.sites}
         reloadRate={60000}
+        getKernel={this.props.getKernel}
+        getJob={this.props.getJob}
       /> // see how we can wrap this to use signal
     );
   }
@@ -265,6 +270,9 @@ export class PyunicoreComponent extends React.Component<
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
+    if (!this.state.sites) {
+      return;
+    }
     this.getData().catch(this.catchError);
     const updateIntervalId = setInterval(this._triggerUpdate, 10000);
     this.setState({ ...this.state, updateIntervalId: updateIntervalId });
@@ -312,12 +320,14 @@ export class PyunicoreComponent extends React.Component<
 
         <UnicoreJobsTable
           buttonSettings={this.state.buttonSettings}
-          cancelJob={this.state.buttonSettings.onClick}
           columns={this.state.tableFormat.cols}
           data={this.state.jobs}
           setMessageState={(message: string) => {
             this.setState({ ...this.state, message: message });
           }}
+          getKernel={this.props.getKernel}
+          getJob={this.props.getJob}
+          handleError={this.catchError}
         />
       </>
     );
