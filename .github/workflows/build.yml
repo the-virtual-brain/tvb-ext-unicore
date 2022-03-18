@@ -35,23 +35,31 @@ jobs:
         jupyter server extension list 2>&1 | grep -ie "tvbextunicore.*OK"
 
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
-        python -m jupyterlab.browser_check
+#        python -m jupyterlab.browser_check
+#
+#        check-manifest -v
+#
+#        pip install build
+#        python -m build --sdist
+#        cp dist/*.tar.gz myextension.tar.gz
+#        pip uninstall -y "tvb-ext-unicore" jupyterlab
+#        rm -rf myextension
 
-        check-manifest -v
+#    - name: Run tests
+#      run: |
+#        pytest tvbextunicore -r ap
+#
+#    - name: Compute coverage
+#      run: |
+#        pytest -v  --cov --cov-report=xml
 
-        pip install build
-        python -m build --sdist
-        cp dist/*.tar.gz myextension.tar.gz
-        pip uninstall -y "tvb-ext-unicore" jupyterlab
-        rm -rf myextension
-
-    - name: Run tests
+    - name: Run JS tests
       run: |
-        pytest tvbextunicore -r ap
+        yarn test
 
-    - name: Compute coverage
+    - name: Compute JS coverage
       run: |
-        pytest -v  --cov --cov-report=xml
+        yarn test --coverage
 
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
