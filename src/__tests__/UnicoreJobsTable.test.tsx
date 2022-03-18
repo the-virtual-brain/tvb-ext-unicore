@@ -11,30 +11,26 @@ import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
 
 // mock function to cancel a job (must return a promise of a job object)
 async function cancelJob(resource_url: string): Promise<any> {
-  return new Promise<any>(resolve => {
-    resolve({
-      job: {
-        id: 'test1',
-        name: 'test_name_1',
-        owner: 'test',
-        site: 'JUDAC',
-        status: 'FAILED',
-        resource_url: 'test_url',
-        start_time: '2022-02-18T10:54:08+0100',
-        is_cancelable: false,
-        logs: ['line 1', 'line 2']
-      },
-      message: ''
-    });
+  return Promise.resolve({
+    job: {
+      id: 'test1',
+      name: 'test_name_1',
+      owner: 'test',
+      site: 'JUDAC',
+      status: 'FAILED',
+      resource_url: 'test_url',
+      start_time: '2022-02-18T10:54:08+0100',
+      is_cancelable: false,
+      logs: ['line 1', 'line 2']
+    },
+    message: ''
   });
 }
 const mockCancel = jest.fn(cancelJob);
 
 // mock function to get kernel
 async function getKernel(): Promise<IKernelConnection | null | undefined> {
-  return new Promise<IKernelConnection | null | undefined>(resolve => {
-    resolve(null);
-  });
+  return Promise.resolve(null);
 }
 const mockGetKernel = jest.fn(getKernel);
 
