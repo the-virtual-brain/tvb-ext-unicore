@@ -1,6 +1,6 @@
 {
   "name": "tvb-ext-unicore",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "TVB Widgets - A Unicore Lab extension",
   "keywords": [
     "jupyter",
