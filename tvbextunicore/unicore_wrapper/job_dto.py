@@ -38,7 +38,7 @@ class JobDTO(object):
 
     def __strip_prefix(self, username):
         prefix = "UID="
-        username = username.removeprefix(prefix)
+        username = username[len(prefix):]
         return username
 
     def __format_datetime(self, datetime_str):
