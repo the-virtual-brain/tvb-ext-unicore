@@ -29,13 +29,15 @@ async function cancelJob(resource_url: string): Promise<any> {
 const mockCancel = jest.fn(cancelJob);
 
 // mock function to get kernel
-async function getKernel(): Promise<IKernelConnection | null | undefined> {
+export async function getKernel(): Promise<
+  IKernelConnection | null | undefined
+> {
   return Promise.resolve(null);
 }
 const mockGetKernel = jest.fn(getKernel);
 
 // mock get job
-const mockGetJob = jest.fn((job_url: string) => {
+export const mockGetJob = jest.fn((job_url: string) => {
   return 'print("get job")';
 });
 
@@ -49,7 +51,7 @@ const mockSetMessageState = jest.fn((message: string) => {
   return;
 });
 
-const BUTTON_SETTINGS = {
+export const BUTTON_SETTINGS = {
   onClick: mockCancel,
   onClickFieldArgs: ['resource_url'],
   isAsync: true,
@@ -183,13 +185,13 @@ describe('<UnicoreJobsTable />, <JobRow />', () => {
     const head = table?.querySelector('thead');
     expect(head).toBeTruthy();
     // header has all columns rendered
-    expect(screen.findByText('ID')).toBeTruthy();
-    expect(screen.findByText('NAME')).toBeTruthy();
-    expect(screen.findByText('OWNER')).toBeTruthy();
-    expect(screen.findByText('SITE')).toBeTruthy();
-    expect(screen.findByText('STATUS')).toBeTruthy();
-    expect(screen.findByText('START_TIME')).toBeTruthy();
-    expect(screen.findByText('ACTIONS')).toBeTruthy();
+    expect(await screen.findByText('ID')).toBeTruthy();
+    expect(await screen.findByText('NAME')).toBeTruthy();
+    expect(await screen.findByText('OWNER')).toBeTruthy();
+    expect(await screen.findByText('SITE')).toBeTruthy();
+    expect(await screen.findByText('STATUS')).toBeTruthy();
+    expect(await screen.findByText('START_TIME')).toBeTruthy();
+    expect(await screen.findByText('ACTIONS')).toBeTruthy();
     // there are two rows one for each job
     expect(await findByTestId('table-row-test1')).toBeTruthy();
     expect(await findByTestId('table-row-test2')).toBeTruthy();

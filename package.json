@@ -61,6 +61,7 @@
     "@jupyterlab/builder": "^3.1.0",
     "@jupyterlab/notebook": "^3.3.0",
     "@types/jest": "^27.4.1",
+    "@types/node": "^17.0.22",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.14.0",

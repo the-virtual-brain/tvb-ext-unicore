@@ -56,10 +56,10 @@ export const TableHeader = (props: types.ThProps): JSX.Element => {
       <tr>
         {props.columns.map(colName => (
           <td key={colName} className={colName}>
-            {colName}
+            {colName.toUpperCase()}
           </td>
         ))}
-        <td>Actions</td>
+        <td>ACTIONS</td>
       </tr>
     </thead>
   );
