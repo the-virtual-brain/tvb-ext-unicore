@@ -9,9 +9,10 @@ import os
 import pytest
 from datetime import datetime
 
-from tvbextunicore.exceptions import TVBExtUnicoreException
+from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
-from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, TERMINATION_TIME, \
+from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
+    TERMINATION_TIME, \
     MOUNT_POINT
 
 
@@ -59,6 +60,22 @@ def test_get_jobs(mocker):
     assert isinstance(jobs[0].finish_time, datetime)
 
 
+def test_get_jobs_exception_at_sites(mocker):
+    os.environ['CLB_AUTH'] = "test_auth_token"
+    exception_msg = 'Test message!'
+
+    def mockk(self, site=''):
+        raise SitesDownException(exception_msg)
+
+    mocker.patch('tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
+    unicore_wrapper = UnicoreWrapper()
+    jobs, msg = unicore_wrapper.get_jobs('TEST_SITE')
+
+    assert jobs is not None
+    assert len(jobs) == 0
+    assert msg == exception_msg
+
+
 def test_get_jobs_failed_auth():
     os.environ.pop('CLB_AUTH')
     with pytest.raises(TVBExtUnicoreException):
@@ -69,3 +86,28 @@ def test_get_jobs_wrong_site():
     os.environ['CLB_AUTH'] = "test_auth_token"
     with pytest.raises(AttributeError):
         UnicoreWrapper().get_jobs('TEST_SITE')
+
+
+def test_get_sites(mocker):
+    os.environ['CLB_AUTH'] = "test_auth_token"
+
+    def mockk(self, site=''):
+        return ['TEST_SITE1', 'TEST_SITE2']
+
+    mocker.patch('pyunicore.client.get_sites', mockk)
+
+    sites = UnicoreWrapper().get_sites()
+    assert sites is not None
+    assert len(sites) == 2
+
+
+def test_get_sites_exception(mocker):
+    os.environ['CLB_AUTH'] = "test_auth_token"
+
+    def mockk(self, site=''):
+        raise AttributeError
+
+    mocker.patch('pyunicore.client.get_sites', mockk)
+
+    with pytest.raises(SitesDownException):
+        UnicoreWrapper().get_sites()

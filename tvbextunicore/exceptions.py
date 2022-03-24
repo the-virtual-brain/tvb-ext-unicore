@@ -19,3 +19,9 @@ class ClientAuthException(TVBExtUnicoreException):
     """
     Throw if the current user does not have access to chosen client site.
     """
+
+
+class SitesDownException(TVBExtUnicoreException):
+    """
+    Throw if the sites cannot be retrieved due to a Pyunicore error.
+    """

@@ -10,7 +10,7 @@ import os
 import pyunicore.client as unicore_client
 from requests.exceptions import ConnectionError
 
-from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException
+from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException, SitesDownException
 from tvbextunicore.logger.builder import get_logger
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO
 
@@ -41,10 +41,12 @@ class UnicoreWrapper(object):
         return token
 
     def __build_transport(self, token):
+        # type: (str) -> unicore_client.Transport
         transport = unicore_client.Transport(token, oidc=True)
         return transport
 
     def __build_client(self, site):
+        # type: (dict) -> unicore_client.Client
         sites = self.get_sites()
         site_url = sites.get(site)
 
@@ -64,8 +66,12 @@ class UnicoreWrapper(object):
         """
         Retrieve all sites available via Unicore.
         """
-        all_sites = unicore_client.get_sites(self.transport)
-        return all_sites
+        try:
+            all_sites = unicore_client.get_sites(self.transport)
+            return all_sites
+        except Exception as e:
+            LOGGER.warning(f"Cannot retrieve sites: {e}")
+            raise SitesDownException('Sites are not available at the moment!')
 
     def get_jobs(self, site, page=0):
         # type: (str, int) -> (list, str)
@@ -81,6 +87,8 @@ class UnicoreWrapper(object):
             client = self.__build_client(site)
         except ClientAuthException:
             return jobs_list, f"You do not have access to {site}"
+        except SitesDownException as e:
+            return jobs_list, e.message
 
         all_jobs = client.get_jobs(offset=jobs_offset, num=jobs_per_page)
 
@@ -109,7 +117,7 @@ class UnicoreWrapper(object):
         return True, JobDTO.from_unicore_job(job)
 
     def get_job(self, job_url):
-        # type: (str) -> unicore.Job
+        # type: (str) -> unicore_client.Job
         """
         Get an unicore job from a job url and return the instantiated Job object
         """

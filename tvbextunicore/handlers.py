@@ -12,6 +12,7 @@ from jupyter_server.utils import url_path_join
 import tornado
 from tornado.web import MissingArgumentError
 
+from tvbextunicore.exceptions import SitesDownException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.logger.builder import get_logger
 
@@ -22,9 +23,13 @@ class SitesHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
         LOGGER.info(f"Retrieving sites...")
-
-        sites = UnicoreWrapper().get_sites()
-        self.finish(json.dumps([site_name for site_name in sites]))
+        message = ''
+        try:
+            sites = UnicoreWrapper().get_sites()
+        except SitesDownException as e:
+            sites = list()
+            message = e.message
+        self.finish(json.dumps({'sites': sites, 'message': message}))
 
 
 class JobsHandler(APIHandler):
