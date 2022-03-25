@@ -72,11 +72,25 @@ class JobsHandler(APIHandler):
         self.finish(json.dumps(resp))
 
 
+# todo: unit tests
+class JobOutputHandler(APIHandler):
+    @tornado.web.authenticated
+    def get(self):
+        try:
+            job_url = self.get_argument("job_url")
+            output = UnicoreWrapper().get_job_output(f'{job_url}')
+            self.finish(json.dumps(output))
+        except MissingArgumentError:
+            self.set_status(400)
+            self.finish(json.dumps({'message': 'Can\'t access job outputs: No job url provided!'}))
+
+
 def setup_handlers(web_app):
     host_pattern = ".*$"
 
     base_url = web_app.settings["base_url"]
     sites_pattern = url_path_join(base_url, "tvbextunicore", "sites")
     jobs_pattern = url_path_join(base_url, "tvbextunicore", "jobs")
-    handlers = [(jobs_pattern, JobsHandler), (sites_pattern, SitesHandler)]
+    output_pattern = url_path_join(base_url, "tvbextunicore", "job_output")
+    handlers = [(jobs_pattern, JobsHandler), (sites_pattern, SitesHandler), (output_pattern, JobOutputHandler)]
     web_app.add_handlers(host_pattern, handlers)

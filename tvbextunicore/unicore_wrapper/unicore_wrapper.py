@@ -122,3 +122,16 @@ class UnicoreWrapper(object):
         Get an unicore job from a job url and return the instantiated Job object
         """
         return unicore_client.Job(self.transport, job_url)
+
+    def get_job_output(self, job_url):
+        # type: (str) -> dict
+        """
+        Get the output files for an unicore job url
+        returns: {<file_name>:{'is_file': bool}}
+        """
+        job = self.get_job(job_url)
+        outputs = dict()
+        files = job.working_dir.listdir()
+        for k, v in files.items():
+            outputs[k] = {'is_file': v.isfile()}
+        return outputs
