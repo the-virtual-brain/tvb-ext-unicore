@@ -29,7 +29,6 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
   }, []);
 
   function waitingOrFailed(): JSX.Element {
-    console.log('draw');
     return message ? (
       <p className={'unicoreMessage'}>{message}</p>
     ) : (

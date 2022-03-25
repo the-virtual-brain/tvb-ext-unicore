@@ -3,7 +3,7 @@ import { IButtonSettings, IJob } from '../pyunicoreWidget';
 import { Kernel } from '@jupyterlab/services';
 import { Drag } from '@lumino/dragdrop';
 import { MimeData } from '@lumino/coreutils';
-import {JobOutputFiles} from "./JobOutputFiles";
+import { JobOutputFiles } from './JobOutputFiles';
 
 const TEXT_PLAIN_MIME = 'text/plain';
 
