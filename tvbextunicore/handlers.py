@@ -72,7 +72,6 @@ class JobsHandler(APIHandler):
         self.finish(json.dumps(resp))
 
 
-# todo: unit tests
 class JobOutputHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
