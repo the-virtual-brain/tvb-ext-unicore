@@ -49,21 +49,26 @@ const data = {
   jobs: generateJobs(12)
 };
 
+export type JobStatus = 'running' | 'failed' | 'successful';
+export function generateJob(status: JobStatus, id = 1) {
+  return {
+    id: `test${id}`,
+    name: `test_name_${id}`,
+    owner: 'test',
+    site: JUDAC,
+    status: status,
+    resource_url: `test_url_2${id}`,
+    start_time: '2022-02-18T10:54:08+0100',
+    is_cancelable: status === 'running',
+    logs: ['line 1', 'line 2']
+  };
+}
+
 export function generateJobs(count: number): Array<IJob> {
   const generatedJobs = [];
   // add more jobs to have next button visible
   for (let i = 0; i < count; i++) {
-    generatedJobs.push({
-      id: `test${i}`,
-      name: `test_name_${i}`,
-      owner: 'test',
-      site: JUDAC,
-      status: 'FAILED',
-      resource_url: `test_url_2${i}`,
-      start_time: '2022-02-18T10:54:08+0100',
-      is_cancelable: false,
-      logs: ['line 1', 'line 2']
-    });
+    generatedJobs.push(generateJob('failed', i));
   }
   return generatedJobs;
 }

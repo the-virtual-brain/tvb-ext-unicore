@@ -1,5 +1,5 @@
 // mock the handler for api requests
-import { generateJobs } from './pyunicoreWidget.test';
+import { generateJobs, JobStatus, generateJob } from './pyunicoreWidget.test';
 
 const data = {
   file1: { is_file: true },
@@ -24,21 +24,6 @@ import {
 } from '@testing-library/react';
 import React from 'react';
 import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
-
-type JobStatus = 'running' | 'failed' | 'successful';
-function generateJob(status: JobStatus) {
-  return {
-    id: 'test1',
-    name: 'test_name_1',
-    owner: 'test',
-    site: 'JUDAC',
-    status: status,
-    resource_url: 'test_url',
-    start_time: '2022-02-18T10:54:08+0100',
-    is_cancelable: status === 'running',
-    logs: ['line 1', 'line 2']
-  };
-}
 
 // mock function to cancel a job (must return a promise of a job object)
 async function cancelJob(resource_url: string): Promise<any> {
