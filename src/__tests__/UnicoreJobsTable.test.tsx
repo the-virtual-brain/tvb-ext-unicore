@@ -25,20 +25,25 @@ import {
 import React from 'react';
 import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
 
+type JobStatus = 'running' | 'failed' | 'successful';
+function generateJob(status: JobStatus) {
+  return {
+    id: 'test1',
+    name: 'test_name_1',
+    owner: 'test',
+    site: 'JUDAC',
+    status: status,
+    resource_url: 'test_url',
+    start_time: '2022-02-18T10:54:08+0100',
+    is_cancelable: status === 'running',
+    logs: ['line 1', 'line 2']
+  };
+}
+
 // mock function to cancel a job (must return a promise of a job object)
 async function cancelJob(resource_url: string): Promise<any> {
   return Promise.resolve({
-    job: {
-      id: 'test1',
-      name: 'test_name_1',
-      owner: 'test',
-      site: 'JUDAC',
-      status: 'FAILED',
-      resource_url: 'test_url',
-      start_time: '2022-02-18T10:54:08+0100',
-      is_cancelable: false,
-      logs: ['line 1', 'line 2']
-    },
+    job: generateJob('failed'),
     message: ''
   });
 }
@@ -77,21 +82,11 @@ export const BUTTON_SETTINGS = {
 const COLUMNS = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
 
 // helper function to render a table row
-function renderRow(status: 'running' | 'failed' | 'successful') {
+function renderRow(status: JobStatus) {
   const props = {
     buttonSettings: BUTTON_SETTINGS,
     cols: COLUMNS,
-    job: {
-      id: 'test1',
-      name: 'test_name_1',
-      owner: 'test',
-      site: 'JUDAC',
-      status: status,
-      resource_url: 'test_url',
-      start_time: '2022-02-18T10:54:08+0100',
-      is_cancelable: status === 'running',
-      logs: ['line 1', 'line 2']
-    },
+    job: generateJob(status),
     setMessageState: mockSetMessageState,
     getKernel: mockGetKernel,
     getJob: mockGetJob,
