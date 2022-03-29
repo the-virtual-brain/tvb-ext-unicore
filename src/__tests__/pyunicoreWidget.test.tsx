@@ -21,7 +21,12 @@ jest.mock('@jupyterlab/apputils', () => {
   };
 });
 
-import { IJob, PyunicoreComponent } from '../pyunicoreWidget';
+import {
+  IJob,
+  PyunicoreComponent,
+  RELOAD_RATE_MS,
+  RELOAD_CHECK_RATE_MS
+} from '../pyunicoreWidget';
 import {
   findByText,
   fireEvent,
@@ -63,7 +68,6 @@ export function generateJobs(count: number): Array<IJob> {
   return generatedJobs;
 }
 
-const RELOAD_RATE_MS = 60000;
 const RELOAD_RATE_S = RELOAD_RATE_MS / 1000;
 
 function renderUnicoreComponent() {
@@ -106,7 +110,7 @@ describe('<PyunicoreComponent />', () => {
     // simulate 60 seconds passed in system time to trigger update
     mockLaterDate.setSeconds(mockLaterDate.getSeconds() + RELOAD_RATE_S);
     jest.setSystemTime(mockLaterDate.getTime());
-    jest.advanceTimersByTime(10000); // component checks every 10s if 60s passed since last update
+    jest.advanceTimersByTime(RELOAD_CHECK_RATE_MS); // advance timer to trigger the chock for reloads
 
     const pagination = await findByTestId('pagination-component');
     expect(pagination).toBeTruthy();
