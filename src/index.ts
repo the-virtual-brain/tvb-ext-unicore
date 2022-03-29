@@ -27,6 +27,11 @@ async function cancelJob(resource_url: string): Promise<any> {
   });
 }
 
+export type SitesResponse = {
+  sites: { [site: string]: string }; // we get the response as a dict { '<siteName>' : '<siteUrl>' }
+  message: string;
+};
+
 /**
  * Initialization data for the tvb-ext-unicore extension.
  */
@@ -57,21 +62,21 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'PyUnicore Task Stream',
       execute: async (): Promise<any> => {
         if (!widget || widget.isDisposed) {
-          const sites = await requestAPI<any>('sites');
+          const sitesResponse = await requestAPI<SitesResponse>('sites');
           const content = new PyunicoreWidget({
             tableFormat: {
               cols: columns,
               idField: 'id',
               buttonRenderConditionField: 'is_cancelable'
             },
-            data: { message: '', jobs: [] },
+            data: { message: sitesResponse.message, jobs: [] },
             buttonSettings: {
               onClick: cancelJob,
               onClickFieldArgs: ['resource_url'],
               isAsync: false,
               name: 'Cancel Job'
             },
-            sites: sites,
+            sites: Object.keys(sitesResponse.sites),
             reloadRate: 60000,
             getKernel: async () => {
               const kernel = Private.getCurrentKernel(

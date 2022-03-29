@@ -124,12 +124,12 @@ export class PyunicoreComponent extends React.Component<
     const lastUpdate = new Date();
     this.state = {
       jobs: [],
-      message: '',
+      message: props.data.message,
       site: props.sites[0],
       buttonSettings: props.buttonSettings,
       tableFormat: props.tableFormat,
       reloadRate: 60000,
-      loading: true,
+      loading: props.sites.length > 0,
       sites: props.sites,
       page: 1,
       itemsPerPage: 10,
@@ -237,8 +237,9 @@ export class PyunicoreComponent extends React.Component<
     prevState: Readonly<types.State>
   ): void {
     if (
-      prevState.page !== this.state.page ||
-      prevState.site !== this.state.site
+      (prevState.page !== this.state.page ||
+        prevState.site !== this.state.site) &&
+      this.state.sites.length > 0
     ) {
       this.getData().catch(this.catchError);
     }
@@ -270,7 +271,7 @@ export class PyunicoreComponent extends React.Component<
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
-    if (!this.state.sites) {
+    if (this.state.sites.length <= 0) {
       return;
     }
     this.getData().catch(this.catchError);
