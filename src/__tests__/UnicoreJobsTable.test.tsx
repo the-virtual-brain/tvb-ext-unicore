@@ -1,3 +1,19 @@
+// mock the handler for api requests
+import { generateJobs } from './pyunicoreWidget.test';
+
+const data = {
+  file1: { is_file: true },
+  dir1: { is_file: false }
+};
+jest.mock('../handler', () => {
+  return {
+    __esModule: true,
+    requestAPI: jest
+      .fn()
+      .mockImplementation((url, init, settings) => Promise.resolve(data))
+  };
+});
+
 import { UnicoreJobsTable, JobRow } from '../components/UnicoreJobsTable';
 import {
   findByText,
@@ -97,30 +113,7 @@ function renderTable() {
     <UnicoreJobsTable
       buttonSettings={BUTTON_SETTINGS}
       columns={COLUMNS}
-      data={[
-        {
-          id: 'test1',
-          name: 'test_name_1',
-          owner: 'test',
-          site: 'JUDAC',
-          status: 'running',
-          resource_url: 'test_url',
-          start_time: '2022-02-18T10:54:08+0100',
-          is_cancelable: true,
-          logs: ['line 1', 'line 2']
-        },
-        {
-          id: 'test2',
-          name: 'test_name_2',
-          owner: 'test',
-          site: 'JUDAC',
-          status: 'FAILED',
-          resource_url: 'test_url_2',
-          start_time: '2022-02-18T10:54:08+0100',
-          is_cancelable: false,
-          logs: ['line 1', 'line 2']
-        }
-      ]}
+      data={generateJobs(3)}
       setMessageState={mockSetMessageState}
       getKernel={mockGetKernel}
       getJob={mockGetJob}
@@ -148,7 +141,7 @@ describe('<UnicoreJobsTable />, <JobRow />', () => {
     // logs are not rendered
     expect(document.getElementsByClassName('detailsRow').length).toBe(0);
     // after click on row the logs are visible
-    fireEvent.click(row);
+    await waitFor(() => fireEvent.click(row));
     expect(document.getElementsByClassName('detailsRow').length).toBe(1);
     expect(document.getElementsByClassName('detailsRow')[0].innerHTML).toBe(
       '<td colspan="100"><textarea readonly="">line 1\nline 2</textarea></td>'

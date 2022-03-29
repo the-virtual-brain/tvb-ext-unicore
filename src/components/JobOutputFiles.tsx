@@ -10,7 +10,7 @@ namespace Types {
     job_url: string;
   };
 }
-// todo: unit tests
+
 export const JobOutputFiles = (props: Types.Props): JSX.Element => {
   const [outputFiles, setOutputFiles] = useState<Types.Output>(null);
   const [message, setMessage] = useState<string>('');
@@ -39,7 +39,7 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
   }
 
   return (
-    <tr className={'outputFiles'}>
+    <tr className={'outputFiles'} data-testid={`output-${props.job_url}`}>
       {outputFiles ? (
         <td colSpan={100}>
           Output Files:

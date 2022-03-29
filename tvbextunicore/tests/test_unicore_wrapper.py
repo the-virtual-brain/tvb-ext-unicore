@@ -16,6 +16,31 @@ from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME
     MOUNT_POINT
 
 
+class MockFilePath:
+    def __init__(self, is_file=True):
+        self.is_file = is_file
+
+    def isfile(self):
+        return self.is_file
+
+
+class WorkingDirMock:
+    def __init__(self, dirs={}):
+        self.dirs = dirs or {
+            'file1': MockFilePath(),
+            'dir1': MockFilePath(is_file=False)
+        }
+
+    def listdir(self):
+        return self.dirs
+
+
+class MockPyUnicoreJob:
+    def __init__(self, job_url='test'):
+        self.job_url = job_url
+        self.working_dir = WorkingDirMock()
+
+
 class MockPyUnicoreResource(object):
     def __init__(self, job_id, properties, working_dir=None, resource_url=None):
         self.job_id = job_id
@@ -111,3 +136,19 @@ def test_get_sites_exception(mocker):
 
     with pytest.raises(SitesDownException):
         UnicoreWrapper().get_sites()
+
+
+def test_get_job_output(mocker):
+    os.environ['CLB_AUTH'] = "test_auth_token"
+
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url)
+
+    mocker.patch('tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job', mockk)
+    job_output = UnicoreWrapper().get_job_output('test')
+    expected = {
+        'file1': {'is_file': True},
+        'dir1': {'is_file': False}
+    }
+
+    assert job_output == expected

@@ -21,7 +21,7 @@ jest.mock('@jupyterlab/apputils', () => {
   };
 });
 
-import { PyunicoreComponent } from '../pyunicoreWidget';
+import { IJob, PyunicoreComponent } from '../pyunicoreWidget';
 import {
   findByText,
   fireEvent,
@@ -37,47 +37,34 @@ import {
 } from './UnicoreJobsTable.test';
 import React from 'react';
 
+const JUDAC = 'JUDAC';
+const JUSUF = 'JUSUF';
 const data = {
   message: '',
-  jobs: [
-    {
-      id: 'test1',
-      name: 'test_name_1',
+  jobs: generateJobs(12)
+};
+
+export function generateJobs(count: number): Array<IJob> {
+  const generatedJobs = [];
+  // add more jobs to have next button visible
+  for (let i = 0; i < count; i++) {
+    generatedJobs.push({
+      id: `test${i}`,
+      name: `test_name_${i}`,
       owner: 'test',
-      site: 'JUDAC',
-      status: 'running',
-      resource_url: 'test_url',
-      start_time: '2022-02-18T10:54:08+0100',
-      is_cancelable: true,
-      logs: ['line 1', 'line 2']
-    },
-    {
-      id: 'test2',
-      name: 'test_name_2',
-      owner: 'test',
-      site: 'JUDAC',
+      site: JUDAC,
       status: 'FAILED',
-      resource_url: 'test_url_2',
+      resource_url: `test_url_2${i}`,
       start_time: '2022-02-18T10:54:08+0100',
       is_cancelable: false,
       logs: ['line 1', 'line 2']
-    }
-  ]
-};
-// add more jobs to have next button visible
-for (let i = 0; i < 10; i++) {
-  data.jobs.push({
-    id: `test-${i}`,
-    name: `test_name_2${i}`,
-    owner: 'test',
-    site: 'JUDAC',
-    status: 'FAILED',
-    resource_url: `test_url_2${i}`,
-    start_time: '2022-02-18T10:54:08+0100',
-    is_cancelable: false,
-    logs: ['line 1', 'line 2']
-  });
+    });
+  }
+  return generatedJobs;
 }
+
+const RELOAD_RATE_MS = 60000;
+const RELOAD_RATE_S = RELOAD_RATE_MS / 1000;
 
 function renderUnicoreComponent() {
   const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
@@ -92,8 +79,8 @@ function renderUnicoreComponent() {
       tableFormat={tableFormat}
       data={data}
       buttonSettings={BUTTON_SETTINGS}
-      sites={['JUSUF', 'JUDAC']}
-      reloadRate={60000}
+      sites={[JUSUF, JUDAC]}
+      reloadRate={RELOAD_RATE_MS}
       getKernel={getKernel}
       getJob={mockGetJob}
     />
@@ -117,7 +104,7 @@ describe('<PyunicoreComponent />', () => {
     const { findByTestId } = renderUnicoreComponent();
 
     // simulate 60 seconds passed in system time to trigger update
-    mockLaterDate.setSeconds(mockLaterDate.getSeconds() + 60);
+    mockLaterDate.setSeconds(mockLaterDate.getSeconds() + RELOAD_RATE_S);
     jest.setSystemTime(mockLaterDate.getTime());
     jest.advanceTimersByTime(10000); // component checks every 10s if 60s passed since last update
 
@@ -133,13 +120,13 @@ describe('<PyunicoreComponent />', () => {
     await waitFor(() => fireEvent.click(next));
     expect(await findByText(pagination, 'Page: 2')).toBeTruthy();
 
-    expect(await findByText(sites, 'JUSUF')).toHaveProperty('selected', true);
-    expect(await findByText(sites, 'JUDAC')).toHaveProperty('selected', false);
+    expect(await findByText(sites, JUSUF)).toHaveProperty('selected', true);
+    expect(await findByText(sites, JUDAC)).toHaveProperty('selected', false);
     // change site
     fireEvent.change(getByTestId(sites, 'select'), {
-      target: { value: 'JUDAC' }
+      target: { value: JUDAC }
     });
-    expect(await findByText(sites, 'JUDAC')).toHaveProperty('selected', true);
-    expect(await findByText(sites, 'JUSUF')).toHaveProperty('selected', false);
+    expect(await findByText(sites, JUDAC)).toHaveProperty('selected', true);
+    expect(await findByText(sites, JUSUF)).toHaveProperty('selected', false);
   });
 });
