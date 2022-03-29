@@ -47,6 +47,16 @@ export interface IButtonSettings {
   isAsync: boolean;
 }
 
+/**
+ * How often should the component reload jobs expressed in milliseconds
+ */
+export const RELOAD_RATE_MS = 60000;
+
+/**
+ * How often should the component check if RELOAD_RATE_MS have passed since the last update
+ */
+export const RELOAD_CHECK_RATE_MS = 10000; //should check every 10sec
+
 namespace types {
   export type Props = {
     tableFormat: ITableFormat;
@@ -96,7 +106,7 @@ export class PyunicoreWidget extends ReactWidget {
         data={this.props.data}
         buttonSettings={this.props.buttonSettings}
         sites={this.props.sites}
-        reloadRate={60000}
+        reloadRate={RELOAD_RATE_MS}
         getKernel={this.props.getKernel}
         getJob={this.props.getJob}
       /> // see how we can wrap this to use signal
@@ -128,7 +138,7 @@ export class PyunicoreComponent extends React.Component<
       site: props.sites[0],
       buttonSettings: props.buttonSettings,
       tableFormat: props.tableFormat,
-      reloadRate: 60000,
+      reloadRate: RELOAD_RATE_MS,
       loading: props.sites.length > 0,
       sites: props.sites,
       page: 1,
@@ -275,7 +285,10 @@ export class PyunicoreComponent extends React.Component<
       return;
     }
     this.getData().catch(this.catchError);
-    const updateIntervalId = setInterval(this._triggerUpdate, 10000);
+    const updateIntervalId = setInterval(
+      this._triggerUpdate,
+      RELOAD_CHECK_RATE_MS
+    );
     this.setState({ ...this.state, updateIntervalId: updateIntervalId });
   }
 

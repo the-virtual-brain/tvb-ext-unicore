@@ -250,3 +250,10 @@ button[disabled]:hover {
     border-right: var(--jp-border-width) solid var(--jp-border-color1);
     padding: 0 0.2rem;
 }
+
+.outputFiles {
+    text-align: left;
+}
+i {
+    margin-right: 5px;
+}

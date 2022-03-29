@@ -3,6 +3,7 @@ import { IButtonSettings, IJob } from '../pyunicoreWidget';
 import { Kernel } from '@jupyterlab/services';
 import { Drag } from '@lumino/dragdrop';
 import { MimeData } from '@lumino/coreutils';
+import { JobOutputFiles } from './JobOutputFiles';
 
 const TEXT_PLAIN_MIME = 'text/plain';
 
@@ -56,10 +57,10 @@ export const TableHeader = (props: types.ThProps): JSX.Element => {
       <tr>
         {props.columns.map(colName => (
           <td key={colName} className={colName}>
-            {colName}
+            {colName.toUpperCase()}
           </td>
         ))}
-        <td>Actions</td>
+        <td>ACTIONS</td>
       </tr>
     </thead>
   );
@@ -159,11 +160,14 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
         )}
       </tr>
       {logsVisible && (
-        <tr className={'detailsRow'}>
-          <td colSpan={100}>
-            <textarea value={job.logs.join('\n')} readOnly={true} />
-          </td>
-        </tr>
+        <>
+          <JobOutputFiles job_url={job.resource_url} />
+          <tr className={'detailsRow'}>
+            <td colSpan={100}>
+              <textarea value={job.logs.join('\n')} readOnly={true} />
+            </td>
+          </tr>
+        </>
       )}
     </>
   );

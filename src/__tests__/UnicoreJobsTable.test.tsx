@@ -1,3 +1,19 @@
+// mock the handler for api requests
+import { generateJobs, JobStatus, generateJob } from './pyunicoreWidget.test';
+
+const data = {
+  file1: { is_file: true },
+  dir1: { is_file: false }
+};
+jest.mock('../handler', () => {
+  return {
+    __esModule: true,
+    requestAPI: jest
+      .fn()
+      .mockImplementation((url, init, settings) => Promise.resolve(data))
+  };
+});
+
 import { UnicoreJobsTable, JobRow } from '../components/UnicoreJobsTable';
 import {
   findByText,
@@ -12,30 +28,22 @@ import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
 // mock function to cancel a job (must return a promise of a job object)
 async function cancelJob(resource_url: string): Promise<any> {
   return Promise.resolve({
-    job: {
-      id: 'test1',
-      name: 'test_name_1',
-      owner: 'test',
-      site: 'JUDAC',
-      status: 'FAILED',
-      resource_url: 'test_url',
-      start_time: '2022-02-18T10:54:08+0100',
-      is_cancelable: false,
-      logs: ['line 1', 'line 2']
-    },
+    job: generateJob('failed'),
     message: ''
   });
 }
 const mockCancel = jest.fn(cancelJob);
 
 // mock function to get kernel
-async function getKernel(): Promise<IKernelConnection | null | undefined> {
+export async function getKernel(): Promise<
+  IKernelConnection | null | undefined
+> {
   return Promise.resolve(null);
 }
 const mockGetKernel = jest.fn(getKernel);
 
 // mock get job
-const mockGetJob = jest.fn((job_url: string) => {
+export const mockGetJob = jest.fn((job_url: string) => {
   return 'print("get job")';
 });
 
@@ -49,7 +57,7 @@ const mockSetMessageState = jest.fn((message: string) => {
   return;
 });
 
-const BUTTON_SETTINGS = {
+export const BUTTON_SETTINGS = {
   onClick: mockCancel,
   onClickFieldArgs: ['resource_url'],
   isAsync: true,
@@ -59,21 +67,11 @@ const BUTTON_SETTINGS = {
 const COLUMNS = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
 
 // helper function to render a table row
-function renderRow(status: 'running' | 'failed' | 'successful') {
+function renderRow(status: JobStatus) {
   const props = {
     buttonSettings: BUTTON_SETTINGS,
     cols: COLUMNS,
-    job: {
-      id: 'test1',
-      name: 'test_name_1',
-      owner: 'test',
-      site: 'JUDAC',
-      status: status,
-      resource_url: 'test_url',
-      start_time: '2022-02-18T10:54:08+0100',
-      is_cancelable: status === 'running',
-      logs: ['line 1', 'line 2']
-    },
+    job: generateJob(status),
     setMessageState: mockSetMessageState,
     getKernel: mockGetKernel,
     getJob: mockGetJob,
@@ -95,30 +93,7 @@ function renderTable() {
     <UnicoreJobsTable
       buttonSettings={BUTTON_SETTINGS}
       columns={COLUMNS}
-      data={[
-        {
-          id: 'test1',
-          name: 'test_name_1',
-          owner: 'test',
-          site: 'JUDAC',
-          status: 'running',
-          resource_url: 'test_url',
-          start_time: '2022-02-18T10:54:08+0100',
-          is_cancelable: true,
-          logs: ['line 1', 'line 2']
-        },
-        {
-          id: 'test2',
-          name: 'test_name_2',
-          owner: 'test',
-          site: 'JUDAC',
-          status: 'FAILED',
-          resource_url: 'test_url_2',
-          start_time: '2022-02-18T10:54:08+0100',
-          is_cancelable: false,
-          logs: ['line 1', 'line 2']
-        }
-      ]}
+      data={generateJobs(3)}
       setMessageState={mockSetMessageState}
       getKernel={mockGetKernel}
       getJob={mockGetJob}
@@ -146,7 +121,7 @@ describe('<UnicoreJobsTable />, <JobRow />', () => {
     // logs are not rendered
     expect(document.getElementsByClassName('detailsRow').length).toBe(0);
     // after click on row the logs are visible
-    fireEvent.click(row);
+    await waitFor(() => fireEvent.click(row));
     expect(document.getElementsByClassName('detailsRow').length).toBe(1);
     expect(document.getElementsByClassName('detailsRow')[0].innerHTML).toBe(
       '<td colspan="100"><textarea readonly="">line 1\nline 2</textarea></td>'
@@ -183,13 +158,13 @@ describe('<UnicoreJobsTable />, <JobRow />', () => {
     const head = table?.querySelector('thead');
     expect(head).toBeTruthy();
     // header has all columns rendered
-    expect(screen.findByText('ID')).toBeTruthy();
-    expect(screen.findByText('NAME')).toBeTruthy();
-    expect(screen.findByText('OWNER')).toBeTruthy();
-    expect(screen.findByText('SITE')).toBeTruthy();
-    expect(screen.findByText('STATUS')).toBeTruthy();
-    expect(screen.findByText('START_TIME')).toBeTruthy();
-    expect(screen.findByText('ACTIONS')).toBeTruthy();
+    expect(await screen.findByText('ID')).toBeTruthy();
+    expect(await screen.findByText('NAME')).toBeTruthy();
+    expect(await screen.findByText('OWNER')).toBeTruthy();
+    expect(await screen.findByText('SITE')).toBeTruthy();
+    expect(await screen.findByText('STATUS')).toBeTruthy();
+    expect(await screen.findByText('START_TIME')).toBeTruthy();
+    expect(await screen.findByText('ACTIONS')).toBeTruthy();
     // there are two rows one for each job
     expect(await findByTestId('table-row-test1')).toBeTruthy();
     expect(await findByTestId('table-row-test2')).toBeTruthy();
