@@ -253,7 +253,18 @@ button[disabled]:hover {
 
 .outputFiles {
     text-align: left;
+
 }
+
+.outputFileName {
+    margin: 0 0.5rem 0 0.2rem;
+    display: inline-block;
+}
+
+.clickableIcon {
+    cursor: pointer;
+}
+
 i {
-    margin-right: 5px;
+    color: var(--jp-content-font-color2);
 }

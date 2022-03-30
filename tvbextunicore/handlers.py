@@ -12,7 +12,7 @@ from jupyter_server.utils import url_path_join
 import tornado
 from tornado.web import MissingArgumentError
 
-from tvbextunicore.exceptions import SitesDownException
+from tvbextunicore.exceptions import SitesDownException, FileNotExistsException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.logger.builder import get_logger
 
@@ -84,6 +84,17 @@ class JobOutputHandler(APIHandler):
             self.finish(json.dumps({'message': 'Can\'t access job outputs: No job url provided!'}))
 
 
+class DownloadHandler(APIHandler):
+    @tornado.web.authenticated
+    def get(self, job_url, file):
+        try:
+            response = UnicoreWrapper().download_file(job_url, file)
+        except FileNotExistsException as e:
+            response = {'success': False, 'message': e.message}
+
+        self.finish(response)
+
+
 def setup_handlers(web_app):
     host_pattern = ".*$"
 
@@ -91,5 +102,11 @@ def setup_handlers(web_app):
     sites_pattern = url_path_join(base_url, "tvbextunicore", "sites")
     jobs_pattern = url_path_join(base_url, "tvbextunicore", "jobs")
     output_pattern = url_path_join(base_url, "tvbextunicore", "job_output")
-    handlers = [(jobs_pattern, JobsHandler), (sites_pattern, SitesHandler), (output_pattern, JobOutputHandler)]
+    download_pattern = url_path_join(base_url, "tvbextunicore", r"download/([^/]+)?/([^/]+)?")
+    handlers = [
+        (jobs_pattern, JobsHandler),
+        (sites_pattern, SitesHandler),
+        (output_pattern, JobOutputHandler),
+        (download_pattern, DownloadHandler)
+    ]
     web_app.add_handlers(host_pattern, handlers)

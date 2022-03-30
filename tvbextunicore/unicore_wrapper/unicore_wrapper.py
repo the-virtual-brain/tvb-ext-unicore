@@ -10,7 +10,7 @@ import os
 import pyunicore.client as unicore_client
 from requests.exceptions import ConnectionError
 
-from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException, SitesDownException
+from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException, SitesDownException, FileNotExistsException
 from tvbextunicore.logger.builder import get_logger
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO
 
@@ -135,3 +135,23 @@ class UnicoreWrapper(object):
         for k, v in files.items():
             outputs[k] = {'is_file': v.isfile()}
         return outputs
+
+    def download_file(self, job_url, file):
+        # type: (str, str) -> dict
+        """
+        helper method to download a file from a job output
+        """
+        success, message = True, f'{file} downloaded successfully!'
+
+        job = self.get_job(job_url)
+        if job.is_running():
+            return {
+                'success': False,
+                'message': f'Can\'t download file {file}. Job {job_url} is still running!'
+            }
+        wd = job.working_dir.listdir()
+        if not wd.get(file, False):
+            raise FileNotExistsException(f'{file} doesn\'t exist as output of {job_url}!')
+
+        wd[file].download(file)
+        return {'success': success, 'message': message}
