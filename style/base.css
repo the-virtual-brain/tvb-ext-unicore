@@ -251,9 +251,18 @@ button[disabled]:hover {
     padding: 0 0.2rem;
 }
 
+
+/*----- output files -----*/
+.unicore-jobOutput {
+    display: flex;
+    flex-direction: row;
+    height: 1rem;
+    align-items: center;
+    margin: 0.1rem 0;
+}
+
 .outputFiles {
     text-align: left;
-
 }
 
 .outputFileName {

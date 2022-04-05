@@ -155,3 +155,18 @@ class UnicoreWrapper(object):
 
         wd[file].download(file)
         return {'success': success, 'message': message}
+
+    def stream_file(self, job_url, file, offset=0, size=-1):
+        # type: (str, str, int, int) -> stream
+        """
+        method to download a file as an octet stream
+        """
+        job = self.get_job(job_url)
+        if job.is_running():
+            raise FileNotExistsException(f'Can\'t access {file}. Job still running.')
+
+        wd = job.working_dir.listdir()
+        if not wd.get(file, False):
+            raise FileNotExistsException(f'{file} doesn\'t exist as output of {job_url}!')
+
+        return wd[file].raw(offset=offset, size=size)

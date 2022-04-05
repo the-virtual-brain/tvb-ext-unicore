@@ -1,4 +1,6 @@
 // mock the handler for api requests
+import { FileBrowser } from '@jupyterlab/filebrowser';
+
 const FAIL_MESSAGE = 'fail';
 jest.mock('../handler', () => {
   return {
@@ -22,13 +24,19 @@ import React from 'react';
 import { JobOutputFiles } from '../components/JobOutputFiles';
 
 function renderJobOutputFiles(url: string) {
-  return render(<JobOutputFiles job_url={url} />, {
-    wrapper: p => (
-      <table>
-        <tbody>{p.children}</tbody>
-      </table>
-    )
-  });
+  return render(
+    <JobOutputFiles
+      job_url={url}
+      getFileBrowser={() => jest.fn as unknown as FileBrowser}
+    />,
+    {
+      wrapper: p => (
+        <table>
+          <tbody>{p.children}</tbody>
+        </table>
+      )
+    }
+  );
 }
 
 describe('test <JobOutputFiles />', () => {

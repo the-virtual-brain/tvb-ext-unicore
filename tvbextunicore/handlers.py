@@ -6,7 +6,6 @@
 #
 
 import json
-
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
 import tornado
@@ -95,6 +94,21 @@ class DownloadHandler(APIHandler):
         self.finish(response)
 
 
+class DownloadStreamHandler(APIHandler):
+    @tornado.web.authenticated
+    def get(self, job_url, file):
+        try:
+            response = UnicoreWrapper().stream_file(job_url, file)
+            self.set_header('Accept', 'application/octet-stream')
+            # LOGGER.info(f'response data: {response.data}')
+        except FileNotExistsException as e:
+            response = {'success': False, 'message': e.message, 'data': e.message}
+            # resp = urllib3.HTTPResponse()
+            # resp.
+
+        self.finish(response.data)
+
+
 def setup_handlers(web_app):
     host_pattern = ".*$"
 
@@ -103,10 +117,12 @@ def setup_handlers(web_app):
     jobs_pattern = url_path_join(base_url, "tvbextunicore", "jobs")
     output_pattern = url_path_join(base_url, "tvbextunicore", "job_output")
     download_pattern = url_path_join(base_url, "tvbextunicore", r"download/([^/]+)?/([^/]+)?")
+    stream_pattern = url_path_join(base_url, "tvbextunicore", r"stream/([^/]+)?/([^/]+)?")
     handlers = [
         (jobs_pattern, JobsHandler),
         (sites_pattern, SitesHandler),
         (output_pattern, JobOutputHandler),
-        (download_pattern, DownloadHandler)
+        (download_pattern, DownloadHandler),
+        (stream_pattern, DownloadStreamHandler)
     ]
     web_app.add_handlers(host_pattern, handlers)

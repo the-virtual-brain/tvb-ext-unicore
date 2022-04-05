@@ -10,6 +10,7 @@ import {
 import { requestAPI } from './handler';
 import { ReactWidget } from '@jupyterlab/apputils';
 import { Kernel } from '@jupyterlab/services';
+import { FileBrowser } from '@jupyterlab/filebrowser';
 
 /**
  * interface to describe how a table should look like, what field from the cols array represents
@@ -65,7 +66,8 @@ namespace types {
     sites: string[];
     reloadRate: number;
     getKernel: () => Promise<Kernel.IKernelConnection | null | undefined>;
-    getJob: (job_url: string) => string;
+    getJobCode: (job_url: string) => string;
+    getFileBrowser: () => FileBrowser;
   };
 
   export type State = {
@@ -108,7 +110,8 @@ export class PyunicoreWidget extends ReactWidget {
         sites={this.props.sites}
         reloadRate={RELOAD_RATE_MS}
         getKernel={this.props.getKernel}
-        getJob={this.props.getJob}
+        getJobCode={this.props.getJobCode}
+        getFileBrowser={this.props.getFileBrowser}
       /> // see how we can wrap this to use signal
     );
   }
@@ -340,8 +343,9 @@ export class PyunicoreComponent extends React.Component<
             this.setState({ ...this.state, message: message });
           }}
           getKernel={this.props.getKernel}
-          getJob={this.props.getJob}
+          getJob={this.props.getJobCode}
           handleError={this.catchError}
+          getFileBrowser={this.props.getFileBrowser}
         />
       </>
     );
