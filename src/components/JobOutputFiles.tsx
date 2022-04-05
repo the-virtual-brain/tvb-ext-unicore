@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { requestAPI } from '../handler';
+import { requestAPI, requestStream } from '../handler';
 import { FileBrowser } from '@jupyterlab/filebrowser';
-
-import { URLExt } from '@jupyterlab/coreutils';
-
-import { ServerConnection } from '@jupyterlab/services';
 
 namespace Types {
   export type Output = {
@@ -95,7 +91,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
   function handleDownloadStream(file: string): void {
     setStatusMessage(`Trying to download ${file}...`);
     setDownloading(true);
-    Private.requestStream<Blob>(`stream/${encodeURIComponent(jobUrl)}/${file}`)
+    requestStream<Blob>(`stream/${encodeURIComponent(jobUrl)}/${file}`)
       .then(r => {
         setStatusMessage(`Uploading file ${file}...`);
         const browser = getFileBrowser();
@@ -146,39 +142,3 @@ export const ProgressBar = (props: Types.ProgressBarProps): JSX.Element => {
     </div>
   );
 };
-
-namespace Private {
-  /**
-   * Call the API extension
-   *
-   * @param endPoint API REST end point for the extension
-   * @param init Initial values for the request
-   * @returns The response body interpreted as BLOB
-   */
-  export async function requestStream<T>(
-    endPoint = '',
-    init: RequestInit = {}
-  ): Promise<T> {
-    // Make request to Jupyter API
-    const settings = ServerConnection.makeSettings();
-    const requestUrl = URLExt.join(
-      settings.baseUrl,
-      'tvbextunicore', // API Namespace
-      endPoint
-    );
-    let response: Response;
-    try {
-      response = await ServerConnection.makeRequest(requestUrl, init, settings);
-    } catch (error) {
-      throw new ServerConnection.NetworkError(error);
-    }
-    console.log('response body before parse: ', response.body);
-    const data: any = await response.blob();
-
-    if (!response.ok) {
-      throw new ServerConnection.ResponseError(response, data.message || data);
-    }
-
-    return data;
-  }
-}
