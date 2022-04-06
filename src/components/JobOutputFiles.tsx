@@ -110,9 +110,9 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
   return (
     <div className={'unicore-jobOutput'} data-testid={`output-${output}`}>
       {outputType.is_file ? (
-        <i className="fa fa-file" />
+        <i className={'fa fa-file'} />
       ) : (
-        <i className="fas fa-folder" />
+        <i className={'fas fa-folder'} />
       )}
       <p draggable={true} className={'outputFileName'}>
         {output}
@@ -126,7 +126,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
           ) : (
             <i
               data-testid={'download-file'}
-              className="fa fa-download clickableIcon"
+              className={'fa fa-download clickableIcon'}
               onClick={() => handleDownloadStream(output)}
             />
           )}
@@ -136,7 +136,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
   );
 };
 
-// todo: use when downloading file and add style
+// to use when downloading file and add style
 export const ProgressBar = (props: Types.ProgressBarProps): JSX.Element => {
   return (
     <div

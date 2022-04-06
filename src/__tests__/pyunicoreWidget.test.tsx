@@ -1,5 +1,5 @@
 // mock the handler for api requests
-import {FileBrowser} from "@jupyterlab/filebrowser";
+import { FileBrowser } from '@jupyterlab/filebrowser';
 
 jest.mock('../handler', () => {
   return {

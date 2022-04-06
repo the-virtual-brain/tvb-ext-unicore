@@ -24,7 +24,7 @@ export const PaginationComponent = (props: types.Props): JSX.Element => {
         <div className={'btnLeftContainer'}>
           {props.showPrevButton && (
             <button onClick={handlePreviousPage} data-testid={'p-btn-left'}>
-              <i className="fa fa-arrow-left" />
+              <i className={'fa fa-arrow-left'} />
             </button>
           )}
         </div>
@@ -34,7 +34,7 @@ export const PaginationComponent = (props: types.Props): JSX.Element => {
         <div className={'btnRightContainer'}>
           {props.showNextButton && (
             <button onClick={handleNextPage} data-testid={'p-btn-right'}>
-              <i className="fa fa-arrow-right" />
+              <i className={'fa fa-arrow-right'} />
             </button>
           )}
         </div>
