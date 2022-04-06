@@ -100,11 +100,8 @@ class DownloadStreamHandler(APIHandler):
         try:
             response = UnicoreWrapper().stream_file(job_url, file)
             self.set_header('Accept', 'application/octet-stream')
-            # LOGGER.info(f'response data: {response.data}')
         except FileNotExistsException as e:
             response = {'success': False, 'message': e.message, 'data': e.message}
-            # resp = urllib3.HTTPResponse()
-            # resp.
 
         self.finish(response.data)
 

@@ -52,7 +52,7 @@ const data = {
 };
 
 export type JobStatus = 'running' | 'failed' | 'successful';
-export function generateJob(status: JobStatus, id = 1) {
+export function generateJob(status: JobStatus, id = 1): IJob {
   return {
     id: `test${id}`,
     name: `test_name_${id}`,

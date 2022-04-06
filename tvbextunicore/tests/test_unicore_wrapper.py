@@ -9,19 +9,53 @@ import os
 import pytest
 from datetime import datetime
 
-from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException
+from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException, FileNotExistsException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
     TERMINATION_TIME, \
     MOUNT_POINT
 
+GET_JOB = 'tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job'
 
 class MockFilePath:
     def __init__(self, is_file=True):
         self.is_file = is_file
 
     def isfile(self):
+        """
+        mock method
+        Returns
+        -------
+
+        """
         return self.is_file
+
+    def download(self, file):
+        """
+        mock method
+        Parameters
+        ----------
+        file
+
+        Returns
+        -------
+
+        """
+        pass
+
+    def raw(self, offset=0, size=-1):
+        """
+        mock method
+        Parameters
+        ----------
+        offset
+        size
+
+        Returns
+        -------
+
+        """
+        return b'test'
 
 
 class WorkingDirMock:
@@ -36,9 +70,13 @@ class WorkingDirMock:
 
 
 class MockPyUnicoreJob:
-    def __init__(self, job_url='test'):
+    def __init__(self, job_url='test', isrunning=False):
         self.job_url = job_url
         self.working_dir = WorkingDirMock()
+        self.isrunning = isrunning
+
+    def is_running(self):
+        return self.isrunning
 
 
 class MockPyUnicoreResource(object):
@@ -144,7 +182,7 @@ def test_get_job_output(mocker):
     def mockk(self, job_url):
         return MockPyUnicoreJob(job_url)
 
-    mocker.patch('tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job', mockk)
+    mocker.patch(GET_JOB, mockk)
     job_output = UnicoreWrapper().get_job_output('test')
     expected = {
         'file1': {'is_file': True},
@@ -152,3 +190,62 @@ def test_get_job_output(mocker):
     }
 
     assert job_output == expected
+
+
+def test_download_file_fails_when_job_is_running(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url, isrunning=True)
+
+    mocker.patch(GET_JOB, mockk)
+    file, job_url = 'test_file', 'test_url'
+    response = UnicoreWrapper().download_file(job_url, file)
+    expected = {
+        'success': False,
+        'message': f'Can\'t download file {file}. Job {job_url} is still running!'
+    }
+    assert response == expected
+
+
+def test_download_file_fails_when_file_doesnt_exist(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+    mocker.patch(GET_JOB, mockk)
+    file, job_url = 'test_file', 'test_url'
+    with pytest.raises(FileNotExistsException):
+        UnicoreWrapper().download_file(job_url, file)
+
+
+def test_download_file_success(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+    mocker.patch(GET_JOB, mockk)
+    file, job_url = 'file1', 'file1'
+    success, message = True, f'{file} downloaded successfully!'
+    expected = {'success': success, 'message': message}
+    assert UnicoreWrapper().download_file(job_url, file) == expected
+
+
+def test_download_stream_fails_when_job_is_running(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url, isrunning=True)
+
+    mocker.patch(GET_JOB, mockk)
+    with pytest.raises(FileNotExistsException):
+        UnicoreWrapper().stream_file('test_url', 'test_file')
+
+
+def test_download_stream_fails_when_file_doesnt_exist(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+
+    mocker.patch(GET_JOB, mockk)
+    with pytest.raises(FileNotExistsException):
+        UnicoreWrapper().stream_file('test_url', 'test_file')
+
+
+def test_download_stream_success(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+
+    mocker.patch(GET_JOB, mockk)
+    assert UnicoreWrapper().stream_file('file1', 'file1') == b'test'
