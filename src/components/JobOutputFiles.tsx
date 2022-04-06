@@ -108,7 +108,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
   }
 
   return (
-    <div className={'unicore-jobOutput'}>
+    <div className={'unicore-jobOutput'} data-testid={`output-${output}`}>
       {outputType.is_file ? (
         <i className="fa fa-file" />
       ) : (
@@ -117,15 +117,20 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       <p draggable={true} className={'outputFileName'}>
         {output}
       </p>
-      {outputType.is_file && downloading ? (
-        <div className={'loadingRoot'}>
-          <span className={'unicoreLoading'} />
-        </div>
-      ) : (
-        <i
-          className="fa fa-download clickableIcon"
-          onClick={() => handleDownloadStream(output)}
-        />
+      {outputType.is_file && (
+        <>
+          {downloading ? (
+            <div className={'loadingRoot'}>
+              <span className={'unicoreLoading'} />
+            </div>
+          ) : (
+            <i
+              data-testid={'download-file'}
+              className="fa fa-download clickableIcon"
+              onClick={() => handleDownloadStream(output)}
+            />
+          )}
+        </>
       )}
     </div>
   );
@@ -137,6 +142,7 @@ export const ProgressBar = (props: Types.ProgressBarProps): JSX.Element => {
     <div
       style={{ width: `${props.size}rem` }}
       className={'unicore-progressBar'}
+      data-testid={'progress-bar'}
     >
       <div style={{ width: `${props.done}%` }} />
     </div>
