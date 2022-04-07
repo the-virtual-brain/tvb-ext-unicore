@@ -201,6 +201,10 @@ selection component (pyunicore sites)
     color: var(--jp-error-color1);
 }
 
+.unicoreMessage-success {
+    color: var(--jp-success-color1);
+}
+
 /**
 pagination style
  */
@@ -256,7 +260,7 @@ button[disabled]:hover {
 .unicore-jobOutput {
     display: flex;
     flex-direction: row;
-    height: 1rem;
+    height: 1.3rem;
     align-items: center;
     margin: 0.1rem 0;
 }

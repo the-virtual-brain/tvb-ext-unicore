@@ -11,7 +11,6 @@ namespace Types {
     output: string;
     outputType: { is_file: boolean };
     jobUrl: string;
-    setStatusMessage: (msg: string) => void;
     getFileBrowser: () => FileBrowser;
   };
 
@@ -23,6 +22,11 @@ namespace Types {
   export type Props = {
     job_url: string;
     getFileBrowser: () => FileBrowser;
+  };
+
+  export type MessageState = {
+    text: string;
+    className: string;
   };
 
   export type ProgressBarProps = {
@@ -70,7 +74,6 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
               outputType={outputType}
               key={`${output}-${index}`}
               jobUrl={props.job_url}
-              setStatusMessage={msg => setMessage(msg)}
               getFileBrowser={props.getFileBrowser}
             />
           ))}
@@ -83,26 +86,36 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
 };
 
 export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
-  const { output, outputType, jobUrl, setStatusMessage, getFileBrowser } =
-    props;
+  const { output, outputType, jobUrl, getFileBrowser } = props;
 
   const [downloading, setDownloading] = useState(false);
+  const [error, success] = ['unicoreMessage', 'unicoreMessage-success'];
+  const [message, setMessage] = useState<Types.MessageState>({
+    text: '',
+    className: success
+  });
 
   function handleDownloadStream(file: string): void {
-    setStatusMessage(`Trying to download ${file}...`);
+    setMessage({ text: 'Downloading ', className: success });
     setDownloading(true);
     requestStream<Blob>(`stream/${encodeURIComponent(jobUrl)}/${file}`)
       .then(r => {
-        setStatusMessage(`Uploading file ${file}...`);
+        setMessage({ className: success, text: 'Uploading...' });
         const browser = getFileBrowser();
-        browser.model.upload(new File([r], file)).then(model => {
-          setDownloading(false);
-          setStatusMessage(`Download finished for ${model.name}!`);
-        });
+        browser.model
+          .upload(new File([r], file))
+          .then(_model => {
+            setDownloading(false);
+            setMessage({ className: success, text: 'Finished!' });
+          })
+          .catch(e => {
+            setMessage({ text: e.message, className: error });
+            setDownloading(false);
+          });
       })
       .catch(err => {
         console.log('error at server: ', err);
-        setStatusMessage(err.message);
+        setMessage({ text: err.message, className: error });
         setDownloading(false);
       });
   }
@@ -119,6 +132,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       </p>
       {outputType.is_file && (
         <>
+          <span className={message.className}>{message.text}</span>
           {downloading ? (
             <div className={'loadingRoot'}>
               <span className={'unicoreLoading'} />
