@@ -242,11 +242,11 @@ export class PyunicoreComponent extends React.Component<
 
   /**
    * if page or site changed reload data
-   * @param prevProps
+   * @param _prevProps
    * @param prevState
    */
   componentDidUpdate(
-    prevProps: Readonly<types.Props>,
+    _prevProps: Readonly<types.Props>,
     prevState: Readonly<types.State>
   ): void {
     if (
