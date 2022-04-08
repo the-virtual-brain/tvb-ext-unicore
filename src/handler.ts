@@ -68,11 +68,15 @@ export async function requestStream<T>(
   } catch (error) {
     throw new ServerConnection.NetworkError(error);
   }
-  const data: any = await response.blob();
 
   if (!response.ok) {
-    throw new ServerConnection.ResponseError(response, data.message || data);
+    const jsonData = await response.json();
+    throw new ServerConnection.ResponseError(
+      response,
+      jsonData.message || jsonData
+    );
   }
 
+  const data: any = await response.blob();
   return data;
 }

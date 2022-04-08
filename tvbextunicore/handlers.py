@@ -91,19 +91,20 @@ class DownloadHandler(APIHandler):
         except FileNotExistsException as e:
             response = {'success': False, 'message': e.message}
 
-        self.finish(response)
+        self.finish(json.dumps(response))
 
 
 class DownloadStreamHandler(APIHandler):
     @tornado.web.authenticated
     def get(self, job_url, file):
         try:
-            response = UnicoreWrapper().stream_file(job_url, file)
+            response = UnicoreWrapper().stream_file(job_url, file).data
             self.set_header('Accept', 'application/octet-stream')
         except FileNotExistsException as e:
-            response = {'success': False, 'message': e.message, 'data': e.message}
+            self.set_status(400)
+            response = json.dumps({'success': False, 'message': e.message})
 
-        self.finish(response.data)
+        self.finish(response)
 
 
 def setup_handlers(web_app):
