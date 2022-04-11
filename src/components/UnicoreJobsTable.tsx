@@ -169,6 +169,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
           <JobOutputFiles
             job_url={job.resource_url}
             getFileBrowser={props.getFileBrowser}
+            getKernel={props.getKernel}
           />
           <tr className={'detailsRow'}>
             <td colSpan={100}>

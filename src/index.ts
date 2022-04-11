@@ -34,6 +34,11 @@ export type SitesResponse = {
   message: string;
 };
 
+export type NullableIKernelConnection =
+  | Kernel.IKernelConnection
+  | null
+  | undefined;
+
 /**
  * Initialization data for the tvb-ext-unicore extension.
  */
@@ -124,11 +129,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
 export default plugin;
 
 namespace Private {
-  export type NullableIKernelConnection =
-    | Kernel.IKernelConnection
-    | null
-    | undefined;
-
   /**
    * Whether a kernel should be used. Only evaluates to true
    * if it is valid and in python.

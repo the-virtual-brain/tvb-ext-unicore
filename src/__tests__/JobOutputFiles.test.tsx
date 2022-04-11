@@ -1,6 +1,37 @@
 // mock the handler for api requests
 import { FileBrowser } from '@jupyterlab/filebrowser';
 
+// mock the jupyter error modal handler
+jest.mock('@jupyterlab/apputils', () => {
+  return {
+    __esModule: true,
+    showErrorMessage: jest
+      .fn()
+      .mockImplementation((_title: string, _error: any) =>
+        Promise.resolve(null)
+      )
+  };
+});
+
+// mock the jupyter Drag
+const startDrag = jest
+  .fn()
+  .mockImplementation((_clientX: number, _clientY: number) =>
+    Promise.resolve(true)
+  );
+jest.mock('@lumino/dragdrop', () => {
+  return {
+    __esModule: true,
+    Drag: jest.fn().mockImplementation(() => {
+      return {
+        data: '',
+        mimeData: { setData: (_mimeType: string, _code: string) => true },
+        start: startDrag
+      };
+    })
+  };
+});
+
 const SHOW_ERROR = jest.fn((_title: string, _message: any) => '');
 
 jest.mock('@jupyterlab/apputils', () => {
@@ -34,6 +65,16 @@ jest.mock('../handler', () => {
   };
 });
 
+const data = {
+  file1: { is_file: true },
+  dir1: { is_file: false }
+};
+
+const getKernelMock = jest
+  .fn()
+  .mockImplementationOnce(() => Promise.resolve(null))
+  .mockImplementation(() => Promise.resolve(true));
+
 import { findByText, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import {
@@ -42,11 +83,14 @@ import {
   ProgressBar
 } from '../components/JobOutputFiles';
 
+import { showErrorMessage } from '@jupyterlab/apputils';
+
 function renderJobOutputFiles(url: string) {
   return render(
     <JobOutputFiles
       job_url={url}
       getFileBrowser={() => jest.fn as unknown as FileBrowser}
+      getKernel={getKernelMock}
     />,
     {
       wrapper: p => (
@@ -86,6 +130,7 @@ function renderJobOutput(
       output={TEST_FILE_NAME}
       outputType={{ is_file: is_file }}
       jobUrl={'test_url'}
+      getKernel={getKernelMock}
       getFileBrowser={getFileBrowser}
     />
   );
@@ -142,6 +187,22 @@ describe('test <JobOutput />', () => {
     expect(container).toBeTruthy();
     const msg = await findByText(container, 'Downloaded');
     expect(msg).toBeTruthy();
+  });
+
+  it('handles drag event - no available kernel', async () => {
+    const { findByTestId } = renderJobOutput(true);
+    const output = await findByTestId(`output-${TEST_FILE_NAME}`);
+    const file = await findByText(output, TEST_FILE_NAME);
+    await waitFor(() => fireEvent.dragStart(file));
+    expect(showErrorMessage).toBeCalledTimes(1);
+  });
+
+  it('handles drag event - usable kernel', async () => {
+    const { findByTestId } = renderJobOutput(true);
+    const output = await findByTestId(`output-${TEST_FILE_NAME}`);
+    const file = await findByText(output, TEST_FILE_NAME);
+    await waitFor(() => fireEvent.dragStart(file));
+    expect(startDrag).toBeCalledTimes(1);
   });
 });
 

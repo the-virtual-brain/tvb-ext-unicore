@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { requestAPI } from '../handler';
 
 import { FileBrowser } from '@jupyterlab/filebrowser';
+import { Drag } from '@lumino/dragdrop';
+import { MimeData } from '@lumino/coreutils';
+import { showErrorMessage } from '@jupyterlab/apputils';
+import { NullableIKernelConnection } from '../index';
+
+const TEXT_PLAIN_MIME = 'text/plain';
 import { showErrorMessage } from '@jupyterlab/apputils';
 
 namespace Types {
@@ -14,6 +20,7 @@ namespace Types {
     outputType: { is_file: boolean };
     jobUrl: string;
     getFileBrowser: () => FileBrowser;
+    getKernel: () => Promise<NullableIKernelConnection>;
   };
 
   export type DownloadResponse = {
@@ -24,6 +31,7 @@ namespace Types {
   export type Props = {
     job_url: string;
     getFileBrowser: () => FileBrowser;
+    getKernel: () => Promise<NullableIKernelConnection>;
   };
 
   export type MessageState = {
@@ -77,6 +85,7 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
               key={`${output}-${index}`}
               jobUrl={props.job_url}
               getFileBrowser={props.getFileBrowser}
+              getKernel={props.getKernel}
             />
           ))}
         </td>
@@ -88,7 +97,7 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
 };
 
 export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
-  const { output, outputType, jobUrl, getFileBrowser } = props;
+  const { output, outputType, jobUrl, getFileBrowser, getKernel } = props;
 
   const [downloading, setDownloading] = useState(false);
   const downloadStatus: { [string: string]: string } = {
@@ -137,6 +146,42 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
     }
   }
 
+  function getDownloadFileCode(job_url: string, file: string): string {
+    return `from tvbextunicore.unicore_wrapper import unicore_wrapper
+unicore = unicore_wrapper.UnicoreWrapper()
+download_result = unicore.download_file('${job_url}', '${file}')
+download_result['message']`;
+  }
+
+  /**
+   * instantiate and start the Drag event with the cell and code to be injected
+   * @param event
+   */
+  async function handleDragStart(event: React.DragEvent): Promise<void> {
+    // make sure we have a kernel that can handle python code
+    const kernel = await getKernel();
+    if (!kernel) {
+      // show error modal
+      await showErrorMessage(
+        'Kernel not available',
+        "Current kernel can't be used to handle this operation!"
+      );
+      return;
+    }
+
+    const code = getDownloadFileCode(jobUrl, output);
+    const drag = new Drag({
+      mimeData: new MimeData(),
+      supportedActions: 'copy',
+      proposedAction: 'copy',
+      source: output
+    });
+
+    // set data for copy in an existing cell
+    drag.mimeData.setData(TEXT_PLAIN_MIME, code);
+    drag.start(event.clientX, event.clientY).then(r => console.log('r: ', r));
+  }
+
   return (
     <div className={'unicore-jobOutput'} data-testid={`output-${output}`}>
       {outputType.is_file ? (
@@ -144,7 +189,11 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       ) : (
         <i className={'fas fa-folder'} />
       )}
-      <p draggable={true} className={'outputFileName'}>
+      <p
+        draggable={true}
+        className={'outputFileName'}
+        onDragStart={handleDragStart}
+      >
         {output}
       </p>
       {outputType.is_file && (
