@@ -5,8 +5,7 @@ import { Drag } from '@lumino/dragdrop';
 import { MimeData } from '@lumino/coreutils';
 import { JobOutputFiles } from './JobOutputFiles';
 import { FileBrowser } from '@jupyterlab/filebrowser';
-
-const TEXT_PLAIN_MIME = 'text/plain';
+import { TEXT_PLAIN_MIME } from '../constants';
 
 export namespace types {
   export type JobsTableProps = {

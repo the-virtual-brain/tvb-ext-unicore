@@ -23,12 +23,8 @@ jest.mock('@jupyterlab/apputils', () => {
   };
 });
 
-import {
-  IJob,
-  PyunicoreComponent,
-  RELOAD_RATE_MS,
-  RELOAD_CHECK_RATE_MS
-} from '../pyunicoreWidget';
+import { IJob, PyunicoreComponent } from '../pyunicoreWidget';
+import { RELOAD_RATE_MS, RELOAD_CHECK_RATE_MS } from '../constants';
 import {
   findByText,
   fireEvent,

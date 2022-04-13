@@ -11,7 +11,7 @@ import { requestAPI } from './handler';
 import { ReactWidget } from '@jupyterlab/apputils';
 import { Kernel } from '@jupyterlab/services';
 import { FileBrowser } from '@jupyterlab/filebrowser';
-import { NO_SITE } from './constants';
+import { NO_SITE, RELOAD_RATE_MS, RELOAD_CHECK_RATE_MS } from './constants';
 
 /**
  * interface to describe how a table should look like, what field from the cols array represents
@@ -48,16 +48,6 @@ export interface IButtonSettings {
   onClickFieldArgs: string[];
   isAsync: boolean;
 }
-
-/**
- * How often should the component reload jobs expressed in milliseconds
- */
-export const RELOAD_RATE_MS = 60000;
-
-/**
- * How often should the component check if RELOAD_RATE_MS have passed since the last update
- */
-export const RELOAD_CHECK_RATE_MS = 10000; //should check every 10sec
 
 namespace types {
   export type Props = {

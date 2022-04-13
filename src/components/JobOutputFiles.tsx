@@ -6,9 +6,7 @@ import { Drag } from '@lumino/dragdrop';
 import { MimeData } from '@lumino/coreutils';
 import { showErrorMessage } from '@jupyterlab/apputils';
 import { NullableIKernelConnection } from '../index';
-
-const TEXT_PLAIN_MIME = 'text/plain';
-import { showErrorMessage } from '@jupyterlab/apputils';
+import { TEXT_PLAIN_MIME } from '../constants';
 
 namespace Types {
   export type Output = {
