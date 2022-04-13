@@ -20,6 +20,7 @@ import { PyunicoreWidget } from './pyunicoreWidget';
 import { requestAPI } from './handler';
 import { Kernel } from '@jupyterlab/services';
 import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
+import { NO_SITE } from './constants';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
@@ -84,7 +85,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               isAsync: false,
               name: 'Cancel Job'
             },
-            sites: Object.keys(sitesResponse.sites),
+            sites: [NO_SITE, ...Object.keys(sitesResponse.sites)],
             reloadRate: 60000,
             getKernel: async () => {
               const kernel = Private.getCurrentKernel(
