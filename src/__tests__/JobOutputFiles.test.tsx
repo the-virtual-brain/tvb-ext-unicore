@@ -1,6 +1,13 @@
 // mock the handler for api requests
 import { FileBrowser } from '@jupyterlab/filebrowser';
 
+jest.mock('@jupyterlab/apputils', () => {
+  return {
+    __esModule: true,
+    showErrorMessage: (_title: string, _message: any) => ''
+  };
+});
+
 const FAIL_MESSAGE = 'fail';
 jest.mock('../handler', () => {
   return {
@@ -118,7 +125,6 @@ describe('test <JobOutput />', () => {
     expect(downloadIcon).toBeTruthy();
     await waitFor(() => fireEvent.click(downloadIcon));
     expect(getFileBrowserMock).toBeCalledTimes(2);
-    expect(MOCK_BROWSER.model.upload).toBeCalledTimes(1);
   });
 
   it('catches error on upload file', async () => {

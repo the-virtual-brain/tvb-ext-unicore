@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { requestAPI, requestStream } from '../handler';
-// requestStream
+import { requestAPI } from '../handler';
+
 import { FileBrowser } from '@jupyterlab/filebrowser';
 import { showErrorMessage } from '@jupyterlab/apputils';
 
@@ -137,34 +137,6 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
     }
   }
 
-  function handleDownloadStream(file: string): void {
-    setMessage({ text: 'Downloading ', className: downloadStatus.success });
-    setDownloading(true);
-    requestStream<Blob>(`stream/${encodeURIComponent(jobUrl)}/${file}`)
-      .then(r => {
-        setMessage({ className: downloadStatus.success, text: 'Uploading...' });
-        const browser = getFileBrowser();
-        browser.model
-          .upload(new File([r], file))
-          .then(_model => {
-            setDownloading(false);
-            setMessage({
-              className: downloadStatus.success,
-              text: 'Finished!'
-            });
-          })
-          .catch(e => {
-            setMessage({ text: e.message, className: downloadStatus.error });
-            setDownloading(false);
-          });
-      })
-      .catch(err => {
-        console.log('error at server: ', err);
-        setMessage({ text: err.message, className: downloadStatus.error });
-        setDownloading(false);
-      });
-  }
-
   return (
     <div className={'unicore-jobOutput'} data-testid={`output-${output}`}>
       {outputType.is_file ? (
@@ -183,16 +155,11 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
               <span className={'unicoreLoading'} />
             </div>
           ) : (
-            <>
-              <i
-                data-testid={'download-file'}
-                className={'fa fa-download clickableIcon'}
-                onClick={() => downloadToCurrentPath(output)}
-              />
-              <span onClick={() => handleDownloadStream(output)}>
-                <i className="fal fa-download"></i>Drive API
-              </span>
-            </>
+            <i
+              data-testid={'download-file'}
+              className={'fa fa-download clickableIcon'}
+              onClick={() => downloadToCurrentPath(output)}
+            />
           )}
         </>
       )}
