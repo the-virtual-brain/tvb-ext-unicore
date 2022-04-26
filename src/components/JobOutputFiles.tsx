@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { requestAPI, requestStream } from '../handler';
+// requestStream
 import { FileBrowser } from '@jupyterlab/filebrowser';
+import { showErrorMessage } from '@jupyterlab/apputils';
 
 namespace Types {
   export type Output = {
@@ -16,7 +18,7 @@ namespace Types {
 
   export type DownloadResponse = {
     message: string;
-    success: boolean;
+    status: string;
   };
 
   export type Props = {
@@ -89,33 +91,76 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
   const { output, outputType, jobUrl, getFileBrowser } = props;
 
   const [downloading, setDownloading] = useState(false);
-  const [error, success] = ['unicoreMessage', 'unicoreMessage-success'];
+  const downloadStatus: { [string: string]: string } = {
+    success: 'unicoreMessage-success',
+    warning: 'unicoreMessage-warning',
+    error: 'unicoreMessage'
+  };
   const [message, setMessage] = useState<Types.MessageState>({
     text: '',
-    className: success
+    className: downloadStatus.success
   });
 
+  /**
+   * function to download a file to the current path (directory) opened in filebrowser
+   * @param file - name of the file to be downloaded from this jobs working dir
+   */
+  async function downloadToCurrentPath(file: string): Promise<void> {
+    const browser = getFileBrowser();
+    const path = browser.model.path;
+    console.log('File browser path: ', path);
+    const dataToSend = {
+      job_url: jobUrl,
+      file: file,
+      path: path
+    };
+    try {
+      setDownloading(true);
+      const response: Types.DownloadResponse = await requestAPI(
+        `drive/${encodeURIComponent(jobUrl)}/${file}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(dataToSend)
+        }
+      );
+      console.log('response: ', response);
+      setMessage({
+        text: response.message,
+        className: downloadStatus[response.status]
+      });
+      setDownloading(false);
+      browser.update();
+    } catch (e) {
+      await showErrorMessage('Error on request:', e);
+      setMessage({ text: e.text, className: downloadStatus.error });
+      setDownloading(false);
+    }
+  }
+
   function handleDownloadStream(file: string): void {
-    setMessage({ text: 'Downloading ', className: success });
+    setMessage({ text: 'Downloading ', className: downloadStatus.success });
     setDownloading(true);
     requestStream<Blob>(`stream/${encodeURIComponent(jobUrl)}/${file}`)
       .then(r => {
-        setMessage({ className: success, text: 'Uploading...' });
+        setMessage({ className: downloadStatus.success, text: 'Uploading...' });
         const browser = getFileBrowser();
         browser.model
           .upload(new File([r], file))
           .then(_model => {
             setDownloading(false);
-            setMessage({ className: success, text: 'Finished!' });
+            setMessage({
+              className: downloadStatus.success,
+              text: 'Finished!'
+            });
           })
           .catch(e => {
-            setMessage({ text: e.message, className: error });
+            setMessage({ text: e.message, className: downloadStatus.error });
             setDownloading(false);
           });
       })
       .catch(err => {
         console.log('error at server: ', err);
-        setMessage({ text: err.message, className: error });
+        setMessage({ text: err.message, className: downloadStatus.error });
         setDownloading(false);
       });
   }
@@ -138,11 +183,16 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
               <span className={'unicoreLoading'} />
             </div>
           ) : (
-            <i
-              data-testid={'download-file'}
-              className={'fa fa-download clickableIcon'}
-              onClick={() => handleDownloadStream(output)}
-            />
+            <>
+              <i
+                data-testid={'download-file'}
+                className={'fa fa-download clickableIcon'}
+                onClick={() => downloadToCurrentPath(output)}
+              />
+              <span onClick={() => handleDownloadStream(output)}>
+                <i className="fal fa-download"></i>Drive API
+              </span>
+            </>
           )}
         </>
       )}
