@@ -4,9 +4,8 @@
 #
 # (c) 2022-2023, TVB Widgets Team
 #
+import os
 import json
-import shutil
-import enum
 
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
@@ -16,34 +15,9 @@ from tornado.web import MissingArgumentError
 from tvbextunicore.exceptions import SitesDownException, FileNotExistsException, JobRunningException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.logger.builder import get_logger
+from tvbextunicore.utils import download_file, build_response, DownloadStatus
 
 LOGGER = get_logger(__name__)
-
-
-def try_move(from_path, to_path):
-    # type: (str, str) -> bool
-    """
-    helper function to move a file
-    if to_path is empty string the file will not be moved assuming that is already where it
-    is supposed to be
-    """
-    if to_path == '':
-        return True
-    try:
-        shutil.move(rf'{from_path}', rf'{to_path}')  # r to avoid error ‘unicodeescape’ codec can’t decode bytes
-        return True
-    except (shutil.Error, IOError) as e:
-        LOGGER.error(e)
-        return False
-
-
-class DownloadStatus(str, enum.Enum):  # inherit str for json serialization
-    """
-    Describes the status of a file download attempt
-    """
-    WARNING = 'warning'
-    ERROR = 'error'
-    SUCCESS = 'success'
 
 
 class SitesHandler(APIHandler):
@@ -126,7 +100,6 @@ class DriveHandler(APIHandler):
 
     @tornado.web.authenticated
     def post(self, *args):
-        status, message = DownloadStatus.SUCCESS, ''
         post_params = self.get_json_body()
         try:
             path = post_params['path']
@@ -137,22 +110,15 @@ class DriveHandler(APIHandler):
             self.set_status(400, 'Request body missing required params!')
             self.finish()
             return
-        LOGGER.info('Downloading file from unicore using local download')
+        LOGGER.info(f'Downloading file from unicore to file created in {path}')
+        if path.strip() and not os.path.exists(path):
+            response = build_response(DownloadStatus.ERROR, f'Path: {path} does not exist!')
+            self.finish(response)
+            return
         unicore_wrapper = UnicoreWrapper()
-        with open(file, 'wb') as f:
-            try:
-                message = unicore_wrapper.download_file(job_url, file, f)
-            except FileNotExistsException as e:
-                LOGGER.error(e)
-                status, message = DownloadStatus.ERROR, e.message
-            except JobRunningException as e:
-                LOGGER.warning(e)
-                status, message = DownloadStatus.WARNING, e.message
-        LOGGER.info(f'MOVING FILE TO {path}')
-        moved = try_move(file, path)
-        if not moved:
-            status, message = DownloadStatus.ERROR, f'Can\'t move file to location {path}'
-        self.finish(json.dumps({'status': status, 'message': message}))
+        file_path = os.path.join(path, file)
+        response = download_file(file_path, file, unicore_wrapper, job_url)
+        self.finish(response)
 
 
 def setup_handlers(web_app):

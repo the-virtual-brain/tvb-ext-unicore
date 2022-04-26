@@ -4,10 +4,10 @@
 #
 # (c) 2022-2023, TVB Widgets Team
 #
-
+import io
+import json
 import os
 import pytest
-import shutil
 from datetime import datetime
 
 from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException, \
@@ -16,10 +16,17 @@ from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
     TERMINATION_TIME, \
     MOUNT_POINT
-from tvbextunicore.handlers import try_move
+from tvbextunicore.utils import build_response, DownloadStatus, download_file
 
 GET_JOB = 'tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job'
+MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE = 'tvbextunicore.tests.test_unicore_wrapper.MockPyunicoreWrapper.download_file'
 SHUTIL_MOVE = 'shutil.move'
+DOWNLOAD_MESSAGE = 'Downloaded successfully!'
+
+
+class MockPyunicoreWrapper:
+    def download_file(self, _job_url, _file_name, _file=None):
+        return DOWNLOAD_MESSAGE
 
 
 class MockFilePath:
@@ -223,8 +230,7 @@ def test_download_file_success(mocker):
 
     mocker.patch(GET_JOB, mockk)
     file, job_url = 'file1', 'file1'
-    message = 'Downloaded successfully!'
-    assert UnicoreWrapper().download_file(job_url, file) == message
+    assert UnicoreWrapper().download_file(job_url, file) == DOWNLOAD_MESSAGE
 
 
 def test_download_stream_fails_when_job_is_running(mocker):
@@ -253,19 +259,47 @@ def test_download_stream_success(mocker):
     assert UnicoreWrapper().stream_file('file1', 'file1') == b'test'
 
 
-def test_try_move_success(mocker):
+def test_build_response(mocker):
     mocker.patch(SHUTIL_MOVE, lambda x, y: True)
-    assert try_move('file', '/here') is True
+    status, message = DownloadStatus.SUCCESS, 'Downloaded'
+    assert build_response(status, message) == json.dumps({'status': status, 'message': message})
 
 
-def test_try_move_fails(mocker):
-    def throw_shutil_error(_from, _to):
-        raise shutil.Error()
+def test_download_file_function_success(mocker):
+    wrapper = MockPyunicoreWrapper()
+    expected = json.dumps({'status': 'success', 'message': DOWNLOAD_MESSAGE})
+    file = 'test_file'
+    response = download_file(file, 'stdout', wrapper, 'url')
+    os.remove(file)
+    assert response == expected
 
-    def throw_io_error(_from, _to):
-        raise IOError()
-    mocker.patch(SHUTIL_MOVE, throw_shutil_error)
-    assert try_move('file1', '/here1') is False
 
-    mocker.patch(SHUTIL_MOVE, throw_io_error)
-    assert try_move('file2', '/here2') is False
+def test_download_file_function_file_not_exists(mocker):
+    err_msg = 'No file'
+
+    def mock_download_file(self, _job_url, _file_name, _file=None):
+        raise FileNotExistsException(err_msg)
+
+    mocker.patch(MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE, mock_download_file)
+    wrapper = MockPyunicoreWrapper()
+    expected = json.dumps({'status': DownloadStatus.ERROR, 'message': err_msg})
+    file = 'test_file'
+    response = download_file(file, 'stdout', wrapper, 'url')
+    os.remove(file)
+    assert response == expected
+
+
+def test_download_file_function_job_running(mocker):
+    err_msg = 'Job running'
+
+    def mock_download_file(self, _job_url, _file_name, _file=None):
+        raise JobRunningException(err_msg)
+
+    mocker.patch(MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE, mock_download_file)
+    wrapper = MockPyunicoreWrapper()
+    expected = json.dumps({'status': DownloadStatus.WARNING, 'message': err_msg})
+    file = 'test_file2'
+    response = download_file(file, 'stdout', wrapper, 'url')
+    os.remove(file)
+    assert response == expected
+
