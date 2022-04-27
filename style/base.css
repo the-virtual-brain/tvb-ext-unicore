@@ -201,6 +201,14 @@ selection component (pyunicore sites)
     color: var(--jp-error-color1);
 }
 
+.unicoreMessage-success {
+    color: var(--jp-success-color1);
+}
+
+.unicoreMessage-warning {
+    color: var(--jp-warn-color1);
+}
+
 /**
 pagination style
  */
@@ -251,9 +259,29 @@ button[disabled]:hover {
     padding: 0 0.2rem;
 }
 
+
+/*----- output files -----*/
+.unicore-jobOutput {
+    display: flex;
+    flex-direction: row;
+    height: 1.3rem;
+    align-items: center;
+    margin: 0.1rem 0;
+}
+
 .outputFiles {
     text-align: left;
 }
+
+.outputFileName {
+    margin: 0 0.5rem 0 0.2rem;
+    display: inline-block;
+}
+
+.clickableIcon {
+    cursor: pointer;
+}
+
 i {
-    margin-right: 5px;
+    color: var(--jp-content-font-color2);
 }

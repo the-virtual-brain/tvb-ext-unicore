@@ -4,7 +4,7 @@
 #
 # (c) 2022-2023, TVB Widgets Team
 #
-
+import os
 import json
 
 from jupyter_server.base.handlers import APIHandler
@@ -12,9 +12,10 @@ from jupyter_server.utils import url_path_join
 import tornado
 from tornado.web import MissingArgumentError
 
-from tvbextunicore.exceptions import SitesDownException
+from tvbextunicore.exceptions import SitesDownException, FileNotExistsException, JobRunningException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.logger.builder import get_logger
+from tvbextunicore.utils import download_file, build_response, DownloadStatus
 
 LOGGER = get_logger(__name__)
 
@@ -84,6 +85,42 @@ class JobOutputHandler(APIHandler):
             self.finish(json.dumps({'message': 'Can\'t access job outputs: No job url provided!'}))
 
 
+class DownloadHandler(APIHandler):
+    @tornado.web.authenticated
+    def get(self, job_url, file):
+        try:
+            response = UnicoreWrapper().download_file(job_url, file)
+        except FileNotExistsException as e:
+            response = {'success': False, 'message': e.message}
+
+        self.finish(json.dumps(response))
+
+
+class DriveHandler(APIHandler):
+
+    @tornado.web.authenticated
+    def post(self, *args):
+        post_params = self.get_json_body()
+        try:
+            path = post_params['path']
+            file = post_params['file']
+            job_url = post_params['job_url']
+        except KeyError as e:
+            LOGGER.error(e)
+            self.set_status(400, 'Request body missing required params!')
+            self.finish()
+            return
+        LOGGER.info(f'Downloading file from unicore to file created in {path}')
+        if path.strip() and not os.path.exists(path):
+            response = build_response(DownloadStatus.ERROR, f'Path: {path} does not exist!')
+            self.finish(response)
+            return
+        unicore_wrapper = UnicoreWrapper()
+        file_path = os.path.join(path, file)
+        response = download_file(file_path, file, unicore_wrapper, job_url)
+        self.finish(response)
+
+
 def setup_handlers(web_app):
     host_pattern = ".*$"
 
@@ -91,5 +128,11 @@ def setup_handlers(web_app):
     sites_pattern = url_path_join(base_url, "tvbextunicore", "sites")
     jobs_pattern = url_path_join(base_url, "tvbextunicore", "jobs")
     output_pattern = url_path_join(base_url, "tvbextunicore", "job_output")
-    handlers = [(jobs_pattern, JobsHandler), (sites_pattern, SitesHandler), (output_pattern, JobOutputHandler)]
+    drive_pattern = url_path_join(base_url, "tvbextunicore", r"drive/([^/]+)?/([^/]+)?")
+    handlers = [
+        (jobs_pattern, JobsHandler),
+        (sites_pattern, SitesHandler),
+        (output_pattern, JobOutputHandler),
+        (drive_pattern, DriveHandler)
+    ]
     web_app.add_handlers(host_pattern, handlers)

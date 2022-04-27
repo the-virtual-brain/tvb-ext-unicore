@@ -11,6 +11,8 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
+import { FileBrowser, IFileBrowserFactory } from '@jupyterlab/filebrowser';
+
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 
 import { PyunicoreWidget } from './pyunicoreWidget';
@@ -43,7 +45,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     ILayoutRestorer,
     IConsoleTracker,
     ILabShell,
-    INotebookTracker
+    INotebookTracker,
+    IFileBrowserFactory
   ],
   activate: async (
     app: JupyterFrontEnd,
@@ -51,11 +54,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
     restorer: ILayoutRestorer,
     consoleTracker: IConsoleTracker,
     labShell: ILabShell,
-    notebookTracker: INotebookTracker
+    notebookTracker: INotebookTracker,
+    factory: IFileBrowserFactory
   ) => {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
-
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
@@ -86,7 +89,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
               );
               return (await Private.shouldUseKernel(kernel)) ? kernel : null; // make sure kernel is usable
             },
-            getJob: Private.getJobCode
+            getJobCode: Private.getJobCode,
+            getFileBrowser: () => Private.getFileBrowser(factory)
           });
 
           widget = new MainAreaWidget({ content });
@@ -167,10 +171,13 @@ namespace Private {
   }
 
   export function getJobCode(job_url: string): string {
-    return `
-from tvbextunicore.unicore_wrapper import unicore_wrapper
+    return `from tvbextunicore.unicore_wrapper import unicore_wrapper
 unicore = unicore_wrapper.UnicoreWrapper()
 job = unicore.get_job('${job_url}')
 job`;
+  }
+
+  export function getFileBrowser(factory: IFileBrowserFactory): FileBrowser {
+    return factory.defaultBrowser;
   }
 }

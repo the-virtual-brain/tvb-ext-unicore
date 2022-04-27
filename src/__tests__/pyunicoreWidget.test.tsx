@@ -1,4 +1,6 @@
 // mock the handler for api requests
+import { FileBrowser } from '@jupyterlab/filebrowser';
+
 jest.mock('../handler', () => {
   return {
     __esModule: true,
@@ -50,7 +52,7 @@ const data = {
 };
 
 export type JobStatus = 'running' | 'failed' | 'successful';
-export function generateJob(status: JobStatus, id = 1) {
+export function generateJob(status: JobStatus, id = 1): IJob {
   return {
     id: `test${id}`,
     name: `test_name_${id}`,
@@ -91,7 +93,8 @@ function renderUnicoreComponent() {
       sites={[JUSUF, JUDAC]}
       reloadRate={RELOAD_RATE_MS}
       getKernel={getKernel}
-      getJob={mockGetJob}
+      getJobCode={mockGetJob}
+      getFileBrowser={() => jest.fn as unknown as FileBrowser}
     />
   );
 }

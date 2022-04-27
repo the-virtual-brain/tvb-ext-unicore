@@ -4,16 +4,29 @@
 #
 # (c) 2022-2023, TVB Widgets Team
 #
-
+import io
+import json
 import os
 import pytest
 from datetime import datetime
 
-from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException
+from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException, \
+    FileNotExistsException, JobRunningException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
     TERMINATION_TIME, \
     MOUNT_POINT
+from tvbextunicore.utils import build_response, DownloadStatus, download_file
+
+GET_JOB = 'tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job'
+MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE = 'tvbextunicore.tests.test_unicore_wrapper.MockPyunicoreWrapper.download_file'
+SHUTIL_MOVE = 'shutil.move'
+DOWNLOAD_MESSAGE = 'Downloaded successfully!'
+
+
+class MockPyunicoreWrapper:
+    def download_file(self, _job_url, _file_name, _file=None):
+        return DOWNLOAD_MESSAGE
 
 
 class MockFilePath:
@@ -21,7 +34,40 @@ class MockFilePath:
         self.is_file = is_file
 
     def isfile(self):
+        """
+        mock method
+        Returns
+        -------
+
+        """
         return self.is_file
+
+    def download(self, file):
+        """
+        mock method
+        Parameters
+        ----------
+        file
+
+        Returns
+        -------
+
+        """
+        pass
+
+    def raw(self, offset=0, size=-1):
+        """
+        mock method
+        Parameters
+        ----------
+        offset
+        size
+
+        Returns
+        -------
+
+        """
+        return b'test'
 
 
 class WorkingDirMock:
@@ -36,9 +82,13 @@ class WorkingDirMock:
 
 
 class MockPyUnicoreJob:
-    def __init__(self, job_url='test'):
+    def __init__(self, job_url='test', isrunning=False):
         self.job_url = job_url
         self.working_dir = WorkingDirMock()
+        self.isrunning = isrunning
+
+    def is_running(self):
+        return self.isrunning
 
 
 class MockPyUnicoreResource(object):
@@ -144,7 +194,7 @@ def test_get_job_output(mocker):
     def mockk(self, job_url):
         return MockPyUnicoreJob(job_url)
 
-    mocker.patch('tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job', mockk)
+    mocker.patch(GET_JOB, mockk)
     job_output = UnicoreWrapper().get_job_output('test')
     expected = {
         'file1': {'is_file': True},
@@ -152,3 +202,104 @@ def test_get_job_output(mocker):
     }
 
     assert job_output == expected
+
+
+def test_download_file_fails_when_job_is_running(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url, isrunning=True)
+
+    mocker.patch(GET_JOB, mockk)
+    file, job_url = 'test_file', 'test_url'
+    with pytest.raises(JobRunningException):
+        UnicoreWrapper().download_file(job_url, file)
+
+
+def test_download_file_fails_when_file_doesnt_exist(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+
+    mocker.patch(GET_JOB, mockk)
+    file, job_url = 'test_file', 'test_url'
+    with pytest.raises(FileNotExistsException):
+        UnicoreWrapper().download_file(job_url, file)
+
+
+def test_download_file_success(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+
+    mocker.patch(GET_JOB, mockk)
+    file, job_url = 'file1', 'file1'
+    assert UnicoreWrapper().download_file(job_url, file) == DOWNLOAD_MESSAGE
+
+
+def test_download_stream_fails_when_job_is_running(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url, isrunning=True)
+
+    mocker.patch(GET_JOB, mockk)
+    with pytest.raises(FileNotExistsException):
+        UnicoreWrapper().stream_file('test_url', 'test_file')
+
+
+def test_download_stream_fails_when_file_doesnt_exist(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+
+    mocker.patch(GET_JOB, mockk)
+    with pytest.raises(FileNotExistsException):
+        UnicoreWrapper().stream_file('test_url', 'test_file')
+
+
+def test_download_stream_success(mocker):
+    def mockk(self, job_url):
+        return MockPyUnicoreJob(job_url=job_url)
+
+    mocker.patch(GET_JOB, mockk)
+    assert UnicoreWrapper().stream_file('file1', 'file1') == b'test'
+
+
+def test_build_response(mocker):
+    mocker.patch(SHUTIL_MOVE, lambda x, y: True)
+    status, message = DownloadStatus.SUCCESS, 'Downloaded'
+    assert build_response(status, message) == json.dumps({'status': status, 'message': message})
+
+
+def test_download_file_function_success(mocker):
+    wrapper = MockPyunicoreWrapper()
+    expected = json.dumps({'status': 'success', 'message': DOWNLOAD_MESSAGE})
+    file = 'test_file'
+    response = download_file(file, 'stdout', wrapper, 'url')
+    os.remove(file)
+    assert response == expected
+
+
+def test_download_file_function_file_not_exists(mocker):
+    err_msg = 'No file'
+
+    def mock_download_file(self, _job_url, _file_name, _file=None):
+        raise FileNotExistsException(err_msg)
+
+    mocker.patch(MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE, mock_download_file)
+    wrapper = MockPyunicoreWrapper()
+    expected = json.dumps({'status': DownloadStatus.ERROR, 'message': err_msg})
+    file = 'test_file'
+    response = download_file(file, 'stdout', wrapper, 'url')
+    os.remove(file)
+    assert response == expected
+
+
+def test_download_file_function_job_running(mocker):
+    err_msg = 'Job running'
+
+    def mock_download_file(self, _job_url, _file_name, _file=None):
+        raise JobRunningException(err_msg)
+
+    mocker.patch(MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE, mock_download_file)
+    wrapper = MockPyunicoreWrapper()
+    expected = json.dumps({'status': DownloadStatus.WARNING, 'message': err_msg})
+    file = 'test_file2'
+    response = download_file(file, 'stdout', wrapper, 'url')
+    os.remove(file)
+    assert response == expected
+

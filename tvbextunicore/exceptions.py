@@ -25,3 +25,15 @@ class SitesDownException(TVBExtUnicoreException):
     """
     Throw if the sites cannot be retrieved due to a Pyunicore error.
     """
+
+
+class FileNotExistsException(TVBExtUnicoreException):
+    """
+    Throw if trying to access a file that doesn't exist
+    """
+
+
+class JobRunningException(TVBExtUnicoreException):
+    """
+    Throw if trying to download files of a running job
+    """

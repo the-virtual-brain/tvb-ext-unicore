@@ -24,6 +24,7 @@ import {
 } from '@testing-library/react';
 import React from 'react';
 import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
+import { FileBrowser } from '@jupyterlab/filebrowser';
 
 // mock function to cancel a job (must return a promise of a job object)
 async function cancelJob(resource_url: string): Promise<any> {
@@ -78,13 +79,19 @@ function renderRow(status: JobStatus) {
     id: 'test',
     handleError: mockHandleError
   };
-  return render(<JobRow {...props} />, {
-    wrapper: p => (
-      <table>
-        <tbody>{p.children}</tbody>
-      </table>
-    )
-  });
+  return render(
+    <JobRow
+      {...props}
+      getFileBrowser={() => jest.fn as unknown as FileBrowser}
+    />,
+    {
+      wrapper: p => (
+        <table>
+          <tbody>{p.children}</tbody>
+        </table>
+      )
+    }
+  );
 }
 
 // helper function to render a table
@@ -98,6 +105,7 @@ function renderTable() {
       getKernel={mockGetKernel}
       getJob={mockGetJob}
       handleError={mockHandleError}
+      getFileBrowser={() => jest.fn as unknown as FileBrowser}
     />
   );
 }
