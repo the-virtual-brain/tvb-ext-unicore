@@ -148,7 +148,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
     return `from tvbextunicore.unicore_wrapper import unicore_wrapper
 unicore = unicore_wrapper.UnicoreWrapper()
 download_result = unicore.download_file('${job_url}', '${file}')
-download_result['message']`;
+download_result`;
   }
 
   /**

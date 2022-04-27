@@ -65,11 +65,6 @@ jest.mock('../handler', () => {
   };
 });
 
-const data = {
-  file1: { is_file: true },
-  dir1: { is_file: false }
-};
-
 const getKernelMock = jest
   .fn()
   .mockImplementationOnce(() => Promise.resolve(null))
@@ -194,7 +189,7 @@ describe('test <JobOutput />', () => {
     const output = await findByTestId(`output-${TEST_FILE_NAME}`);
     const file = await findByText(output, TEST_FILE_NAME);
     await waitFor(() => fireEvent.dragStart(file));
-    expect(showErrorMessage).toBeCalledTimes(1);
+    expect(showErrorMessage).toBeCalledTimes(2);
   });
 
   it('handles drag event - usable kernel', async () => {
