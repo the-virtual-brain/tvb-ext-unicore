@@ -15,15 +15,19 @@ const data = {
   dir1: { is_file: false }
 };
 const FAIL_MESSAGE = 'fail';
+const URL = 'test';
 jest.mock('../handler', () => {
   return {
     __esModule: true,
-    requestAPI: jest
-      .fn()
-      .mockImplementationOnce((_url, _init, _settings) => Promise.resolve(data))
-      .mockImplementationOnce((_url, _init, _settings) =>
-        Promise.reject({ message: FAIL_MESSAGE })
-      ),
+    requestAPI: jest.fn().mockImplementation((_url, _init, _settings) => {
+      if (_init && _init.method === 'POST') {
+        return Promise.resolve({ status: 'success', message: 'Downloaded' });
+      }
+      if (_url === `job_output?job_url=${URL}`) {
+        return Promise.resolve(data);
+      }
+      return Promise.reject({ message: FAIL_MESSAGE });
+    }),
     requestStream: jest
       .fn()
       .mockImplementation((_url, _init) => Promise.resolve(new Blob()))
@@ -66,7 +70,8 @@ const MOCK_BROWSER = {
         Promise.reject({ message: UPLOAD_ERROR })
       ),
     path: 'file'
-  }
+  },
+  update: () => jest.fn()
 } as unknown as FileBrowser;
 
 const TEST_FILE_NAME = 'test_file';
@@ -111,8 +116,14 @@ describe('test <JobOutput />', () => {
     expect(document.getElementsByClassName('clickableIcon').length).toEqual(0);
   });
 
-  it('downloads file on click - error', async () => {
-    const getBrowser = jest.fn(() => MOCK_BROWSER);
+  it('downloads file on click - catches error', async () => {
+    const errorBrowser = {
+      model: { path: 'test' },
+      update: () => {
+        throw new Error('error on down');
+      }
+    } as unknown as FileBrowser;
+    const getBrowser = jest.fn(() => errorBrowser);
     const { findByTestId } = renderJobOutput(true, getBrowser);
     const downloadIcon = await findByTestId('download-file');
     expect(downloadIcon).toBeTruthy();
@@ -127,31 +138,24 @@ describe('test <JobOutput />', () => {
     expect(downloadIcon).toBeTruthy();
     await waitFor(() => fireEvent.click(downloadIcon));
     expect(getFileBrowserMock).toBeCalledTimes(1);
-  });
-
-  it('catches error on download file', async () => {
-    const { findByTestId } = renderJobOutput(true);
-    // const output = await findByTestId(`output-${TEST_FILE_NAME}`);
-    const downloadIcon = await findByTestId('download-file');
-    expect(downloadIcon).toBeTruthy();
-    await waitFor(() => fireEvent.click(downloadIcon));
-    expect(getFileBrowserMock).toBeCalledTimes(2);
-    expect(SHOW_ERROR).toBeCalledTimes(3);
+    const container = await findByTestId(`output-${TEST_FILE_NAME}`);
+    expect(container).toBeTruthy();
+    const msg = await findByText(container, 'Downloaded');
+    expect(msg).toBeTruthy();
   });
 });
 
 describe('test <JobOutputFiles />', () => {
   it('renders component correctly', async () => {
-    const url = 'test';
-    const { findByTestId } = renderJobOutputFiles(url);
-    const outputTr = await findByTestId(`output-${url}`);
+    const { findByTestId } = renderJobOutputFiles(URL);
+    const outputTr = await findByTestId(`output-${URL}`);
     expect(outputTr).toBeTruthy();
     expect(document.getElementsByClassName('fa-file').length).toEqual(1);
     expect(document.getElementsByClassName('fa-folder').length).toEqual(1);
   });
 
   it('renders message in case of error', async () => {
-    const url = 'test';
+    const url = 'error';
     const { findByTestId } = renderJobOutputFiles(url);
     const outputTr = await findByTestId(`output-${url}`);
     expect(outputTr).toBeTruthy();
