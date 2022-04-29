@@ -20,7 +20,7 @@ import { PyunicoreWidget } from './pyunicoreWidget';
 import { requestAPI } from './handler';
 import { Kernel } from '@jupyterlab/services';
 import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
-import { NO_SITE } from './constants';
+import { NO_SITE, getJobCode } from './constants';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
@@ -95,7 +95,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               );
               return (await Private.shouldUseKernel(kernel)) ? kernel : null; // make sure kernel is usable
             },
-            getJobCode: Private.getJobCode,
+            getJobCode: getJobCode,
             getFileBrowser: () => Private.getFileBrowser(factory)
           });
 
@@ -169,13 +169,6 @@ namespace Private {
       kernel = (current as ConsolePanel).sessionContext.session?.kernel;
     }
     return kernel;
-  }
-
-  export function getJobCode(job_url: string): string {
-    return `from tvbextunicore.unicore_wrapper import unicore_wrapper
-unicore = unicore_wrapper.UnicoreWrapper()
-job = unicore.get_job('${job_url}')
-job`;
   }
 
   export function getFileBrowser(factory: IFileBrowserFactory): FileBrowser {

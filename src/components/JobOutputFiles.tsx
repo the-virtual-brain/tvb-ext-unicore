@@ -6,7 +6,7 @@ import { Drag } from '@lumino/dragdrop';
 import { MimeData } from '@lumino/coreutils';
 import { showErrorMessage } from '@jupyterlab/apputils';
 import { NullableIKernelConnection } from '../index';
-import { TEXT_PLAIN_MIME } from '../constants';
+import { TEXT_PLAIN_MIME, getDownloadFileCode } from '../constants';
 
 namespace Types {
   export type Output = {
@@ -142,13 +142,6 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       setMessage({ text: e.text, className: downloadStatus.error });
       setDownloading(false);
     }
-  }
-
-  function getDownloadFileCode(job_url: string, file: string): string {
-    return `from tvbextunicore.unicore_wrapper import unicore_wrapper
-unicore = unicore_wrapper.UnicoreWrapper()
-download_result = unicore.download_file('${job_url}', '${file}')
-download_result`;
   }
 
   /**
