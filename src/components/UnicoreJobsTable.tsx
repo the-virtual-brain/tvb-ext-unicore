@@ -5,8 +5,7 @@ import { Drag } from '@lumino/dragdrop';
 import { MimeData } from '@lumino/coreutils';
 import { JobOutputFiles } from './JobOutputFiles';
 import { FileBrowser } from '@jupyterlab/filebrowser';
-
-const TEXT_PLAIN_MIME = 'text/plain';
+import { TEXT_PLAIN_MIME } from '../constants';
 
 export namespace types {
   export type JobsTableProps = {
@@ -169,6 +168,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
           <JobOutputFiles
             job_url={job.resource_url}
             getFileBrowser={props.getFileBrowser}
+            getKernel={props.getKernel}
           />
           <tr className={'detailsRow'}>
             <td colSpan={100}>

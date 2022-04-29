@@ -20,6 +20,7 @@ import { PyunicoreWidget } from './pyunicoreWidget';
 import { requestAPI } from './handler';
 import { Kernel } from '@jupyterlab/services';
 import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
+import { NO_SITE, getJobCode } from './constants';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
@@ -33,6 +34,11 @@ export type SitesResponse = {
   sites: { [site: string]: string }; // we get the response as a dict { '<siteName>' : '<siteUrl>' }
   message: string;
 };
+
+export type NullableIKernelConnection =
+  | Kernel.IKernelConnection
+  | null
+  | undefined;
 
 /**
  * Initialization data for the tvb-ext-unicore extension.
@@ -79,7 +85,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               isAsync: false,
               name: 'Cancel Job'
             },
-            sites: Object.keys(sitesResponse.sites),
+            sites: [NO_SITE, ...Object.keys(sitesResponse.sites)],
             reloadRate: 60000,
             getKernel: async () => {
               const kernel = Private.getCurrentKernel(
@@ -89,7 +95,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               );
               return (await Private.shouldUseKernel(kernel)) ? kernel : null; // make sure kernel is usable
             },
-            getJobCode: Private.getJobCode,
+            getJobCode: getJobCode,
             getFileBrowser: () => Private.getFileBrowser(factory)
           });
 
@@ -124,11 +130,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
 export default plugin;
 
 namespace Private {
-  export type NullableIKernelConnection =
-    | Kernel.IKernelConnection
-    | null
-    | undefined;
-
   /**
    * Whether a kernel should be used. Only evaluates to true
    * if it is valid and in python.
@@ -168,13 +169,6 @@ namespace Private {
       kernel = (current as ConsolePanel).sessionContext.session?.kernel;
     }
     return kernel;
-  }
-
-  export function getJobCode(job_url: string): string {
-    return `from tvbextunicore.unicore_wrapper import unicore_wrapper
-unicore = unicore_wrapper.UnicoreWrapper()
-job = unicore.get_job('${job_url}')
-job`;
   }
 
   export function getFileBrowser(factory: IFileBrowserFactory): FileBrowser {

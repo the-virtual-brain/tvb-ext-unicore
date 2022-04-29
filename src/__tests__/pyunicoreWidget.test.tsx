@@ -23,12 +23,8 @@ jest.mock('@jupyterlab/apputils', () => {
   };
 });
 
-import {
-  IJob,
-  PyunicoreComponent,
-  RELOAD_RATE_MS,
-  RELOAD_CHECK_RATE_MS
-} from '../pyunicoreWidget';
+import { IJob, PyunicoreComponent } from '../pyunicoreWidget';
+import { RELOAD_RATE_MS, RELOAD_CHECK_RATE_MS } from '../constants';
 import {
   findByText,
   fireEvent,
@@ -43,6 +39,7 @@ import {
   mockGetJob
 } from './UnicoreJobsTable.test';
 import React from 'react';
+import { NO_SITE } from '../constants';
 
 const JUDAC = 'JUDAC';
 const JUSUF = 'JUSUF';
@@ -77,7 +74,7 @@ export function generateJobs(count: number): Array<IJob> {
 
 const RELOAD_RATE_S = RELOAD_RATE_MS / 1000;
 
-function renderUnicoreComponent() {
+function renderUnicoreComponent(sites: string[] = []) {
   const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
   const tableFormat = {
     cols: columns,
@@ -90,7 +87,7 @@ function renderUnicoreComponent() {
       tableFormat={tableFormat}
       data={data}
       buttonSettings={BUTTON_SETTINGS}
-      sites={[JUSUF, JUDAC]}
+      sites={[...sites, JUSUF, JUDAC]}
       reloadRate={RELOAD_RATE_MS}
       getKernel={getKernel}
       getJobCode={mockGetJob}
@@ -140,5 +137,53 @@ describe('<PyunicoreComponent />', () => {
     });
     expect(await findByText(sites, JUDAC)).toHaveProperty('selected', true);
     expect(await findByText(sites, JUSUF)).toHaveProperty('selected', false);
+  });
+
+  it('does not update when no site selected', async () => {
+    const mockDate = new Date();
+    const mockLaterDate = new Date();
+    jest.setSystemTime(mockDate.getTime());
+
+    const { findByTestId } = renderUnicoreComponent([NO_SITE]);
+
+    // simulate 60 seconds passed in system time to trigger update
+    mockLaterDate.setSeconds(mockLaterDate.getSeconds() + RELOAD_RATE_S);
+    jest.setSystemTime(mockLaterDate.getTime());
+    jest.advanceTimersByTime(RELOAD_CHECK_RATE_MS); // advance timer to trigger the check for reloads
+
+    const pagination = await findByTestId('pagination-component');
+    expect(pagination).toBeTruthy();
+
+    const sites = await findByTestId('pyunicore-sites');
+    expect(sites).toBeTruthy();
+    // check option for no site is rendered
+    const noSite = await findByText(sites, NO_SITE);
+    expect(noSite).toBeTruthy();
+    // only the header table row is rendered
+    expect(document.getElementsByTagName('tr').length).toBe(1);
+    // test pagination buttons
+    const prev = document.querySelector('.fa-arrow-left');
+    const next = document.querySelector('.fa-arrow-right');
+    expect(next).toBe(null);
+    expect(prev).toBe(null);
+    expect(await findByText(pagination, 'Page: 1')).toBeTruthy();
+
+    expect(await findByText(sites, NO_SITE)).toHaveProperty('selected', true);
+    // change site
+    fireEvent.change(getByTestId(sites, 'select'), {
+      target: { value: JUDAC }
+    });
+    expect(await findByText(sites, JUDAC)).toHaveProperty('selected', true);
+    expect(await findByText(sites, NO_SITE)).toHaveProperty('selected', false);
+    // when changing from no site to other site the table is populated with more rows
+    let rows = document.getElementsByTagName('tr');
+    expect(rows.length).toBeGreaterThan(1);
+
+    // changing from a site to none results in not displaying any data in table
+    fireEvent.change(getByTestId(sites, 'select'), {
+      target: { value: NO_SITE }
+    });
+    rows = document.getElementsByTagName('tr');
+    expect(rows.length).toBe(1);
   });
 });

@@ -11,6 +11,7 @@ import { requestAPI } from './handler';
 import { ReactWidget } from '@jupyterlab/apputils';
 import { Kernel } from '@jupyterlab/services';
 import { FileBrowser } from '@jupyterlab/filebrowser';
+import { NO_SITE, RELOAD_RATE_MS, RELOAD_CHECK_RATE_MS } from './constants';
 
 /**
  * interface to describe how a table should look like, what field from the cols array represents
@@ -47,16 +48,6 @@ export interface IButtonSettings {
   onClickFieldArgs: string[];
   isAsync: boolean;
 }
-
-/**
- * How often should the component reload jobs expressed in milliseconds
- */
-export const RELOAD_RATE_MS = 60000;
-
-/**
- * How often should the component check if RELOAD_RATE_MS have passed since the last update
- */
-export const RELOAD_CHECK_RATE_MS = 10000; //should check every 10sec
 
 namespace types {
   export type Props = {
@@ -198,6 +189,9 @@ export class PyunicoreComponent extends React.Component<
   }
 
   private _triggerUpdate = (): void => {
+    if (this.state.site === NO_SITE) {
+      return;
+    }
     const now = new Date().valueOf();
     const previous = this.state.lastUpdate.valueOf();
     const diff = now - previous;
@@ -237,7 +231,11 @@ export class PyunicoreComponent extends React.Component<
    */
   protected setSiteState(site: string): void {
     // reset the page to 1 when changing site
-    this.setState({ ...this.state, page: 1, site: site });
+    let jobs = this.state.jobs;
+    if (site === NO_SITE) {
+      jobs = [];
+    }
+    this.setState({ ...this.state, page: 1, site: site, jobs: jobs });
   }
 
   /**
@@ -254,6 +252,17 @@ export class PyunicoreComponent extends React.Component<
         prevState.site !== this.state.site) &&
       this.state.sites.length > 0
     ) {
+      if (this.state.site === NO_SITE) {
+        this.setState({
+          ...this.state,
+          loading: false,
+          disableSitesSelection: false,
+          jobs: [],
+          renderLeftArrow: false,
+          renderRightArrow: false
+        });
+        return;
+      }
       this.getData().catch(this.catchError);
     }
   }
@@ -284,15 +293,23 @@ export class PyunicoreComponent extends React.Component<
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
-    if (this.state.sites.length <= 0) {
-      return;
-    }
-    this.getData().catch(this.catchError);
     const updateIntervalId = setInterval(
       this._triggerUpdate,
       RELOAD_CHECK_RATE_MS
     );
     this.setState({ ...this.state, updateIntervalId: updateIntervalId });
+    if (this.state.site === NO_SITE) {
+      this.setState({
+        ...this.state,
+        loading: false,
+        disableSitesSelection: false
+      });
+      return;
+    }
+    if (this.state.sites.length <= 0) {
+      return;
+    }
+    this.getData().catch(this.catchError);
   }
 
   /**
