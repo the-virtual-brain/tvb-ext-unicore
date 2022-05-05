@@ -14,11 +14,13 @@ jest.mock('@jupyterlab/apputils', () => {
 });
 
 // mock the jupyter Drag
-const startDrag = jest
-  .fn()
-  .mockImplementation((_clientX: number, _clientY: number) =>
-    Promise.resolve(true)
-  );
+let promiseResolve: (value: unknown) => void;
+const startDrag = jest.fn().mockImplementation(
+  (_clientX: number, _clientY: number) =>
+    new Promise((resolve, _reject) => {
+      promiseResolve = resolve;
+    })
+);
 jest.mock('@lumino/dragdrop', () => {
   return {
     __esModule: true,
@@ -26,7 +28,8 @@ jest.mock('@lumino/dragdrop', () => {
       return {
         data: '',
         mimeData: { setData: (_mimeType: string, _code: string) => true },
-        start: startDrag
+        start: startDrag,
+        dispose: () => true
       };
     })
   };
@@ -78,8 +81,6 @@ import {
   ProgressBar
 } from '../components/JobOutputFiles';
 
-import { showErrorMessage } from '@jupyterlab/apputils';
-
 function renderJobOutputFiles(url: string) {
   return render(
     <JobOutputFiles
@@ -110,6 +111,7 @@ const MOCK_BROWSER = {
       ),
     path: 'file'
   },
+  node: document.createElement('div'),
   update: () => jest.fn()
 } as unknown as FileBrowser;
 
@@ -189,7 +191,8 @@ describe('test <JobOutput />', () => {
     const output = await findByTestId(`output-${TEST_FILE_NAME}`);
     const file = await findByText(output, TEST_FILE_NAME);
     await waitFor(() => fireEvent.dragStart(file));
-    expect(showErrorMessage).toBeCalledTimes(2);
+    // drag should still work even if kernel is not available
+    expect(startDrag).toBeCalledTimes(1);
   });
 
   it('handles drag event - usable kernel', async () => {
@@ -197,7 +200,24 @@ describe('test <JobOutput />', () => {
     const output = await findByTestId(`output-${TEST_FILE_NAME}`);
     const file = await findByText(output, TEST_FILE_NAME);
     await waitFor(() => fireEvent.dragStart(file));
-    expect(startDrag).toBeCalledTimes(1);
+    expect(startDrag).toBeCalledTimes(2);
+  });
+
+  it('downloads file on drag and drop to file browser', async () => {
+    const { findByTestId } = renderJobOutput(true);
+    const output = await findByTestId(`output-${TEST_FILE_NAME}`);
+    expect(output).toBeTruthy();
+    const file = await findByText(output, TEST_FILE_NAME);
+    // console.log('file: ', file);
+    console.log('file ondragstart: ', file.ondragstart);
+    // drag file
+    await waitFor(() => fireEvent.dragStart(file));
+    // drop file to browser
+    console.log('node ondrop: ', MOCK_BROWSER.node.ondrop);
+    await waitFor(() => fireEvent.drop(MOCK_BROWSER.node));
+    promiseResolve(true);
+    const msg = await findByText(output, 'Downloaded');
+    expect(msg).toBeTruthy();
   });
 });
 
