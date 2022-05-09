@@ -95,7 +95,7 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
 };
 
 export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
-  const { output, outputType, jobUrl, getFileBrowser, getKernel } = props;
+  const { output, outputType, jobUrl, getFileBrowser } = props;
 
   const [downloading, setDownloading] = useState(false);
   const downloadStatus: { [string: string]: string } = {
@@ -107,6 +107,8 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
     text: '',
     className: downloadStatus.success
   });
+
+  let drag: Drag;
 
   /**
    * function to download a file to the current path (directory) opened in filebrowser
@@ -144,24 +146,32 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
     }
   }
 
+  async function handleDropToFileBrowser(_event: DragEvent): Promise<void> {
+    await downloadToCurrentPath(output);
+    removeDropHandlerFromFileBrowser();
+  }
+
+  function addDropHandlerToFileBrowser(): void {
+    const browser = getFileBrowser();
+    browser.node.addEventListener('drop', handleDropToFileBrowser);
+  }
+
+  function removeDropHandlerFromFileBrowser(): void {
+    const browser = getFileBrowser();
+    browser.node.removeEventListener('drop', handleDropToFileBrowser);
+    drag?.dispose();
+  }
+
   /**
    * instantiate and start the Drag event with the cell and code to be injected
    * @param event
    */
   async function handleDragStart(event: React.DragEvent): Promise<void> {
     // make sure we have a kernel that can handle python code
-    const kernel = await getKernel();
-    if (!kernel) {
-      // show error modal
-      await showErrorMessage(
-        'Kernel not available',
-        "Current kernel can't be used to handle this operation!"
-      );
-      return;
-    }
+    addDropHandlerToFileBrowser();
 
     const code = getDownloadFileCode(jobUrl, output);
-    const drag = new Drag({
+    drag = new Drag({
       mimeData: new MimeData(),
       supportedActions: 'copy',
       proposedAction: 'copy',
@@ -170,7 +180,11 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
 
     // set data for copy in an existing cell
     drag.mimeData.setData(TEXT_PLAIN_MIME, code);
-    drag.start(event.clientX, event.clientY).then(r => console.log('r: ', r));
+    drag.start(event.clientX, event.clientY).then(r => {
+      console.log('r: ', r);
+      // remove handler after drop in cell to avoid download when dropping a job
+      removeDropHandlerFromFileBrowser();
+    });
   }
 
   return (
