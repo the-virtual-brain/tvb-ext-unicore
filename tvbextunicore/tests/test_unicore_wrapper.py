@@ -285,7 +285,7 @@ def test_download_file_function_file_not_exists(mocker):
     expected = json.dumps({'status': DownloadStatus.ERROR, 'message': err_msg})
     file = 'test_file'
     response = download_file(file, 'stdout', wrapper, 'url')
-    os.remove(file)
+    assert not os.path.exists(file)
     assert response == expected
 
 
@@ -300,6 +300,6 @@ def test_download_file_function_job_running(mocker):
     expected = json.dumps({'status': DownloadStatus.WARNING, 'message': err_msg})
     file = 'test_file2'
     response = download_file(file, 'stdout', wrapper, 'url')
-    os.remove(file)
+    assert not os.path.exists(file)
     assert response == expected
 

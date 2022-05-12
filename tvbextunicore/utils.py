@@ -1,5 +1,6 @@
 import json
 import enum
+import os
 
 from tvbextunicore.exceptions import FileNotExistsException, JobRunningException
 from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
@@ -39,14 +40,19 @@ def download_file(file_path, file_name, unicore_wrapper, job_url):
     -------
     json string with result of download process. ex: {"status": "success", "message": "Downloaded"}
     """
+    downloaded = True
     with open(file_path, 'wb') as f:
         try:
             message = unicore_wrapper.download_file(job_url, file_name, f)
             response = build_response(DownloadStatus.SUCCESS, message)
         except FileNotExistsException as e:
             LOGGER.error(e)
+            downloaded = False
             response = build_response(DownloadStatus.ERROR, e.message)
         except JobRunningException as e:
             LOGGER.warning(e)
+            downloaded = False
             response = build_response(DownloadStatus.WARNING, e.message)
+    if not downloaded and os.path.exists(file_path):
+        os.remove(file_path)
     return response
