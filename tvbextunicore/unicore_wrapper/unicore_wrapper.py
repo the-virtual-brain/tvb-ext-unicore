@@ -146,7 +146,7 @@ class UnicoreWrapper(object):
             file = file_name
         job = self.get_job(job_url)
         if job.is_running():
-            raise JobRunningException(f'Can\'t download file {file_name}. Job {job_url} is still running!')
+            raise JobRunningException(f'Can\'t download file while the job is still running!')
         wd = job.working_dir.listdir()
         if not wd.get(file_name, False):
             raise FileNotExistsException(f'{file_name} doesn\'t exist as output of {job_url}!')
