@@ -82,8 +82,9 @@ class WorkingDirMock:
 
 
 class MockPyUnicoreJob:
-    def __init__(self, job_url='test', isrunning=False):
+    def __init__(self, job_url='test', isrunning=False, job_id='test'):
         self.job_url = job_url
+        self.job_id = job_id
         self.working_dir = WorkingDirMock()
         self.isrunning = isrunning
 

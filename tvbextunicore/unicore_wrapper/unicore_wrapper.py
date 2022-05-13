@@ -150,7 +150,8 @@ class UnicoreWrapper(object):
         wd = job.working_dir.listdir()
         if not wd.get(file_name, False):
             raise FileNotExistsException(f'{file_name} doesn\'t exist as output of {job_url}!')
-
+        if isinstance(file, str):
+            file += f'_{job.job_id}'
         wd[file_name].download(file)
         return 'Downloaded successfully!'
 

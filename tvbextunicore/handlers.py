@@ -105,6 +105,7 @@ class DriveHandler(APIHandler):
             path = post_params['path']
             file = post_params['file']
             job_url = post_params['job_url']
+            job_id = post_params['job_id']
         except KeyError as e:
             LOGGER.error(e)
             self.set_status(400, 'Request body missing required params!')
@@ -116,7 +117,7 @@ class DriveHandler(APIHandler):
             self.finish(response)
             return
         unicore_wrapper = UnicoreWrapper()
-        file_path = os.path.join(path, file)
+        file_path = os.path.join(path, file) + f'_{job_id}'
         response = download_file(file_path, file, unicore_wrapper, job_url)
         self.finish(response)
 

@@ -5,11 +5,19 @@ import { FileBrowser } from '@jupyterlab/filebrowser';
 jest.mock('@jupyterlab/apputils', () => {
   return {
     __esModule: true,
-    showErrorMessage: jest
+    showErrorMessage: SHOW_ERROR,
+    showDialog: jest
       .fn()
-      .mockImplementation((_title: string, _error: any) =>
-        Promise.resolve(null)
+      .mockImplementationOnce((..._args: any) =>
+        Promise.resolve({ button: { accept: true } })
       )
+      .mockImplementation((..._args: any) =>
+        Promise.resolve({ button: { accept: false } })
+      ),
+    Dialog: {
+      cancelButton: (..._args: any) => null,
+      okButton: (..._args: any) => null
+    }
   };
 });
 
@@ -35,14 +43,9 @@ jest.mock('@lumino/dragdrop', () => {
   };
 });
 
-const SHOW_ERROR = jest.fn((_title: string, _message: any) => '');
-
-jest.mock('@jupyterlab/apputils', () => {
-  return {
-    __esModule: true,
-    showErrorMessage: SHOW_ERROR
-  };
-});
+const SHOW_ERROR = jest.fn((_title: string, _message: any) =>
+  Promise.resolve('')
+);
 
 const data = {
   file1: { is_file: true },
@@ -85,6 +88,7 @@ function renderJobOutputFiles(url: string) {
   return render(
     <JobOutputFiles
       job_url={url}
+      jobId={'test'}
       getFileBrowser={() => jest.fn as unknown as FileBrowser}
       getKernel={getKernelMock}
     />,
@@ -109,10 +113,19 @@ const MOCK_BROWSER = {
       .mockImplementationOnce((_file: File, _name: string) =>
         Promise.reject({ message: UPLOAD_ERROR })
       ),
-    path: 'file'
+    path: 'file',
+    items: () => []
   },
   node: document.createElement('div'),
   update: () => jest.fn()
+} as unknown as FileBrowser;
+
+const browserWithFiles = {
+  ...MOCK_BROWSER,
+  model: {
+    path: 'test',
+    items: () => [{ name: 'test_file_test' }]
+  }
 } as unknown as FileBrowser;
 
 const TEST_FILE_NAME = 'test_file';
@@ -127,6 +140,7 @@ function renderJobOutput(
       output={TEST_FILE_NAME}
       outputType={{ is_file: is_file }}
       jobUrl={'test_url'}
+      jobId={'test'}
       getKernel={getKernelMock}
       getFileBrowser={getFileBrowser}
     />
@@ -160,7 +174,7 @@ describe('test <JobOutput />', () => {
 
   it('downloads file on click - catches error', async () => {
     const errorBrowser = {
-      model: { path: 'test' },
+      model: { path: 'test', items: () => [] },
       update: () => {
         throw new Error('error on down');
       }
@@ -170,7 +184,7 @@ describe('test <JobOutput />', () => {
     const downloadIcon = await findByTestId('download-file');
     expect(downloadIcon).toBeTruthy();
     await waitFor(() => fireEvent.click(downloadIcon));
-    expect(getBrowser).toBeCalledTimes(1);
+    expect(getBrowser).toBeCalledTimes(2);
     expect(SHOW_ERROR).toBeCalledTimes(1);
   });
 
@@ -179,7 +193,7 @@ describe('test <JobOutput />', () => {
     const downloadIcon = await findByTestId('download-file');
     expect(downloadIcon).toBeTruthy();
     await waitFor(() => fireEvent.click(downloadIcon));
-    expect(getFileBrowserMock).toBeCalledTimes(1);
+    expect(getFileBrowserMock).toBeCalledTimes(2);
     const container = await findByTestId(`output-${TEST_FILE_NAME}`);
     expect(container).toBeTruthy();
     const msg = await findByText(container, 'Downloaded');
@@ -208,16 +222,48 @@ describe('test <JobOutput />', () => {
     const output = await findByTestId(`output-${TEST_FILE_NAME}`);
     expect(output).toBeTruthy();
     const file = await findByText(output, TEST_FILE_NAME);
-    // console.log('file: ', file);
-    console.log('file ondragstart: ', file.ondragstart);
     // drag file
     await waitFor(() => fireEvent.dragStart(file));
     // drop file to browser
-    console.log('node ondrop: ', MOCK_BROWSER.node.ondrop);
     await waitFor(() => fireEvent.drop(MOCK_BROWSER.node));
     promiseResolve(true);
     const msg = await findByText(output, 'Downloaded');
     expect(msg).toBeTruthy();
+  });
+
+  it('downloads file on drag and drop to file browser when file exists and confirm re download', async () => {
+    const getBrowser = jest.fn(() => browserWithFiles);
+    const { findByTestId } = renderJobOutput(true, getBrowser);
+    const output = await findByTestId(`output-${TEST_FILE_NAME}`);
+    expect(output).toBeTruthy();
+    const file = await findByText(output, TEST_FILE_NAME);
+    // drag file
+    await waitFor(() => fireEvent.dragStart(file));
+    // drop file to browser
+    await waitFor(() => fireEvent.drop(MOCK_BROWSER.node));
+    promiseResolve(false);
+    const msg = await findByText(output, 'Downloaded');
+    expect(msg).toBeTruthy();
+  });
+
+  it('does not download file on drag and drop to file browser when file exists and cancel re download', async () => {
+    const getBrowser = jest.fn(() => browserWithFiles);
+    const { findByTestId } = renderJobOutput(true, getBrowser);
+    const output = await findByTestId(`output-${TEST_FILE_NAME}`);
+    // on a second pass  this will behave as though we clicked on cancel in modal
+    const file = await findByText(output, TEST_FILE_NAME);
+    // drag file
+    await waitFor(() => fireEvent.dragStart(file));
+    // drop file to browser
+    await waitFor(() => fireEvent.drop(MOCK_BROWSER.node));
+    promiseResolve(true);
+    let msg: any;
+    try {
+      msg = await findByText(output, 'Downloaded');
+    } catch (e) {
+      msg = false;
+    }
+    expect(msg).toBeFalsy();
   });
 });
 
