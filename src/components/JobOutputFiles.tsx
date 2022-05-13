@@ -161,7 +161,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
   function fileExists(downloadedFileName: string): boolean {
     const browser = getFileBrowser();
     const items = browser.model.items();
-    return some(items, (item, ind) => item.name === downloadedFileName);
+    return some(items, (item, _index) => item.name === downloadedFileName);
   }
 
   async function confirmReDownload(
