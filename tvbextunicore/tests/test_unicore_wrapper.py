@@ -4,7 +4,7 @@
 #
 # (c) 2022-2023, TVB Widgets Team
 #
-import io
+
 import json
 import os
 import pytest
@@ -16,17 +16,11 @@ from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
     TERMINATION_TIME, \
     MOUNT_POINT
-from tvbextunicore.utils import build_response, DownloadStatus, download_file
+from tvbextunicore.utils import build_response, DownloadStatus
 
 GET_JOB = 'tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job'
-MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE = 'tvbextunicore.tests.test_unicore_wrapper.MockPyunicoreWrapper.download_file'
 SHUTIL_MOVE = 'shutil.move'
 DOWNLOAD_MESSAGE = 'Downloaded successfully!'
-
-
-class MockPyunicoreWrapper:
-    def download_file(self, _job_url, _file_name, _file=None):
-        return DOWNLOAD_MESSAGE
 
 
 class MockFilePath:
@@ -117,6 +111,13 @@ class MockPyUnicoreClient(object):
 
     def get_jobs(self, offset, num):
         return self.__generate_list_of_jobs()
+
+
+def test_ensure_format_is_respected():
+    job = MockPyUnicoreResource('10', None, None, None)
+    file_name = UnicoreWrapper._prepare_output_filename('test_file', job)
+    assert file_name == 'test_file_10', 'Changing this filename format affects functionality on the client-side! ' \
+                                        'Please check they are kept in sync!'
 
 
 def test_get_jobs(mocker):
@@ -264,43 +265,3 @@ def test_build_response(mocker):
     mocker.patch(SHUTIL_MOVE, lambda x, y: True)
     status, message = DownloadStatus.SUCCESS, 'Downloaded'
     assert build_response(status, message) == json.dumps({'status': status, 'message': message})
-
-
-def test_download_file_function_success(mocker):
-    wrapper = MockPyunicoreWrapper()
-    expected = json.dumps({'status': 'success', 'message': DOWNLOAD_MESSAGE})
-    file = 'test_file'
-    response = download_file(file, 'stdout', wrapper, 'url')
-    os.remove(file)
-    assert response == expected
-
-
-def test_download_file_function_file_not_exists(mocker):
-    err_msg = 'No file'
-
-    def mock_download_file(self, _job_url, _file_name, _file=None):
-        raise FileNotExistsException(err_msg)
-
-    mocker.patch(MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE, mock_download_file)
-    wrapper = MockPyunicoreWrapper()
-    expected = json.dumps({'status': DownloadStatus.ERROR, 'message': err_msg})
-    file = 'test_file'
-    response = download_file(file, 'stdout', wrapper, 'url')
-    assert not os.path.exists(file)
-    assert response == expected
-
-
-def test_download_file_function_job_running(mocker):
-    err_msg = 'Job running'
-
-    def mock_download_file(self, _job_url, _file_name, _file=None):
-        raise JobRunningException(err_msg)
-
-    mocker.patch(MOCK_PYUNICORE_WRAPPER_DOWNLOAD_FILE, mock_download_file)
-    wrapper = MockPyunicoreWrapper()
-    expected = json.dumps({'status': DownloadStatus.WARNING, 'message': err_msg})
-    file = 'test_file2'
-    response = download_file(file, 'stdout', wrapper, 'url')
-    assert not os.path.exists(file)
-    assert response == expected
-

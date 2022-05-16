@@ -131,7 +131,6 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
     console.log('File browser path: ', path);
     const dataToSend = {
       job_url: jobUrl,
-      job_id: jobId,
       file: file,
       path: path
     };
