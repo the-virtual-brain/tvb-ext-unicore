@@ -10,7 +10,7 @@ import os
 import pyunicore.client as unicore_client
 from requests.exceptions import ConnectionError
 
-from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException,\
+from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException, \
     SitesDownException, FileNotExistsException, JobRunningException
 from tvbextunicore.logger.builder import get_logger
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO
@@ -137,34 +137,45 @@ class UnicoreWrapper(object):
             outputs[k] = {'is_file': v.isfile()}
         return outputs
 
-    def download_file(self, job_url, file_name, file=None):
-        # type: (str, str) -> str
+    @staticmethod
+    def _prepare_output_filename(file_name, job):
+        # TODO: take file extension into consideration?
+        return f'{file_name}_{job.job_id}'
+
+    def download_file(self, job_url, file_name, path=None):
+        # type: (str, str, str) -> str
         """
-        helper method to download a file from a job output
+        Helper method to download a file from a job output
         """
-        if file is None:
-            file = file_name
         job = self.get_job(job_url)
         if job.is_running():
-            raise JobRunningException(f'Can\'t download file {file_name}. Job {job_url} is still running!')
+            raise JobRunningException(f'Cannot download file while the job is still running!')
         wd = job.working_dir.listdir()
         if not wd.get(file_name, False):
-            raise FileNotExistsException(f'{file_name} doesn\'t exist as output of {job_url}!')
+            raise FileNotExistsException(f'{file_name} does not exist as output of {job_url}!')
 
-        wd[file_name].download(file)
+        final_name = self._prepare_output_filename(file_name, job)
+
+        # We need the 'if' below to support download from cell
+        if path is None:
+            file_path = final_name
+        else:
+            file_path = os.path.join(path, final_name)
+
+        wd[file_name].download(file_path)
         return 'Downloaded successfully!'
 
     def stream_file(self, job_url, file, offset=0, size=-1):
         # type: (str, str, int, int) -> stream
         """
-        method to download a file as an octet stream
+        Method to download a file as an octet stream
         """
         job = self.get_job(job_url)
         if job.is_running():
-            raise FileNotExistsException(f'Can\'t access {file}. Job still running.')
+            raise FileNotExistsException(f'Cannot access {file}. Job still running.')
 
         wd = job.working_dir.listdir()
         if not wd.get(file, False):
-            raise FileNotExistsException(f'{file} doesn\'t exist as output of {job_url}!')
+            raise FileNotExistsException(f'{file} does not exist as output of {job_url}!')
 
         return wd[file].raw(offset=offset, size=size)

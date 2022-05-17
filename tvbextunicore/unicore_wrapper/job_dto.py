@@ -69,7 +69,3 @@ class JobDTO(object):
                       job.working_dir.properties.get(MOUNT_POINT),
                       job.resource_url,
                       job.properties.get(LOGS))
-
-    def execution_time(self):
-        # TODO: Termination time is always the same, how to compute real execution time?
-        pass

@@ -4,9 +4,10 @@ import { requestAPI } from '../handler';
 import { FileBrowser } from '@jupyterlab/filebrowser';
 import { Drag } from '@lumino/dragdrop';
 import { MimeData } from '@lumino/coreutils';
-import { showErrorMessage } from '@jupyterlab/apputils';
+import { showErrorMessage, showDialog, Dialog } from '@jupyterlab/apputils';
 import { NullableIKernelConnection } from '../index';
 import { TEXT_PLAIN_MIME, getDownloadFileCode } from '../constants';
+import { some } from '@lumino/algorithm';
 
 namespace Types {
   export type Output = {
@@ -17,6 +18,7 @@ namespace Types {
     output: string;
     outputType: { is_file: boolean };
     jobUrl: string;
+    jobId: string;
     getFileBrowser: () => FileBrowser;
     getKernel: () => Promise<NullableIKernelConnection>;
   };
@@ -28,6 +30,7 @@ namespace Types {
 
   export type Props = {
     job_url: string;
+    jobId: string;
     getFileBrowser: () => FileBrowser;
     getKernel: () => Promise<NullableIKernelConnection>;
   };
@@ -82,6 +85,7 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
               outputType={outputType}
               key={`${output}-${index}`}
               jobUrl={props.job_url}
+              jobId={props.jobId}
               getFileBrowser={props.getFileBrowser}
               getKernel={props.getKernel}
             />
@@ -95,7 +99,7 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
 };
 
 export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
-  const { output, outputType, jobUrl, getFileBrowser } = props;
+  const { output, outputType, jobUrl, getFileBrowser, jobId } = props;
 
   const [downloading, setDownloading] = useState(false);
   const downloadStatus: { [string: string]: string } = {
@@ -115,6 +119,13 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
    * @param file - name of the file to be downloaded from this jobs working dir
    */
   async function downloadToCurrentPath(file: string): Promise<void> {
+    const downloadedFileName = `${file}_${jobId}`;
+    if (
+      fileExists(downloadedFileName) &&
+      !(await confirmReDownload(downloadedFileName))
+    ) {
+      return;
+    }
     const browser = getFileBrowser();
     const path = browser.model.path;
     console.log('File browser path: ', path);
@@ -144,6 +155,26 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       setMessage({ text: e.text, className: downloadStatus.error });
       setDownloading(false);
     }
+  }
+
+  function fileExists(downloadedFileName: string): boolean {
+    const browser = getFileBrowser();
+    const items = browser.model.items();
+    return some(items, (item, _index) => item.name === downloadedFileName);
+  }
+
+  async function confirmReDownload(
+    downloadedFileName: string
+  ): Promise<boolean> {
+    const confirm = await showDialog({
+      title: 'File already exists!',
+      body: `If you continue the file ${downloadedFileName}} will be re downloaded and overwritten!`,
+      buttons: [
+        Dialog.cancelButton({ label: 'Cancel' }),
+        Dialog.okButton({ label: 'Continue' })
+      ]
+    });
+    return confirm.button.accept;
   }
 
   async function handleDropToFileBrowser(_event: DragEvent): Promise<void> {
