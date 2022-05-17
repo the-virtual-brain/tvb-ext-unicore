@@ -124,7 +124,7 @@ const browserWithFiles = {
   ...MOCK_BROWSER,
   model: {
     path: 'test',
-    items: () => [{ name: 'test_file_test' }]
+    items: () => [{ name: 'test_file' }]
   }
 } as unknown as FileBrowser;
 
