@@ -100,8 +100,9 @@ class DriveHandler(APIHandler):
         post_params = self.get_json_body()
         try:
             path = post_params['path']
-            file = post_params['file']
+            unicore_file = post_params['in_file']
             job_url = post_params['job_url']
+            drive_file = post_params['out_file']
         except KeyError as e:
             LOGGER.error(e)
             self.set_status(400, 'Request body missing required params!')
@@ -116,7 +117,8 @@ class DriveHandler(APIHandler):
 
         try:
             unicore_wrapper = UnicoreWrapper()
-            message = unicore_wrapper.download_file(job_url, file, path)
+            drive_file_path = os.path.join(path, drive_file)
+            message = unicore_wrapper.download_file(job_url, unicore_file, drive_file_path)
             response = build_response(DownloadStatus.SUCCESS, message)
         except FileNotExistsException as e:
             LOGGER.error(e)

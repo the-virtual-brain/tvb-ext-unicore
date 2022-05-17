@@ -113,13 +113,6 @@ class MockPyUnicoreClient(object):
         return self.__generate_list_of_jobs()
 
 
-def test_ensure_format_is_respected():
-    job = MockPyUnicoreResource('10', None, None, None)
-    file_name = UnicoreWrapper._prepare_output_filename('test_file', job)
-    assert file_name == 'test_file_10', 'Changing this filename format affects functionality on the client-side! ' \
-                                        'Please check they are kept in sync!'
-
-
 def test_get_jobs(mocker):
     os.environ['CLB_AUTH'] = "test_auth_token"
 

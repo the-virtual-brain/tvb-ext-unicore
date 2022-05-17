@@ -119,7 +119,14 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
    * @param file - name of the file to be downloaded from this jobs working dir
    */
   async function downloadToCurrentPath(file: string): Promise<void> {
-    const downloadedFileName = `${file}_${jobId}`;
+    let downloadedFileName = file;
+    if (
+      ['stdout', 'stderr', 'UNICORE_SCRIPT_EXIT_CODE'].includes(
+        downloadedFileName
+      )
+    ) {
+      downloadedFileName = `${file}_${jobId}`;
+    }
     if (
       fileExists(downloadedFileName) &&
       !(await confirmReDownload(downloadedFileName))
@@ -131,8 +138,9 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
     console.log('File browser path: ', path);
     const dataToSend = {
       job_url: jobUrl,
-      file: file,
-      path: path
+      in_file: file,
+      path: path,
+      out_file: downloadedFileName
     };
     try {
       setDownloading(true);

@@ -137,11 +137,6 @@ class UnicoreWrapper(object):
             outputs[k] = {'is_file': v.isfile()}
         return outputs
 
-    @staticmethod
-    def _prepare_output_filename(file_name, job):
-        # TODO: take file extension into consideration?
-        return f'{file_name}_{job.job_id}'
-
     def download_file(self, job_url, file_name, path=None):
         # type: (str, str, str) -> str
         """
@@ -154,15 +149,11 @@ class UnicoreWrapper(object):
         if not wd.get(file_name, False):
             raise FileNotExistsException(f'{file_name} does not exist as output of {job_url}!')
 
-        final_name = self._prepare_output_filename(file_name, job)
-
         # We need the 'if' below to support download from cell
         if path is None:
-            file_path = final_name
-        else:
-            file_path = os.path.join(path, final_name)
+            path = file_name
 
-        wd[file_name].download(file_path)
+        wd[file_name].download(path)
         return 'Downloaded successfully!'
 
     def stream_file(self, job_url, file, offset=0, size=-1):
