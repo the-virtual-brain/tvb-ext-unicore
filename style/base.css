@@ -97,8 +97,33 @@ details section style
 selection component (pyunicore sites)
  */
 .pyunicoreSites {
-    display: inline-block;
+    display: flex;
+    flex-direction: row;
     margin: 0 1rem 0 0 ;
+}
+
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+
+.spin {
+    -webkit-animation: spin 1s infinite linear;
+    animation: spin 0.5s infinite linear;
+}
+
+.pyunicoreSites .refreshBtn {
+    border: none;
+    padding: 5px;
+    background: none;
 }
 .pyunicoreSites div{
     border: var(--jp-border-width) solid var(--jp-border-color1);

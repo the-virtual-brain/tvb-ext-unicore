@@ -188,8 +188,12 @@ export class PyunicoreComponent extends React.Component<
     return data;
   }
 
-  private _triggerUpdate = (): void => {
+  private _triggerUpdate = (ignoreRefreshRate = false): void => {
     if (this.state.site === NO_SITE) {
+      return;
+    }
+    if (ignoreRefreshRate && !this.state.loading) {
+      this.getData().catch(this.catchError);
       return;
     }
     const now = new Date().valueOf();
@@ -335,6 +339,8 @@ export class PyunicoreComponent extends React.Component<
             sites={this.state.sites}
             onChangeSite={this.setSiteState}
             disableSelection={this.state.disableSitesSelection}
+            refreshSite={() => this._triggerUpdate(true)}
+            loading={this.state.loading}
           />
           {this.state.loading ? (
             <div>
