@@ -7,6 +7,7 @@
 
 import os
 
+from pyunicore.client import _HBP_REGISTRY_URL
 import pyunicore.client as unicore_client
 from requests.exceptions import ConnectionError
 
@@ -23,6 +24,7 @@ class UnicoreWrapper(object):
     def __init__(self):
         token = self.__retrieve_token()
         self.transport = self.__build_transport(token)
+        self.registry = unicore_client.Registry(self.transport, _HBP_REGISTRY_URL)
 
     def __retrieve_token(self):
         try:
@@ -48,14 +50,14 @@ class UnicoreWrapper(object):
 
     def __build_client(self, site):
         # type: (dict) -> unicore_client.Client
-        sites = self.get_sites()
+        sites = self.registry.site_urls
         site_url = sites.get(site)
 
         if site_url is None:
             raise AttributeError(f"Requested HPC site: {site}, does not exist!")
 
         try:
-            client = unicore_client.Client(self.transport, site_url)
+            client = self.registry.site(site)
         except Exception as e:
             LOGGER.warning(f"Could not connect to client: {e}")
             raise ClientAuthException(e)
@@ -63,12 +65,12 @@ class UnicoreWrapper(object):
         return client
 
     def get_sites(self):
-        # type: () -> list
+        # type: () -> dict[str, str]
         """
         Retrieve all sites available via Unicore.
         """
         try:
-            all_sites = unicore_client.get_sites(self.transport)
+            all_sites = self.registry.site_urls
             return all_sites
         except Exception as e:
             LOGGER.warning(f"Cannot retrieve sites: {e}")
@@ -85,6 +87,7 @@ class UnicoreWrapper(object):
         jobs_list = list()
 
         try:
+            LOGGER.info(f"Getting jobs at site: {site}")
             client = self.__build_client(site)
         except ClientAuthException:
             return jobs_list, f"You do not have access to {site}"
@@ -122,7 +125,8 @@ class UnicoreWrapper(object):
         """
         Get an unicore job from a job url and return the instantiated Job object
         """
-        return unicore_client.Job(self.transport, job_url)
+        job = unicore_client.Job(self.transport, job_url)
+        return job
 
     def get_job_output(self, job_url):
         # type: (str) -> dict
@@ -130,11 +134,15 @@ class UnicoreWrapper(object):
         Get the output files for an unicore job url
         returns: {<file_name>:{'is_file': bool}}
         """
-        job = self.get_job(job_url)
-        outputs = dict()
-        files = job.working_dir.listdir()
-        for k, v in files.items():
-            outputs[k] = {'is_file': v.isfile()}
+        try:
+            job = self.get_job(job_url)
+            outputs = dict()
+            files = job.working_dir.listdir()
+            for k, v in files.items():
+                outputs[k] = {'is_file': v.isfile()}
+        except Exception as e:
+            LOGGER.error(f'Something went wrong: {e}')
+            outputs[f'ERROR:{e}'] = {'is_file': False}
         return outputs
 
     def download_file(self, job_url, file_name, path=None):

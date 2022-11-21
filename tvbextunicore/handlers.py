@@ -82,6 +82,7 @@ class JobOutputHandler(APIHandler):
         """
         try:
             job_url = self.get_argument("job_url")
+            LOGGER.info(f'Getting job output at url: {job_url}')
             output = UnicoreWrapper().get_job_output(f'{job_url}')
             self.finish(json.dumps(output))
         except MissingArgumentError:

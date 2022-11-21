@@ -58,7 +58,7 @@ setup_args = dict(
     packages=setuptools.find_packages(),
     install_requires=[
         "jupyter_server>=1.6,<2",
-        "pyunicore >= 0.9.15"
+        "pyunicore >= 0.11.1"
     ],
     zip_safe=False,
     include_package_data=True,
