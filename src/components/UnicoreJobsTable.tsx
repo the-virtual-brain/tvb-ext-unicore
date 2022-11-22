@@ -138,6 +138,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
     drag.mimeData.setData(TEXT_PLAIN_MIME, code);
     drag.start(event.clientX, event.clientY).then(r => console.log('r: ', r));
   }
+
   return (
     <>
       <tr

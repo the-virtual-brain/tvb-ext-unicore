@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { CheckBoxToggle } from './CheckBoxToggle';
 
 namespace types {
   export type Props = {
     sites: string[];
     onChangeSite: (site: string) => void;
     disableSelection: boolean;
+    refreshSite: () => void;
+    loading: boolean;
+    setAutoReload: (active: boolean) => void;
   };
 }
 
@@ -23,6 +27,13 @@ export const UnicoreSites = (props: types.Props): JSX.Element => {
     props.onChangeSite(event.target.value);
   }
 
+  const [spin, setSpin] = useState<boolean>(false);
+
+  function doSpin() {
+    setSpin(true);
+    setTimeout(() => setSpin(false), 500);
+  }
+
   return (
     <div className={'pyunicoreSites'} data-testid={'pyunicore-sites'}>
       <div>
@@ -39,6 +50,21 @@ export const UnicoreSites = (props: types.Props): JSX.Element => {
           ))}
         </select>
       </div>
+      <button
+        className={`refreshBtn ${spin && 'spin'}`}
+        onClick={() => {
+          doSpin();
+          props.refreshSite();
+        }}
+        disabled={props.loading}
+      >
+        <i className="fa fa-refresh" />
+      </button>
+      <CheckBoxToggle
+        onToggle={props.setAutoReload}
+        initialCheckedState={true}
+        label={'Auto refresh'}
+      />
     </div>
   );
 };

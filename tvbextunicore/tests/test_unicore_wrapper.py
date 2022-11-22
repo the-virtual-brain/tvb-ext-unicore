@@ -86,6 +86,23 @@ class MockPyUnicoreJob:
         return self.isrunning
 
 
+class MockPyunicoreRegistry:
+    def __init__(self, transport, url, *args, **kwargs):
+        self.transport = transport
+        self.url = url
+        self.site_urls = ['TEST_SITE1', 'TEST_SITE2']
+
+
+class MockPyunicoreRegistryWithE:
+    def __init__(self, transport, url, *args, **kwargs):
+        self.transport = transport
+        self.url = url
+
+    @property
+    def site_urls(self):
+        raise AttributeError
+
+
 class MockPyUnicoreResource(object):
     def __init__(self, job_id, properties, working_dir=None, resource_url=None):
         self.job_id = job_id
@@ -161,10 +178,7 @@ def test_get_jobs_wrong_site():
 def test_get_sites(mocker):
     os.environ['CLB_AUTH'] = "test_auth_token"
 
-    def mockk(self, site=''):
-        return ['TEST_SITE1', 'TEST_SITE2']
-
-    mocker.patch('pyunicore.client.get_sites', mockk)
+    mocker.patch('pyunicore.client.Registry', MockPyunicoreRegistry)
 
     sites = UnicoreWrapper().get_sites()
     assert sites is not None
@@ -174,10 +188,7 @@ def test_get_sites(mocker):
 def test_get_sites_exception(mocker):
     os.environ['CLB_AUTH'] = "test_auth_token"
 
-    def mockk(self, site=''):
-        raise AttributeError
-
-    mocker.patch('pyunicore.client.get_sites', mockk)
+    mocker.patch('pyunicore.client.Registry', MockPyunicoreRegistryWithE)
 
     with pytest.raises(SitesDownException):
         UnicoreWrapper().get_sites()
@@ -204,9 +215,9 @@ def test_download_file_fails_when_job_is_running(mocker):
         return MockPyUnicoreJob(job_url=job_url, isrunning=True)
 
     mocker.patch(GET_JOB, mockk)
-    file, job_url = 'test_file', 'test_url'
+    test_file, job_url = 'test_file', 'test_url'
     with pytest.raises(JobRunningException):
-        UnicoreWrapper().download_file(job_url, file)
+        UnicoreWrapper().download_file(job_url, test_file)
 
 
 def test_download_file_fails_when_file_doesnt_exist(mocker):
@@ -214,9 +225,9 @@ def test_download_file_fails_when_file_doesnt_exist(mocker):
         return MockPyUnicoreJob(job_url=job_url)
 
     mocker.patch(GET_JOB, mockk)
-    file, job_url = 'test_file', 'test_url'
+    test_file, job_url = 'test_file', 'test_url'
     with pytest.raises(FileNotExistsException):
-        UnicoreWrapper().download_file(job_url, file)
+        UnicoreWrapper().download_file(job_url, test_file)
 
 
 def test_download_file_success(mocker):
@@ -224,8 +235,8 @@ def test_download_file_success(mocker):
         return MockPyUnicoreJob(job_url=job_url)
 
     mocker.patch(GET_JOB, mockk)
-    file, job_url = 'file1', 'file1'
-    assert UnicoreWrapper().download_file(job_url, file) == DOWNLOAD_MESSAGE
+    test_file, job_url = 'file1', 'file1'
+    assert UnicoreWrapper().download_file(job_url, test_file) == DOWNLOAD_MESSAGE
 
 
 def test_download_stream_fails_when_job_is_running(mocker):
