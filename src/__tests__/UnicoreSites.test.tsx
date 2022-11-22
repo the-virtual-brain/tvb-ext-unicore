@@ -17,7 +17,10 @@ function renderSites(
   const props = {
     sites: ['JUDAC', 'JUSUF', 'DAINT'],
     onChangeSite: onChange,
-    disableSelection: disabled
+    disableSelection: disabled,
+    refreshSite: () => console.log('Refresh sites'),
+    loading: false,
+    setAutoReload: (val: boolean) => console.log(val)
   };
 
   return render(<UnicoreSites {...props} />);

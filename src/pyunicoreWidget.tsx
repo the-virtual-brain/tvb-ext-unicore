@@ -78,6 +78,7 @@ namespace types {
     disableSitesSelection: boolean;
     updateIntervalId?: number;
     modalState: modalTypes.Props;
+    autoReload: boolean;
   };
 }
 
@@ -125,6 +126,7 @@ export class PyunicoreComponent extends React.Component<
     this.setModalSateVisible = this.setModalSateVisible.bind(this);
     this.getData = this.getData.bind(this);
     this.catchError = this.catchError.bind(this);
+    this.setAutoReload = this.setAutoReload.bind(this);
     const lastUpdate = new Date();
     this.state = {
       jobs: [],
@@ -147,6 +149,7 @@ export class PyunicoreComponent extends React.Component<
         visible: false,
         setVisible: this.setModalSateVisible
       },
+      autoReload: true,
       updateIntervalId: 0 // set when component mounts
     };
   }
@@ -188,8 +191,18 @@ export class PyunicoreComponent extends React.Component<
     return data;
   }
 
-  private _triggerUpdate = (): void => {
+  /**
+   * Main function that triggers an update of the jobs from current site
+   * @param ignoreRefreshRate - if true will ignore how much time has passed since last update
+   */
+  private _triggerUpdate = (ignoreRefreshRate = false): void => {
     if (this.state.site === NO_SITE) {
+      return;
+    }
+    if (ignoreRefreshRate) {
+      this.getData().catch(this.catchError);
+      return;
+    } else if (!this.state.autoReload) {
       return;
     }
     const now = new Date().valueOf();
@@ -236,6 +249,15 @@ export class PyunicoreComponent extends React.Component<
       jobs = [];
     }
     this.setState({ ...this.state, page: 1, site: site, jobs: jobs });
+  }
+
+  /**
+   * Method to set state of auto update functionality
+   * @param active - active state of the reload functionality
+   * @protected
+   */
+  protected setAutoReload(active: boolean) {
+    this.setState({ ...this.state, autoReload: active });
   }
 
   /**
@@ -335,6 +357,9 @@ export class PyunicoreComponent extends React.Component<
             sites={this.state.sites}
             onChangeSite={this.setSiteState}
             disableSelection={this.state.disableSitesSelection}
+            refreshSite={() => this._triggerUpdate(true)}
+            loading={this.state.loading}
+            setAutoReload={this.setAutoReload}
           />
           {this.state.loading ? (
             <div>
