@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CheckBoxToggle } from './CheckBoxToggle';
 
 namespace types {
   export type Props = {
@@ -7,6 +8,7 @@ namespace types {
     disableSelection: boolean;
     refreshSite: () => void;
     loading: boolean;
+    setAutoReload: (active: boolean) => void;
   };
 }
 
@@ -58,6 +60,11 @@ export const UnicoreSites = (props: types.Props): JSX.Element => {
       >
         <i className="fa fa-refresh" />
       </button>
+      <CheckBoxToggle
+        onToggle={props.setAutoReload}
+        initialCheckedState={true}
+        label={'Auto refresh'}
+      />
     </div>
   );
 };

@@ -19,7 +19,8 @@ function renderSites(
     onChangeSite: onChange,
     disableSelection: disabled,
     refreshSite: () => console.log('Refresh sites'),
-    loading: false
+    loading: false,
+    setAutoReload: (val: boolean) => console.log(val)
   };
 
   return render(<UnicoreSites {...props} />);
