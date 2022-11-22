@@ -256,7 +256,7 @@ export class PyunicoreComponent extends React.Component<
    * @param active - active state of the reload functionality
    * @protected
    */
-  protected setAutoReload(active: boolean) {
+  protected setAutoReload(active: boolean): void {
     this.setState({ ...this.state, autoReload: active });
   }
 
