@@ -119,6 +119,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
    * @param file - name of the file to be downloaded from this jobs working dir
    */
   async function downloadToCurrentPath(file: string): Promise<void> {
+    file = file.replace('/', '');
     let downloadedFileName = file;
     if (
       ['stdout', 'stderr', 'UNICORE_SCRIPT_EXIT_CODE'].includes(
@@ -240,7 +241,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       >
         {output}
       </p>
-      {outputType.is_file && (
+      {outputType && (
         <>
           <span className={message.className}>{message.text}</span>
           {downloading ? (
