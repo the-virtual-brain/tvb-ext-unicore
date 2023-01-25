@@ -71,7 +71,7 @@ class WorkingDirMock:
             'dir1': MockFilePath(is_file=False)
         }
 
-    def listdir(self):
+    def listdir(self, subdir=''):
         return self.dirs
 
 

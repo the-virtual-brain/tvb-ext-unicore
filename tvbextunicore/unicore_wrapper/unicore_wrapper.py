@@ -153,15 +153,32 @@ class UnicoreWrapper(object):
         job = self.get_job(job_url)
         if job.is_running():
             raise JobRunningException(f'Cannot download file while the job is still running!')
-        wd = job.working_dir.listdir()
-        if not wd.get(file_name, False):
-            raise FileNotExistsException(f'{file_name} does not exist as output of {job_url}!')
 
         # We need the 'if' below to support download from cell
         if path is None:
             path = file_name
 
-        wd[file_name].download(path)
+        wd = job.working_dir.listdir()
+        if not wd.get(file_name, False):
+            # Try with folder suffix
+            file_name += '/'
+            if not wd.get(file_name, False):
+                raise FileNotExistsException(f'{file_name} does not exist as output of {job_url}!')
+
+        if isinstance(wd[file_name], unicore_client.PathFile):
+            wd[file_name].download(path)
+            return 'Downloaded successfully!'
+
+        # In case the file to download is a directory:
+        if not os.path.isdir(path):
+            os.mkdir(path)
+
+        LOGGER.info(f"Downloading results to {path}...")
+        results_content = job.working_dir.listdir(file_name)
+
+        for fname, fpath in results_content.items():
+            if isinstance(fpath, unicore_client.PathFile):
+                fpath.download(os.path.join(path, os.path.basename(fname)))
         return 'Downloaded successfully!'
 
     def stream_file(self, job_url, file, offset=0, size=-1):

@@ -169,7 +169,7 @@ describe('test <JobOutput />', () => {
     expect(document.getElementsByClassName('fa-file').length).toEqual(0);
     expect(document.getElementsByClassName('fa-folder').length).toEqual(1);
     //doesn't render download icon
-    expect(document.getElementsByClassName('clickableIcon').length).toEqual(0);
+    expect(document.getElementsByClassName('clickableIcon').length).toEqual(1);
   });
 
   it('downloads file on click - catches error', async () => {
