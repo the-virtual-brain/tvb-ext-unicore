@@ -10,6 +10,7 @@ import { TEXT_PLAIN_MIME } from '../constants';
 export namespace types {
   export type JobsTableProps = {
     buttonSettings: IButtonSettings;
+    afterButtonSettingClick: () => Promise<void>;
     columns: string[];
     data: Array<IJob>;
     setMessageState: (message: string) => void;
@@ -25,6 +26,7 @@ export namespace types {
 
   export type JobRowProps = {
     buttonSettings: IButtonSettings;
+    afterButtonSettingClick: () => Promise<void>;
     cols: string[];
     job: IJob;
     setMessageState: (message: string) => void;
@@ -49,6 +51,7 @@ export const UnicoreJobsTable = (props: types.JobsTableProps): JSX.Element => {
         getJob={props.getJob}
         handleError={props.handleError}
         getFileBrowser={props.getFileBrowser}
+        afterButtonSettingClick={props.afterButtonSettingClick}
       />
     </table>
   );
@@ -84,6 +87,7 @@ export const TableBody = (props: types.JobsTableProps): JSX.Element => {
           getJob={props.getJob}
           handleError={props.handleError}
           getFileBrowser={props.getFileBrowser}
+          afterButtonSettingClick={props.afterButtonSettingClick}
         />
       ))}
     </tbody>
@@ -91,7 +95,6 @@ export const TableBody = (props: types.JobsTableProps): JSX.Element => {
 };
 
 export const JobRow = (props: types.JobRowProps): JSX.Element => {
-  const [job, setJob] = useState(props.job);
   const [loading, setLoading] = useState(false);
   const [logsVisible, setLogsVisible] = useState(false);
 
@@ -100,11 +103,10 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
     setLoading(true);
     props.buttonSettings
       .onClick(
-        ...props.buttonSettings.onClickFieldArgs.map(field => job[field])
+        ...props.buttonSettings.onClickFieldArgs.map(field => props.job[field])
       )
       .then(r => {
-        setLoading(false);
-        setJob(r.job);
+        props.afterButtonSettingClick().then(() => setLoading(false));
         props.setMessageState(r.message);
       });
   }
@@ -123,15 +125,15 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
       );
       return;
     }
-    const code = props.getJob(job.resource_url);
+    const code = props.getJob(props.job.resource_url);
     const drag = new Drag({
       mimeData: new MimeData(),
       supportedActions: 'copy',
       proposedAction: 'copy',
       dragImage: document
-        .getElementById(`${job.id}`)
+        .getElementById(`${props.job.id}`)
         ?.cloneNode(true) as HTMLElement,
-      source: job
+      source: props.job
     });
 
     // set data for copy in an existing cell
@@ -148,7 +150,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
         data-testid={`table-row-${props.job.id}`}
       >
         {props.cols.map((col, index) => (
-          <td key={`${job.id}-${index}`}>{job[col]}</td>
+          <td key={`${props.job.id}-${index}`}>{props.job[col]}</td>
         ))}
         {loading ? (
           <td>
@@ -158,7 +160,7 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
           </td>
         ) : (
           <td>
-            {job.is_cancelable && !loading && (
+            {props.job.is_cancelable && !loading && (
               <button onClick={handleButton}>Cancel Job</button>
             )}
           </td>
@@ -167,14 +169,14 @@ export const JobRow = (props: types.JobRowProps): JSX.Element => {
       {logsVisible && (
         <>
           <JobOutputFiles
-            job_url={job.resource_url}
+            job_url={props.job.resource_url}
             getFileBrowser={props.getFileBrowser}
             getKernel={props.getKernel}
-            jobId={job.id}
+            jobId={props.job.id}
           />
           <tr className={'detailsRow'}>
             <td colSpan={100}>
-              <textarea value={job.logs.join('\n')} readOnly={true} />
+              <textarea value={props.job.logs.join('\n')} readOnly={true} />
             </td>
           </tr>
         </>

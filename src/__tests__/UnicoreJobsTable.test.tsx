@@ -35,6 +35,11 @@ async function cancelJob(resource_url: string): Promise<any> {
 }
 const mockCancel = jest.fn(cancelJob);
 
+async function getData(): Promise<void> {
+  return Promise.resolve();
+}
+const mockGetData = jest.fn(getData);
+
 // mock function to get kernel
 export async function getKernel(): Promise<
   IKernelConnection | null | undefined
@@ -83,6 +88,7 @@ function renderRow(status: JobStatus) {
     <JobRow
       {...props}
       getFileBrowser={() => jest.fn as unknown as FileBrowser}
+      afterButtonSettingClick={mockGetData}
     />,
     {
       wrapper: p => (
@@ -106,6 +112,7 @@ function renderTable() {
       getJob={mockGetJob}
       handleError={mockHandleError}
       getFileBrowser={() => jest.fn as unknown as FileBrowser}
+      afterButtonSettingClick={mockGetData}
     />
   );
 }

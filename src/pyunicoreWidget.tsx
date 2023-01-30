@@ -79,6 +79,7 @@ namespace types {
     updateIntervalId?: number;
     modalState: modalTypes.Props;
     autoReload: boolean;
+    isRefresh: boolean;
   };
 }
 
@@ -150,6 +151,7 @@ export class PyunicoreComponent extends React.Component<
         setVisible: this.setModalSateVisible
       },
       autoReload: true,
+      isRefresh: false,
       updateIntervalId: 0 // set when component mounts
     };
   }
@@ -185,7 +187,8 @@ export class PyunicoreComponent extends React.Component<
       lastUpdate: new Date(),
       renderLeftArrow: this.state.page > 1,
       renderRightArrow: data.jobs.length >= this.state.itemsPerPage,
-      disableSitesSelection: false
+      disableSitesSelection: false,
+      isRefresh: false
     });
 
     return data;
@@ -200,7 +203,7 @@ export class PyunicoreComponent extends React.Component<
       return;
     }
     if (ignoreRefreshRate) {
-      this.getData().catch(this.catchError);
+      this.setState({ ...this.state, isRefresh: true });
       return;
     } else if (!this.state.autoReload) {
       return;
@@ -209,7 +212,7 @@ export class PyunicoreComponent extends React.Component<
     const previous = this.state.lastUpdate.valueOf();
     const diff = now - previous;
     if (diff >= this.state.reloadRate && !this.state.loading) {
-      this.getData().catch(this.catchError);
+      this.setState({ ...this.state, isRefresh: true });
     }
   };
 
@@ -270,7 +273,8 @@ export class PyunicoreComponent extends React.Component<
     prevState: Readonly<types.State>
   ): void {
     if (
-      (prevState.page !== this.state.page ||
+      ((this.state.isRefresh && !prevState.isRefresh) ||
+        prevState.page !== this.state.page ||
         prevState.site !== this.state.site) &&
       this.state.sites.length > 0
     ) {
@@ -281,7 +285,8 @@ export class PyunicoreComponent extends React.Component<
           disableSitesSelection: false,
           jobs: [],
           renderLeftArrow: false,
-          renderRightArrow: false
+          renderRightArrow: false,
+          isRefresh: false
         });
         return;
       }
@@ -315,6 +320,7 @@ export class PyunicoreComponent extends React.Component<
    * lifecycle method, override to load data from api when component is mounted
    */
   componentDidMount(): void {
+    // TODO: Try to replace with setTimeout
     const updateIntervalId = setInterval(
       this._triggerUpdate,
       RELOAD_CHECK_RATE_MS
@@ -379,6 +385,7 @@ export class PyunicoreComponent extends React.Component<
 
         <UnicoreJobsTable
           buttonSettings={this.state.buttonSettings}
+          afterButtonSettingClick={this.getData}
           columns={this.state.tableFormat.cols}
           data={this.state.jobs}
           setMessageState={(message: string) => {
