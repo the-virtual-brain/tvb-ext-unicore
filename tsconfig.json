@@ -23,6 +23,7 @@
   "include": [
     "src/*",
     "src/components/*.tsx",
+    "src/components/*.ts",
     "src/__tests__/*.tsx",
     "node_modules/@types/jest/index.d.ts"
   ]

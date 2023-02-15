@@ -21,6 +21,7 @@ import { requestAPI } from './handler';
 import { Kernel } from '@jupyterlab/services';
 import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
 import { NO_SITE, getJobCode } from './constants';
+import { SideButton } from './components/SideButton';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
@@ -65,6 +66,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
   ) => {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
+    // let sideBtn: SideButton;
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
@@ -119,6 +121,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const tracker = new WidgetTracker<MainAreaWidget<PyunicoreWidget>>({
       namespace: 'pyunicore'
     });
+
+    const sideBtn = new SideButton({
+      command: command,
+      commandRegistry: app.commands
+    });
+    labShell.add(sideBtn, 'right', { rank: 0 });
 
     restorer.restore(tracker, {
       command,
