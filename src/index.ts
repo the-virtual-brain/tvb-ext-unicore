@@ -66,7 +66,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
   ) => {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
-    // let sideBtn: SideButton;
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
@@ -124,9 +123,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     const sideBtn = new SideButton({
       command: command,
-      commandRegistry: app.commands
+      commandRegistry: app.commands,
+      labShell,
+      area: 'right',
+      shellOptions: { rank: 10 }
     });
-    labShell.add(sideBtn, 'right', { rank: 0 });
+    sideBtn.addToLabShell();
 
     restorer.restore(tracker, {
       command,
