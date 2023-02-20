@@ -1,7 +1,7 @@
 import { Widget } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 import { CommandRegistry } from '@lumino/commands';
-import { launcherIcon, LabIcon } from '@jupyterlab/ui-components';
+import { LabIcon } from '@jupyterlab/ui-components';
 import { ILabShell } from '@jupyterlab/application';
 import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { Drag } from '@lumino/dragdrop';
@@ -24,10 +24,8 @@ export class SideButton extends Widget {
     this._commands = options.commandRegistry;
     this._area = options.area;
     this._shellOptions = options.shellOptions;
-    this.title.icon = options.icon ? options.icon : launcherIcon;
-    this.title.caption = options.caption
-      ? options.caption
-      : 'PyUnicore Task Stream';
+    this.title.icon = options.icon;
+    this.title.caption = options.caption;
     this.id = options.id ? options.id : 'tvb-ext-unicore-side-btn';
     this.title.className = this.id;
   }
@@ -46,6 +44,7 @@ export class SideButton extends Widget {
    * @protected
    */
   protected async onAfterShow(msg: Message): Promise<void> {
+    console.log('after show');
     super.onAfterShow(msg);
     Drag.overrideCursor('wait');
     await this._click();
@@ -85,13 +84,13 @@ export namespace SideButton {
    * @id: Button id
    */
   export interface IOptions extends Widget.IOptions {
+    caption: string;
     command: string;
     commandRegistry: CommandRegistry;
     labShell: ILabShell;
     area: Area;
     shellOptions?: DocumentRegistry.IOpenOptions;
-    icon?: LabIcon;
-    caption?: string;
+    icon: LabIcon;
     id?: string;
   }
 

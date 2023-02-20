@@ -21,6 +21,7 @@ import { requestAPI } from './handler';
 import { Kernel } from '@jupyterlab/services';
 import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
 import { NO_SITE, getJobCode } from './constants';
+import { launcherIcon } from '@jupyterlab/ui-components';
 import { SideButton } from './components/SideButton';
 
 async function cancelJob(resource_url: string): Promise<any> {
@@ -125,6 +126,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
       command: command,
       commandRegistry: app.commands,
       labShell,
+      caption: 'PyUnicore Tasks Stream',
+      icon: launcherIcon,
       area: 'right',
       shellOptions: { rank: 10 }
     });
