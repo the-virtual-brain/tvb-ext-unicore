@@ -21,8 +21,10 @@ import { requestAPI } from './handler';
 import { Kernel } from '@jupyterlab/services';
 import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
 import { NO_SITE, getJobCode } from './constants';
-import { launcherIcon } from '@jupyterlab/ui-components';
+// @ts-ignore
+import logoUnicore from '../style/icons/logo-unicore.svg';
 import { SideButton } from './components/SideButton';
+import { LabIcon } from '@jupyterlab/ui-components';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
@@ -122,12 +124,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
       namespace: 'pyunicore'
     });
 
+    const unicoreIcon = new LabIcon({
+      name: 'unicoreIcon',
+      svgstr: logoUnicore
+    });
+
     const sideBtn = new SideButton({
       command: command,
       commandRegistry: app.commands,
       labShell,
       caption: 'PyUnicore Tasks Stream',
-      icon: launcherIcon,
+      icon: unicoreIcon,
       area: 'right',
       shellOptions: { rank: 10 }
     });
