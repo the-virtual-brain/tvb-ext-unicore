@@ -195,3 +195,16 @@ class UnicoreWrapper(object):
             raise FileNotExistsException(f'{file} does not exist as output of {job_url}!')
 
         return wd[file].raw(offset=offset, size=size)
+
+    def send_to_bucket(self, job_id, output_file, bucket_upload_url):
+        job = self.get_job(job_id)
+        wd = job.working_dir.listdir()
+        if not wd.get(output_file):
+            raise FileNotExistsException(f'{output_file} does not exist as output of {job_id}!')
+        # Storage.send_file
+        transfer = wd[output_file].storage.send_file(output_file, bucket_upload_url)
+        # wait for transfer to finish
+        while transfer.is_running:
+            pass
+
+        return transfer.properties["status"]

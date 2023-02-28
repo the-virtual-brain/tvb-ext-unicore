@@ -8,6 +8,7 @@ import { showErrorMessage, showDialog, Dialog } from '@jupyterlab/apputils';
 import { NullableIKernelConnection } from '../index';
 import { TEXT_PLAIN_MIME, getDownloadFileCode } from '../constants';
 import { some } from '@lumino/algorithm';
+import { downloadFileToBucket, IOptions } from '../helpers';
 
 namespace Types {
   export type Output = {
@@ -209,6 +210,7 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
   async function handleDragStart(event: React.DragEvent): Promise<void> {
     // make sure we have a kernel that can handle python code
     addDropHandlerToFileBrowser();
+    initiateDragDropToBucket(event);
 
     const code = getDownloadFileCode(jobUrl, output);
     drag = new Drag({
@@ -226,6 +228,25 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       removeDropHandlerFromFileBrowser();
     });
   }
+
+  const onDropToBucket = async (options?: IOptions): Promise<any> => {
+    await downloadFileToBucket(jobUrl, output, options);
+    console.log('Dropped file from unicore to bucket');
+  };
+
+  const initiateDragDropToBucket = (ev: React.DragEvent) => {
+    const initiator: IDragInitiator = {
+      source: output,
+      action: onDropToBucket
+    };
+    const drag = new Drag({
+      mimeData: new MimeData(),
+      source: initiator,
+      proposedAction: 'copy'
+    });
+    drag.mimeData.setData('text/plain', JSON.stringify(output));
+    drag.start(ev.clientX, ev.clientY).then(() => console.log('drag ended'));
+  };
 
   return (
     <div className={'unicore-jobOutput'} data-testid={`output-${output}`}>
@@ -273,3 +294,8 @@ export const ProgressBar = (props: Types.ProgressBarProps): JSX.Element => {
     </div>
   );
 };
+
+interface IDragInitiator {
+  source: any;
+  action: (options?: IOptions) => Promise<any>;
+}

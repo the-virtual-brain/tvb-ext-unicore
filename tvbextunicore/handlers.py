@@ -131,6 +131,19 @@ class DriveHandler(APIHandler):
         self.finish(response)
 
 
+class DriveToBucketHandler(APIHandler):
+    def get(self):
+        try:
+            job_id = self.get_argument('job_id')
+            output_file = self.get_argument('output_file')
+            bucket_upload_url = self.get_argument('upload_url')
+            wrapper = UnicoreWrapper()
+            resp = wrapper.send_to_bucket(job_id, output_file, bucket_upload_url)
+            self.finish(json.dumps(resp))
+        except MissingArgumentError:
+            self.finish(json.dumps({'success': False, 'message': 'Missing arguments in url params of request'}))
+
+
 def setup_handlers(web_app):
     host_pattern = ".*$"
 
@@ -139,10 +152,12 @@ def setup_handlers(web_app):
     jobs_pattern = url_path_join(base_url, "tvbextunicore", "jobs")
     output_pattern = url_path_join(base_url, "tvbextunicore", "job_output")
     drive_pattern = url_path_join(base_url, "tvbextunicore", r"drive/([^/]+)?/([^/]+)?")
+    bucket_pattern = url_path_join(base_url, 'tvbextunicore', 'bucket_download')
     handlers = [
         (jobs_pattern, JobsHandler),
         (sites_pattern, SitesHandler),
         (output_pattern, JobOutputHandler),
-        (drive_pattern, DriveHandler)
+        (drive_pattern, DriveHandler),
+        (bucket_pattern, DriveToBucketHandler)
     ]
     web_app.add_handlers(host_pattern, handlers)
