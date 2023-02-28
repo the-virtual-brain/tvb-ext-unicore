@@ -8,6 +8,7 @@ import {
 import {
   ICommandPalette,
   MainAreaWidget,
+  showErrorMessage,
   WidgetTracker
 } from '@jupyterlab/apputils';
 
@@ -75,7 +76,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'PyUnicore Task Stream',
       execute: async (): Promise<any> => {
         if (!widget || widget.isDisposed) {
-          const sitesResponse = await requestAPI<SitesResponse>('sites');
+          let sitesResponse: SitesResponse;
+          try {
+            sitesResponse = await requestAPI<SitesResponse>('sites');
+          } catch (e) {
+            await showErrorMessage(
+              'ERROR',
+              'Unicore seems to be down at the moment. Please check service availability and try again later.'
+            );
+            return;
+          }
           const content = new PyunicoreWidget({
             tableFormat: {
               cols: columns,
