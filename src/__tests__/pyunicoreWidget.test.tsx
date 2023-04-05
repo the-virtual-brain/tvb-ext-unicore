@@ -74,7 +74,10 @@ export function generateJobs(count: number): Array<IJob> {
 
 const RELOAD_RATE_S = RELOAD_RATE_MS / 1000;
 
-function renderUnicoreComponent(sites: string[] = []) {
+function renderUnicoreComponent(
+  sites: string[] = [],
+  defaultSite: string = NO_SITE
+) {
   const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
   const tableFormat = {
     cols: columns,
@@ -88,6 +91,7 @@ function renderUnicoreComponent(sites: string[] = []) {
       data={data}
       buttonSettings={BUTTON_SETTINGS}
       sites={[...sites, JUSUF, JUDAC]}
+      defaultSite={defaultSite}
       reloadRate={RELOAD_RATE_MS}
       getKernel={getKernel}
       getJobCode={mockGetJob}
@@ -110,7 +114,7 @@ describe('<PyunicoreComponent />', () => {
     const mockLaterDate = new Date();
     jest.setSystemTime(mockDate.getTime());
 
-    const { findByTestId } = renderUnicoreComponent();
+    const { findByTestId } = renderUnicoreComponent([], JUSUF);
 
     // simulate 60 seconds passed in system time to trigger update
     mockLaterDate.setSeconds(mockLaterDate.getSeconds() + RELOAD_RATE_S);

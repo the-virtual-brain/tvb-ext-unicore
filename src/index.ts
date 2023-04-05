@@ -74,11 +74,29 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
-      execute: async (): Promise<any> => {
+      execute: async (args = { defaultSite: NO_SITE }): Promise<any> => {
         if (!widget || widget.isDisposed) {
           let sitesResponse: SitesResponse;
+          let availableSites: string[] = [];
+          let defaultSite = NO_SITE;
           try {
             sitesResponse = await requestAPI<SitesResponse>('sites');
+            availableSites = [...Object.keys(sitesResponse.sites)];
+            const desiredDefaultSite = args['defaultSite'] as string;
+            if (
+              desiredDefaultSite !== NO_SITE &&
+              desiredDefaultSite !== undefined &&
+              desiredDefaultSite !== null
+            ) {
+              if (!availableSites.includes(desiredDefaultSite)) {
+                showErrorMessage(
+                  'SITE ERROR',
+                  `Site ${desiredDefaultSite} is not available at this time! Available sites: ${availableSites}`
+                );
+                return;
+              }
+              defaultSite = desiredDefaultSite;
+            }
           } catch (e) {
             await showErrorMessage(
               'ERROR',
@@ -99,7 +117,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
               isAsync: false,
               name: 'Cancel Job'
             },
-            sites: [NO_SITE, ...Object.keys(sitesResponse.sites)],
+            sites: [NO_SITE, ...availableSites],
+            defaultSite: defaultSite,
             reloadRate: 60000,
             getKernel: async () => {
               const kernel = Private.getCurrentKernel(

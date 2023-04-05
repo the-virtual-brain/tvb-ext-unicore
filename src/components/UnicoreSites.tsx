@@ -4,6 +4,7 @@ import { CheckBoxToggle } from './CheckBoxToggle';
 namespace types {
   export type Props = {
     sites: string[];
+    defaultSite: string;
     onChangeSite: (site: string) => void;
     disableSelection: boolean;
     refreshSite: () => void;
@@ -42,6 +43,7 @@ export const UnicoreSites = (props: types.Props): JSX.Element => {
           onChange={handleSiteChange}
           disabled={props.disableSelection}
           data-testid={'select'}
+          defaultValue={props.defaultSite}
         >
           {props.sites.map(site => (
             <option key={site} id={site} value={site}>
