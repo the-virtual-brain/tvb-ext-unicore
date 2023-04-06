@@ -12,6 +12,8 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
+import { validateDefaultSite } from './utils';
+
 import { FileBrowser, IFileBrowserFactory } from '@jupyterlab/filebrowser';
 
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
@@ -83,20 +85,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
             sitesResponse = await requestAPI<SitesResponse>('sites');
             availableSites = [...Object.keys(sitesResponse.sites)];
             const desiredDefaultSite = args['defaultSite'] as string;
-            if (
-              desiredDefaultSite !== NO_SITE &&
-              desiredDefaultSite !== undefined &&
-              desiredDefaultSite !== null
-            ) {
-              if (!availableSites.includes(desiredDefaultSite)) {
-                showErrorMessage(
-                  'SITE ERROR',
-                  `Site ${desiredDefaultSite} is not available at this time! Available sites: ${availableSites}`
-                );
-                return;
-              }
-              defaultSite = desiredDefaultSite;
-            }
+            defaultSite = validateDefaultSite(
+              desiredDefaultSite,
+              availableSites
+            );
           } catch (e) {
             await showErrorMessage(
               'ERROR',
