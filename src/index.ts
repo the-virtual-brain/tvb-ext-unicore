@@ -80,7 +80,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (!widget || widget.isDisposed) {
           let sitesResponse: SitesResponse;
           let availableSites: string[] = [];
-          let defaultSite = NO_SITE;
+          let defaultSite: string;
           try {
             sitesResponse = await requestAPI<SitesResponse>('sites');
             availableSites = [...Object.keys(sitesResponse.sites)];
