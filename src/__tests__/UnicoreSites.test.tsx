@@ -16,6 +16,7 @@ function renderSites(
 ) {
   const props = {
     sites: ['JUDAC', 'JUSUF', 'DAINT'],
+    defaultSite: 'JUDAC',
     onChangeSite: onChange,
     disableSelection: disabled,
     refreshSite: () => console.log('Refresh sites'),

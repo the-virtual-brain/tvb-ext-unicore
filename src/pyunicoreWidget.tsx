@@ -55,6 +55,7 @@ namespace types {
     data: IDataType;
     buttonSettings: IButtonSettings;
     sites: string[];
+    defaultSite: string;
     reloadRate: number;
     getKernel: () => Promise<Kernel.IKernelConnection | null | undefined>;
     getJobCode: (job_url: string) => string;
@@ -101,6 +102,7 @@ export class PyunicoreWidget extends ReactWidget {
         data={this.props.data}
         buttonSettings={this.props.buttonSettings}
         sites={this.props.sites}
+        defaultSite={this.props.defaultSite}
         reloadRate={RELOAD_RATE_MS}
         getKernel={this.props.getKernel}
         getJobCode={this.props.getJobCode}
@@ -132,7 +134,7 @@ export class PyunicoreComponent extends React.Component<
     this.state = {
       jobs: [],
       message: props.data.message,
-      site: props.sites[0],
+      site: props.defaultSite,
       buttonSettings: props.buttonSettings,
       tableFormat: props.tableFormat,
       reloadRate: RELOAD_RATE_MS,
@@ -362,6 +364,7 @@ export class PyunicoreComponent extends React.Component<
           <UnicoreSites
             sites={this.state.sites}
             onChangeSite={this.setSiteState}
+            defaultSite={this.state.site}
             disableSelection={this.state.disableSitesSelection}
             refreshSite={() => this._triggerUpdate(true)}
             loading={this.state.loading}

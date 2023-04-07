@@ -12,6 +12,8 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
+import { validateDefaultSite } from './utils';
+
 import { FileBrowser, IFileBrowserFactory } from '@jupyterlab/filebrowser';
 
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
@@ -74,11 +76,19 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const command = 'tvbextunicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
-      execute: async (): Promise<any> => {
+      execute: async (args = { defaultSite: NO_SITE }): Promise<any> => {
         if (!widget || widget.isDisposed) {
           let sitesResponse: SitesResponse;
+          let availableSites: string[] = [];
+          let defaultSite: string;
           try {
             sitesResponse = await requestAPI<SitesResponse>('sites');
+            availableSites = [...Object.keys(sitesResponse.sites)];
+            const desiredDefaultSite = args['defaultSite'] as string;
+            defaultSite = validateDefaultSite(
+              desiredDefaultSite,
+              availableSites
+            );
           } catch (e) {
             await showErrorMessage(
               'ERROR',
@@ -99,7 +109,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
               isAsync: false,
               name: 'Cancel Job'
             },
-            sites: [NO_SITE, ...Object.keys(sitesResponse.sites)],
+            sites: [NO_SITE, ...availableSites],
+            defaultSite: defaultSite,
             reloadRate: 60000,
             getKernel: async () => {
               const kernel = Private.getCurrentKernel(
