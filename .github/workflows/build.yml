@@ -98,7 +98,9 @@ jobs:
         # Remove NodeJS, twice to take care of system and locally installed node versions.
         sudo rm -rf $(which node)
         sudo rm -rf $(which node)
+        pip install --upgrade pip
         pip install myextension.tar.gz
         pip install jupyterlab
+        jupyter labextension list
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
         python -m jupyterlab.browser_check --no-chrome-test
