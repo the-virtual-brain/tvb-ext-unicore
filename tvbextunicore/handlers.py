@@ -24,7 +24,7 @@ LOGGER = get_logger(__name__)
 class SitesHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
-        LOGGER.info(f"Retrieving sites...")
+        LOGGER.info("Retrieving sites...")
         message = ''
         try:
             sites = UnicoreWrapper().get_sites()
