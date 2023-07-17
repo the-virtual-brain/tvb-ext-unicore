@@ -17,6 +17,7 @@ from tvbextunicore.logger.builder import get_logger
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO
 
 LOGGER = get_logger(__name__)
+DOWNLOAD_MESSAGE = 'Downloaded successfully!'
 
 
 class UnicoreWrapper(object):
@@ -167,7 +168,7 @@ class UnicoreWrapper(object):
 
         if isinstance(wd[file_name], unicore_client.PathFile):
             wd[file_name].download(path)
-            return 'Downloaded successfully!'
+            return DOWNLOAD_MESSAGE
 
         # In case the file to download is a directory:
         if not os.path.isdir(path):
@@ -179,7 +180,7 @@ class UnicoreWrapper(object):
         for fname, fpath in results_content.items():
             if isinstance(fpath, unicore_client.PathFile):
                 fpath.download(os.path.join(path, os.path.basename(fname)))
-        return 'Downloaded successfully!'
+        return DOWNLOAD_MESSAGE
 
     def stream_file(self, job_url, file, offset=0, size=-1):
         # type: (str, str, int, int) -> stream

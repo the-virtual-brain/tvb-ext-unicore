@@ -79,11 +79,11 @@ export const JobOutputFiles = (props: Types.Props): JSX.Element => {
         <td colSpan={100}>
           <p className={'unicoreMessage'}>{message}</p>
           Output Files:
-          {Object.entries(outputFiles).map(([output, outputType], index) => (
+          {Object.entries(outputFiles).map(([output, outputType]) => (
             <JobOutput
               output={output}
               outputType={outputType}
-              key={`${output}-${index}`}
+              key={`${output}`}
               jobUrl={props.job_url}
               jobId={props.jobId}
               getFileBrowser={props.getFileBrowser}
