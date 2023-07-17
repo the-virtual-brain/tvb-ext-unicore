@@ -12,7 +12,7 @@ from datetime import datetime
 
 from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException, \
     FileNotExistsException, JobRunningException
-from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
+from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper, DOWNLOAD_MESSAGE
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
     TERMINATION_TIME, \
     MOUNT_POINT
@@ -20,7 +20,6 @@ from tvbextunicore.utils import build_response, DownloadStatus
 
 GET_JOB = 'tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job'
 SHUTIL_MOVE = 'shutil.move'
-DOWNLOAD_MESSAGE = 'Downloaded successfully!'
 
 
 class MockFilePath:
