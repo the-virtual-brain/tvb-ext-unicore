@@ -152,7 +152,7 @@ class UnicoreWrapper(object):
         """
         job = self.get_job(job_url)
         if job.is_running():
-            raise JobRunningException(f'Cannot download file while the job is still running!')
+            raise JobRunningException('Cannot download file while the job is still running!')
 
         # We need the 'if' below to support download from cell
         if path is None:
