@@ -6,13 +6,12 @@
 #
 
 import os
-
 from pyunicore.client import _HBP_REGISTRY_URL
 import pyunicore.client as unicore_client
+from pyunicore.credentials import OIDCToken
 from requests.exceptions import ConnectionError
-
-from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException, \
-    SitesDownException, FileNotExistsException, JobRunningException
+from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException, SitesDownException
+from tvbextunicore.exceptions import FileNotExistsException, JobRunningException
 from tvbextunicore.logger.builder import get_logger
 from tvbextunicore.unicore_wrapper.job_dto import JobDTO
 
@@ -23,11 +22,12 @@ DOWNLOAD_MESSAGE = 'Downloaded successfully!'
 class UnicoreWrapper(object):
 
     def __init__(self):
-        token = self.__retrieve_token()
+        token = self.__retrieve_token_str()
+        token = OIDCToken(token)
         self.transport = self.__build_transport(token)
         self.registry = unicore_client.Registry(self.transport, _HBP_REGISTRY_URL)
 
-    def __retrieve_token(self):
+    def __retrieve_token_str(self):
         try:
             from clb_nb_utils import oauth as clb_oauth
             token = clb_oauth.get_token()
@@ -46,7 +46,7 @@ class UnicoreWrapper(object):
 
     def __build_transport(self, token):
         # type: (str) -> unicore_client.Transport
-        transport = unicore_client.Transport(token, oidc=True)
+        transport = unicore_client.Transport(token)
         return transport
 
     def __build_client(self, site):
