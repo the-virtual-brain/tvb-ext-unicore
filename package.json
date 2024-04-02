@@ -1,6 +1,6 @@
 {
   "name": "tvb-ext-unicore",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "TVB Widgets - A Unicore Lab extension",
   "keywords": [
     "jupyter",
@@ -9,7 +9,7 @@
   ],
   "homepage": "https://github.com/the-virtual-brain/tvb-ext-unicore",
   "bugs": {
-    "url": "https://req.thevirtualbrain.org/"
+    "url": "https://tvb-projects.atlassian.net/"
   },
   "license": "GPL-3.0-or-later",
   "author": {
