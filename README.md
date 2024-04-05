@@ -26,8 +26,8 @@ EBRAINS Lab and keep it in an environment variable called **CLB_AUTH**.
 
 ## Requirements
 
-* JupyterLab >= 3.0
-* pyunicore >= 0.9.15
+* JupyterLab version 3
+* pyunicore >= 1.0
 
 ## Install
 
