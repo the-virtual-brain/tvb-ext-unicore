@@ -172,26 +172,26 @@ export class PyunicoreComponent extends React.Component<
    * @protected
    */
   protected async getData(): Promise<void> {
-    this.setState({
-      ...this.state,
+    this.setState(prevState => ({
+      ...prevState,
       loading: true,
       renderLeftArrow: false,
       renderRightArrow: false,
       disableSitesSelection: true
-    });
+    }));
     const data = await requestAPI<any>(this._getEndpoint());
 
-    this.setState({
-      ...this.state,
+    this.setState(prevState => ({
+      ...prevState,
       jobs: data.jobs,
       message: data.message,
       loading: false,
       lastUpdate: new Date(),
-      renderLeftArrow: this.state.page > 1,
-      renderRightArrow: data.jobs.length >= this.state.itemsPerPage,
+      renderLeftArrow: prevState.page > 1,
+      renderRightArrow: data.jobs.length >= prevState.itemsPerPage,
       disableSitesSelection: false,
       isRefresh: false
-    });
+    }));
 
     return data;
   }
@@ -205,7 +205,7 @@ export class PyunicoreComponent extends React.Component<
       return;
     }
     if (ignoreRefreshRate) {
-      this.setState({ ...this.state, isRefresh: true });
+      this.setState(prevState => ({ ...prevState, isRefresh: true }));
       return;
     } else if (!this.state.autoReload) {
       return;
@@ -214,7 +214,7 @@ export class PyunicoreComponent extends React.Component<
     const previous = this.state.lastUpdate.valueOf();
     const diff = now - previous;
     if (diff >= this.state.reloadRate && !this.state.loading) {
-      this.setState({ ...this.state, isRefresh: true });
+      this.setState(prevState => ({ ...prevState, isRefresh: true }));
     }
   };
 
@@ -224,7 +224,7 @@ export class PyunicoreComponent extends React.Component<
    * @protected
    */
   protected setPageState(page: number): void {
-    this.setState({ ...this.state, page: page });
+    this.setState(prevState => ({ ...prevState, page: page }));
   }
 
   /**
@@ -233,14 +233,14 @@ export class PyunicoreComponent extends React.Component<
    * @protected
    */
   protected setModalSateVisible(visible: boolean): void {
-    this.setState({
-      ...this.state,
+    this.setState(prevState => ({
+      ...prevState,
       loading: false,
       renderLeftArrow: true,
       renderRightArrow: true,
       disableSitesSelection: false,
-      modalState: { ...this.state.modalState, visible: visible }
-    });
+      modalState: { ...prevState.modalState, visible: visible }
+    }));
   }
   /**
    * helper method to set site state from a child component
@@ -249,11 +249,12 @@ export class PyunicoreComponent extends React.Component<
    */
   protected setSiteState(site: string): void {
     // reset the page to 1 when changing site
-    let jobs = this.state.jobs;
-    if (site === NO_SITE) {
-      jobs = [];
-    }
-    this.setState({ ...this.state, page: 1, site: site, jobs: jobs });
+    this.setState(prevState => ({
+      ...prevState,
+      page: 1,
+      site: site,
+      jobs: site === NO_SITE ? [] : prevState.jobs
+    }));
   }
 
   /**
@@ -262,7 +263,7 @@ export class PyunicoreComponent extends React.Component<
    * @protected
    */
   protected setAutoReload(active: boolean): void {
-    this.setState({ ...this.state, autoReload: active });
+    this.setState(prevState => ({ ...prevState, autoReload: active }));
   }
 
   /**
@@ -281,15 +282,15 @@ export class PyunicoreComponent extends React.Component<
       this.state.sites.length > 0
     ) {
       if (this.state.site === NO_SITE) {
-        this.setState({
-          ...this.state,
+        this.setState(prevState => ({
+          ...prevState,
           loading: false,
           disableSitesSelection: false,
           jobs: [],
           renderLeftArrow: false,
           renderRightArrow: false,
           isRefresh: false
-        });
+        }));
         return;
       }
       this.getData().catch(this.catchError);
@@ -302,14 +303,14 @@ export class PyunicoreComponent extends React.Component<
    * @private
    */
   private catchError(reason?: any): void {
-    this.setState({
-      ...this.state,
+    this.setState(prevState => ({
+      ...prevState,
       modalState: {
-        ...this.state.modalState,
+        ...prevState.modalState,
         visible: true,
         message: reason
       }
-    });
+    }));
   }
   /**
    * clear interval to avoid unnecessary reloads
@@ -329,11 +330,11 @@ export class PyunicoreComponent extends React.Component<
     );
     this.setState({ ...this.state, updateIntervalId: updateIntervalId });
     if (this.state.site === NO_SITE) {
-      this.setState({
-        ...this.state,
+      this.setState(prevState => ({
+        ...prevState,
         loading: false,
         disableSitesSelection: false
-      });
+      }));
       return;
     }
     if (this.state.sites.length <= 0) {
@@ -392,7 +393,7 @@ export class PyunicoreComponent extends React.Component<
           columns={this.state.tableFormat.cols}
           data={this.state.jobs}
           setMessageState={(message: string) => {
-            this.setState({ ...this.state, message: message });
+            this.setState(prevState => ({ ...prevState, message: message }));
           }}
           getKernel={this.props.getKernel}
           getJob={this.props.getJobCode}
