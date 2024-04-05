@@ -307,6 +307,11 @@ button[disabled]:hover {
     cursor: pointer;
 }
 
+.clickableIcon:focus {
+    outline: #2b2b2c solid 2px;
+    outline-offset: 2px;
+}
+
 i {
     color: var(--jp-content-font-color2);
 }

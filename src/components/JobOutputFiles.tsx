@@ -253,6 +253,12 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
               data-testid={'download-file'}
               className={'fa fa-download clickableIcon'}
               onClick={() => downloadToCurrentPath(output)}
+              onKeyDown={event => {
+                if (event.key === 'Enter') {
+                  downloadToCurrentPath(output);
+                }
+              }}
+              tabIndex={0}
             />
           )}
         </>
