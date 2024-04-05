@@ -126,3 +126,5 @@ folder is located. Then you can remove the symlink named `tvb-ext-unicore` withi
 ### Acknowledgments
 
 This project has received funding from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under the Specific Grant Agreement No. 945539 (Human Brain Project SGA3).
+
+This project has received funding from the European Union’s Horizon Europe Programme under the Specific Grant Agreement No. 101147319 (EBRAINS 2.0 Project).
