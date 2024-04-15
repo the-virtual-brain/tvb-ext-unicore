@@ -1,4 +1,4 @@
-name: Mirror to Ebrains
+name: Mirror to Ebrains 2.0
 
 on:
   push:
@@ -13,12 +13,12 @@ jobs:
         with:
           source_repo: "the-virtual-brain/tvb-ext-unicore"
           source_branch: "main"
-          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/tvb/tvb-ext-unicore.git"
+          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/ri/tech-hub/apps/tvb/tvb-ext-unicore-mirror.git"
           destination_branch: "master"
       - name: synctags
         uses: wei/git-sync@v3
         with:
           source_repo: "the-virtual-brain/tvb-ext-unicore"
           source_branch: "refs/tags/*"
-          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/tvb/tvb-ext-unicore.git"
+          destination_repo: "https://ghpusher:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/ri/tech-hub/apps/tvb/tvb-ext-unicore-mirror.git"
           destination_branch: "refs/tags/*"
