@@ -8,6 +8,7 @@ import { showErrorMessage, showDialog, Dialog } from '@jupyterlab/apputils';
 import { NullableIKernelConnection } from '../index';
 import { TEXT_PLAIN_MIME, getDownloadFileCode } from '../constants';
 import { some } from '@lumino/algorithm';
+import IError = Dialog.IError;
 
 namespace Types {
   export type Output = {
@@ -160,8 +161,8 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       setDownloading(false);
       browser.update();
     } catch (e) {
-      await showErrorMessage('Error on request:', e);
-      setMessage({ text: e.text, className: downloadStatus.error });
+      await showErrorMessage('Error on request:', e as string | IError);
+      setMessage({ text: e as string, className: downloadStatus.error });
       setDownloading(false);
     }
   }

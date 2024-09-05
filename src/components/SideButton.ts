@@ -46,9 +46,9 @@ export class SideButton extends Widget {
   protected async onAfterShow(msg: Message): Promise<void> {
     console.log('after show');
     super.onAfterShow(msg);
-    Drag.overrideCursor('wait');
+    const cursorOverride = Drag.overrideCursor('wait');
     await this._click();
-    Drag.overrideCursor('inherit');
+    cursorOverride.dispose();
   }
 
   /**

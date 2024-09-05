@@ -213,6 +213,6 @@ namespace Private {
   }
 
   export function getFileBrowser(factory: IFileBrowserFactory): FileBrowser {
-    return factory.defaultBrowser;
+    return factory.createFileBrowser('default');
   }
 }

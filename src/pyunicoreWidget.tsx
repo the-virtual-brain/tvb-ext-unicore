@@ -77,7 +77,7 @@ namespace types {
     renderLeftArrow: boolean;
     renderRightArrow: boolean;
     disableSitesSelection: boolean;
-    updateIntervalId?: number;
+    updateIntervalId?: number | NodeJS.Timeout;
     modalState: modalTypes.Props;
     autoReload: boolean;
     isRefresh: boolean;
@@ -316,7 +316,15 @@ export class PyunicoreComponent extends React.Component<
    * clear interval to avoid unnecessary reloads
    */
   componentWillUnmount(): void {
-    clearInterval(this.state.updateIntervalId);
+    const { updateIntervalId } = this.state;
+
+    if (typeof updateIntervalId === 'number') {
+      // in browser envs
+      clearInterval(updateIntervalId);
+    } else if (updateIntervalId !== undefined) {
+      // in Node.js envs
+      clearInterval(updateIntervalId);
+    }
   }
 
   /**
