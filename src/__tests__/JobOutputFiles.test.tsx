@@ -204,7 +204,8 @@ describe('test <JobOutput />', () => {
     const { findByTestId } = renderJobOutput(true);
     const output = await findByTestId(`output-${TEST_FILE_NAME}`);
     const file = await findByText(output, TEST_FILE_NAME);
-    await waitFor(() => fireEvent.dragStart(file));
+    const dragStartEvent = new Event('dragstart', { bubbles: true, cancelable: true });
+    await waitFor(() => file.dispatchEvent(dragStartEvent));
     // drag should still work even if kernel is not available
     expect(startDrag).toBeCalledTimes(1);
   });
@@ -213,7 +214,8 @@ describe('test <JobOutput />', () => {
     const { findByTestId } = renderJobOutput(true);
     const output = await findByTestId(`output-${TEST_FILE_NAME}`);
     const file = await findByText(output, TEST_FILE_NAME);
-    await waitFor(() => fireEvent.dragStart(file));
+    const dragStartEvent = new Event('dragstart', { bubbles: true, cancelable: true });
+    await waitFor(() => file.dispatchEvent(dragStartEvent));
     expect(startDrag).toBeCalledTimes(2);
   });
 
@@ -223,9 +225,11 @@ describe('test <JobOutput />', () => {
     expect(output).toBeTruthy();
     const file = await findByText(output, TEST_FILE_NAME);
     // drag file
-    await waitFor(() => fireEvent.dragStart(file));
+    const dragStartEvent = new Event('dragstart', { bubbles: true, cancelable: true });
+    await waitFor(() => file.dispatchEvent(dragStartEvent));
     // drop file to browser
-    await waitFor(() => fireEvent.drop(MOCK_BROWSER.node));
+    const dropEvent = new Event('drop', { bubbles: true, cancelable: true });
+    await waitFor(() => MOCK_BROWSER.node.dispatchEvent(dropEvent));
     promiseResolve(true);
     const msg = await findByText(output, 'Downloaded');
     expect(msg).toBeTruthy();
@@ -238,9 +242,11 @@ describe('test <JobOutput />', () => {
     expect(output).toBeTruthy();
     const file = await findByText(output, TEST_FILE_NAME);
     // drag file
-    await waitFor(() => fireEvent.dragStart(file));
+    const dragStartEvent = new Event('dragstart', { bubbles: true, cancelable: true });
+    await waitFor(() => file.dispatchEvent(dragStartEvent));
     // drop file to browser
-    await waitFor(() => fireEvent.drop(MOCK_BROWSER.node));
+    const dropEvent = new Event('drop', { bubbles: true, cancelable: true });
+    await waitFor(() => MOCK_BROWSER.node.dispatchEvent(dropEvent));
     promiseResolve(false);
     const msg = await findByText(output, 'Downloaded');
     expect(msg).toBeTruthy();
@@ -253,9 +259,11 @@ describe('test <JobOutput />', () => {
     // on a second pass  this will behave as though we clicked on cancel in modal
     const file = await findByText(output, TEST_FILE_NAME);
     // drag file
-    await waitFor(() => fireEvent.dragStart(file));
+    const dragStartEvent = new Event('dragstart', { bubbles: true, cancelable: true });
+    await waitFor(() => file.dispatchEvent(dragStartEvent));
     // drop file to browser
-    await waitFor(() => fireEvent.drop(MOCK_BROWSER.node));
+    const dropEvent = new Event('drop', { bubbles: true, cancelable: true });
+    await waitFor(() => MOCK_BROWSER.node.dispatchEvent(dropEvent));
     promiseResolve(true);
     let msg: any;
     try {

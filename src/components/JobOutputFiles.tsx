@@ -162,7 +162,13 @@ export const JobOutput = (props: Types.JobOutputProps): JSX.Element => {
       browser.update();
     } catch (e) {
       await showErrorMessage('Error on request:', e as string | IError);
-      setMessage({ text: e as string, className: downloadStatus.error });
+      const errorMessage =
+        e instanceof Error ? e.message : 'An unexpected error occurred';
+
+      setMessage({
+        text: errorMessage,
+        className: downloadStatus.error
+      });
       setDownloading(false);
     }
   }

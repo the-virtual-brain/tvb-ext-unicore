@@ -180,14 +180,16 @@ describe('<PyunicoreComponent />', () => {
     expect(await findByText(sites, JUDAC)).toHaveProperty('selected', true);
     expect(await findByText(sites, NO_SITE)).toHaveProperty('selected', false);
     // when changing from no site to other site the table is populated with more rows
-    let rows = document.getElementsByTagName('tr');
-    expect(rows.length).toBeGreaterThan(1);
+    await waitFor(() => {
+      let rows = document.getElementsByTagName('tr');
+      expect(rows.length).toBeGreaterThan(1);
+    })
 
     // changing from a site to none results in not displaying any data in table
     fireEvent.change(getByTestId(sites, 'select'), {
       target: { value: NO_SITE }
     });
-    rows = document.getElementsByTagName('tr');
+    const rows = document.getElementsByTagName('tr');
     expect(rows.length).toBe(1);
   });
 });
