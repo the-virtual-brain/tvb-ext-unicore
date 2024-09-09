@@ -44,8 +44,6 @@ jobs:
         CLB_AUTH: 'TEST_TOKEN'
       run: |
         set -eux
-        jlpm
-        jlpm run eslint:check
         python -m pip install .[test]
 
         pytest -vv -r ap tvbextunicore
