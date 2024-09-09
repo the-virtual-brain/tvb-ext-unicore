@@ -45,6 +45,7 @@ jobs:
       run: |
         set -eux
         jlpm
+        jlpm run build
         python -m pip install .[test]
 
         pytest -vv -r ap tvbextunicore
