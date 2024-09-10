@@ -318,12 +318,11 @@ export class PyunicoreComponent extends React.Component<
   componentWillUnmount(): void {
     const { updateIntervalId } = this.state;
 
-    if (typeof updateIntervalId === 'number') {
-      // in browser envs
-      clearInterval(updateIntervalId);
-    } else if (updateIntervalId !== undefined) {
-      // in Node.js envs
-      clearInterval(updateIntervalId);
+    if (
+      typeof updateIntervalId === 'number' ||
+      (typeof updateIntervalId === 'object' && updateIntervalId !== null)
+    ) {
+      clearInterval(updateIntervalId as any);
     }
   }
 
