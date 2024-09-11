@@ -1,10 +1,15 @@
 *.bundle.*
 lib/
 node_modules/
+*.log
+.eslintcache
+.stylelintcache
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
 tvbextunicore/labextension
+# Version file is handled by hatchling
+tvbextunicore/_version.py
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
@@ -113,3 +118,5 @@ dmypy.json
 /.idea/
 
 .tvb_ext_unicore.log*
+# Yarn cache
+.yarn/

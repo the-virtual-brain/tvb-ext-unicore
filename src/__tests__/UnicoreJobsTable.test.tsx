@@ -22,7 +22,7 @@ import {
   screen,
   waitFor
 } from '@testing-library/react';
-import React from 'react';
+import React, {act} from 'react';
 import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
 import { FileBrowser } from '@jupyterlab/filebrowser';
 
@@ -136,11 +136,17 @@ describe('<UnicoreJobsTable />, <JobRow />', () => {
     // logs are not rendered
     expect(document.getElementsByClassName('detailsRow').length).toBe(0);
     // after click on row the logs are visible
-    await waitFor(() => fireEvent.click(row));
-    expect(document.getElementsByClassName('detailsRow').length).toBe(1);
-    expect(document.getElementsByClassName('detailsRow')[0].innerHTML).toBe(
-      '<td colspan="100"><textarea readonly="">line 1\nline 2</textarea></td>'
+    await act(async () => {
+      fireEvent.click(row);
+    });
+    await waitFor(() => {
+      expect(document.getElementsByClassName('detailsRow').length).toBe(1);
+    });
+    await waitFor(() => {
+      expect(document.getElementsByClassName('detailsRow')[0].innerHTML)
+          .toBe('<td colspan="100"><textarea readonly="">line 1\nline 2</textarea></td>'
     );
+    })
   });
 
   it('renders job row with job in progress correctly, renders button to cancel', async () => {
@@ -151,13 +157,18 @@ describe('<UnicoreJobsTable />, <JobRow />', () => {
     const btn = await findByText(row, 'Cancel Job');
     expect(btn).toBeTruthy();
     // click on cancel job button and wait until finished
-    await waitFor(() => fireEvent.click(btn));
-    // function to cancel job should be called
-    expect(mockCancel).toBeCalledTimes(1);
+    await act(async () => {
+      fireEvent.click(btn);
+    });
+    await waitFor(() => {
+      // function to cancel job should be called
+      expect(mockCancel).toBeCalledTimes(1);
+    })
     // function to set message state should be called
     expect(mockSetMessageState).toBeCalledTimes(1);
     // try to drag a job
-    await waitFor(() => fireEvent.dragStart(row));
+    const dragStartEvent = new Event('dragstart', { bubbles: true, cancelable: true });
+    await waitFor(() => row.dispatchEvent(dragStartEvent));
     // get kernel should have been called
     expect(mockGetKernel).toBeCalledTimes(1);
     // handle error should have been called as get kernel returns null

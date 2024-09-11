@@ -7,17 +7,18 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
+        python-version: [ "3.8", "3.11", "3.12" ]
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -25,8 +26,15 @@ jobs:
       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
 
     - name: Install dependencies
+      run:  python -m pip install -U "jupyterlab>=4.0.0,<5" check-manifest pyunicore pytest pytest-mock build
+
+    - name: Install Node.js dependencies
+      run: jlpm install
+
+    - name: Test the extension with jlpm
       run: |
-        python -m pip install -U jupyterlab~=3.6 check-manifest pyunicore pytest pytest-mock pytest-cov
+        set -eux
+        jlpm run test
 
     - name: Build the extension
       env:
@@ -34,73 +42,88 @@ jobs:
       run: |
         set -eux
         jlpm
-        jlpm run eslint:check
-        python -m pip install .
+        jlpm run build
+        python -m pip install .[test]
 
         jupyter server extension list 2>&1 | grep -ie "tvbextunicore.*OK"
-
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
         python -m jupyterlab.browser_check
 
-        check-manifest -v
-
-        pip install build
         python -m build --sdist
-        cp dist/*.tar.gz myextension.tar.gz
         pip uninstall -y "tvb-ext-unicore" jupyterlab
-        rm -rf myextension
 
-    - name: Run tests
+    - name: Run Python & JS tests
       run: |
+        set -eux
         pytest tvbextunicore -r ap
-
-    - name: Compute coverage
-      run: |
-        pytest -v  --cov --cov-report=xml
-
-    - name: Run JS tests
-      run: |
         yarn test
 
-    - name: Compute JS coverage
+    - name: Package the extension
       run: |
-        yarn test --coverage
+        set -eux
 
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        pip install build
+        python -m build
+        pip uninstall -y "tvb-ext-unicore" jupyterlab
 
-    - uses: actions/upload-artifact@v3
+    - name: Upload extension packages
+      uses: actions/upload-artifact@v4
       with:
-        name: myextension-sdist
-        path: myextension.tar.gz
+        name: extension-artifacts-${{ matrix.python-version }}
+        path: dist/tvbextunicore*
+        if-no-files-found: error
+
+  sonar_cloud:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Base Setup
+        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+      - name: Install dependencies
+        run: python -m pip install -U "jupyterlab>=4.0.0,<5" check-manifest pyunicore pytest pytest-mock pytest-cov
+
+      - name: Compute coverage
+        run: |
+          python -m pip install .[test]
+          pytest -v  --cov --cov-report=xml
+          yarn test --coverage
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   test_isolated:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
     - name: Install Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.8'
+        python-version: '3.11'
         architecture: 'x64'
-    - uses: actions/download-artifact@v3
+
+    - uses: actions/download-artifact@v4
       with:
-        name: myextension-sdist
+        name: extension-artifacts-3.11
+
     - name: Install and Test
       run: |
         set -eux
         # Remove NodeJS, twice to take care of system and locally installed node versions.
         sudo rm -rf $(which node)
         sudo rm -rf $(which node)
-        pip install --upgrade pip
-        pip install myextension.tar.gz
-        pip install jupyterlab==3.6.5
-        jupyter labextension list
+
+        pip install "jupyterlab>=4.0.0,<5" tvbextunicore*.whl
+
+        jupyter server extension list 2>&1 | grep -ie "tvbextunicore.*OK"
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
-        python -m jupyterlab.browser_check --no-chrome-test
+        python -m jupyterlab.browser_check --no-browser-test

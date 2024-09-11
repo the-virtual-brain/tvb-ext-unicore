@@ -26,7 +26,7 @@ EBRAINS Lab and keep it in an environment variable called **CLB_AUTH**.
 
 ## Requirements
 
-* JupyterLab version 3
+* JupyterLab version >= 4
 * pyunicore >= 1.0
 
 ## Install
@@ -123,8 +123,45 @@ In development mode, you will also need to remove the symlink created by `jupyte
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
 folder is located. Then you can remove the symlink named `tvb-ext-unicore` within that folder.
 
-### Acknowledgments
+
+### Testing the extension
+
+#### Server tests
+
+This extension is using [Pytest](https://docs.pytest.org/) for Python code testing.
+
+Install test dependencies (needed only once):
+
+```sh
+pip install -e ".[test]"
+# Each time you install the Python package, you need to restore the front-end extension link
+jupyter labextension develop . --overwrite
+```
+
+To execute them, run:
+
+```sh
+pytest -vv -r ap --cov tvbextunicore
+```
+
+#### Frontend tests
+
+This extension is using [Jest](https://jestjs.io/) for JavaScript code testing.
+
+To execute them, execute:
+
+```sh
+jlpm
+jlpm test
+```
+
+### Packaging the extension
+
+See [RELEASE](RELEASE.md)
+
+## Acknowledgments
 
 This project has received funding from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under the Specific Grant Agreement No. 945539 (Human Brain Project SGA3).
 
 This project has received funding from the European Union’s Horizon Europe Programme under the Specific Grant Agreement No. 101147319 (EBRAINS 2.0 Project).
+
