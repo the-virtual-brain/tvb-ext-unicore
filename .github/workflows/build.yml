@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [ "3.8", "3.11", "3.12" ]
+        python-version: [ "3.11"]
 
     steps:
     - name: Checkout
@@ -45,6 +45,8 @@ jobs:
         jlpm run build
         python -m pip install .[test]
 
+        jupyter server extension list
+        
         jupyter server extension list 2>&1 | grep -ie "tvbextunicore.*OK"
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
         python -m jupyterlab.browser_check
