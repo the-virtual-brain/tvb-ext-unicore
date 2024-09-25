@@ -37,7 +37,7 @@
     "build:prod": "jlpm clean && jlpm build:lib:prod && jlpm build:labextension",
     "clean": "jlpm clean:lib",
     "clean:all": "jlpm clean:lib && jlpm clean:labextension && jlpm clean:lintcache",
-    "clean:labextension": "rimraf tvbextunicore/labextension tvbextunicore/_version.py",
+    "clean:labextension": "rimraf tvb_ext_unicore/labextension tvb_ext_unicore/_version.py",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "clean:lintcache": "rimraf .eslintcache .stylelintcache",
     "eslint": "jlpm eslint:check --fix",
@@ -122,7 +122,7 @@
       }
     },
     "extension": true,
-    "outputDir": "tvbextunicore/labextension"
+    "outputDir": "tvb_ext_unicore/labextension"
   },
   "jupyter-releaser": {
     "hooks": {

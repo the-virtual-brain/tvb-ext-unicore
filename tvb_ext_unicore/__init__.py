@@ -6,14 +6,14 @@ from .handlers import setup_handlers
 def _jupyter_labextension_paths():
     return [{
         "src": "labextension",
-        "dest": "tvbextunicore"
+        "dest": "tvb_ext_unicore"
     }]
 
 
 
 def _jupyter_server_extension_points():
     return [{
-        "module": "tvbextunicore"
+        "module": "tvb_ext_unicore"
     }]
 
 
@@ -26,7 +26,7 @@ def _load_jupyter_server_extension(server_app):
         JupyterLab application instance
     """
     setup_handlers(server_app.web_app)
-    server_app.log.info("Registered tvbextunicore server extension")
+    server_app.log.info("Registered tvb_ext_unicore server extension")
 
 
 # For backward compatibility with notebook server - useful for Binder/JupyterHub

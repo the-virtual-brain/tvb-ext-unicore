@@ -41,13 +41,11 @@ jobs:
         CLB_AUTH: 'TEST_TOKEN'
       run: |
         set -eux
-        jlpm
-        jlpm run build
         python -m pip install .[test]
 
         jupyter server extension list
         
-        jupyter server extension list 2>&1 | grep -ie "tvbextunicore.*OK"
+        jupyter server extension list 2>&1 | grep -ie "tvb_ext_unicore.*OK"
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
         python -m jupyterlab.browser_check
 
@@ -57,7 +55,7 @@ jobs:
     - name: Run Python & JS tests
       run: |
         set -eux
-        pytest tvbextunicore -r ap
+        pytest tvb_ext_unicore -r ap
         yarn test
 
     - name: Package the extension
@@ -126,6 +124,6 @@ jobs:
 
         pip install "jupyterlab>=4.0.0,<5" tvb_ext_unicore*.whl
 
-        jupyter server extension list 2>&1 | grep -ie "tvbextunicore.*OK"
+        jupyter server extension list 2>&1 | grep -ie "tvb_ext_unicore.*OK"
         jupyter labextension list 2>&1 | grep -ie "tvb-ext-unicore.*OK"
         python -m jupyterlab.browser_check --no-browser-test

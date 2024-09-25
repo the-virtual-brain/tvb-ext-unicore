@@ -17,7 +17,7 @@ export async function requestAPI<T>(
   const settings = ServerConnection.makeSettings();
   const requestUrl = URLExt.join(
     settings.baseUrl,
-    'tvbextunicore', // API Namespace
+    'tvb_ext_unicore', // API Namespace
     endPoint
   );
   let response: Response;
@@ -60,7 +60,7 @@ export async function requestStream<T>(
   const settings = ServerConnection.makeSettings();
   const requestUrl = URLExt.join(
     settings.baseUrl,
-    'tvbextunicore', // API Namespace
+    'tvb_ext_unicore', // API Namespace
     endPoint
   );
   let response: Response;

@@ -13,10 +13,10 @@ from jupyter_server.utils import url_path_join
 import tornado
 from tornado.web import MissingArgumentError
 
-from tvbextunicore.exceptions import SitesDownException, FileNotExistsException, JobRunningException
-from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
-from tvbextunicore.logger.builder import get_logger
-from tvbextunicore.utils import build_response, DownloadStatus
+from tvb_ext_unicore.exceptions import SitesDownException, FileNotExistsException, JobRunningException
+from tvb_ext_unicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper
+from tvb_ext_unicore.logger.builder import get_logger
+from tvb_ext_unicore.utils import build_response, DownloadStatus
 
 LOGGER = get_logger(__name__)
 
@@ -135,10 +135,10 @@ def setup_handlers(web_app):
     host_pattern = ".*$"
 
     base_url = web_app.settings["base_url"]
-    sites_pattern = url_path_join(base_url, "tvbextunicore", "sites")
-    jobs_pattern = url_path_join(base_url, "tvbextunicore", "jobs")
-    output_pattern = url_path_join(base_url, "tvbextunicore", "job_output")
-    drive_pattern = url_path_join(base_url, "tvbextunicore", r"drive/([^/]+)?/([^/]+)?")
+    sites_pattern = url_path_join(base_url, "tvb_ext_unicore", "sites")
+    jobs_pattern = url_path_join(base_url, "tvb_ext_unicore", "jobs")
+    output_pattern = url_path_join(base_url, "tvb_ext_unicore", "job_output")
+    drive_pattern = url_path_join(base_url, "tvb_ext_unicore", r"drive/([^/]+)?/([^/]+)?")
     handlers = [
         (jobs_pattern, JobsHandler),
         (sites_pattern, SitesHandler),

@@ -30,7 +30,7 @@ export const RELOAD_CHECK_RATE_MS = 10000; //should check every 10sec
  * @param file
  */
 export function getDownloadFileCode(job_url: string, file: string): string {
-  return `from tvbextunicore.unicore_wrapper import unicore_wrapper
+  return `from tvb_ext_unicore.unicore_wrapper import unicore_wrapper
 unicore = unicore_wrapper.UnicoreWrapper()
 download_result = unicore.download_file('${job_url}', '${file}')
 download_result`;
@@ -41,7 +41,7 @@ download_result`;
  * @param job_url
  */
 export function getJobCode(job_url: string): string {
-  return `from tvbextunicore.unicore_wrapper import unicore_wrapper
+  return `from tvb_ext_unicore.unicore_wrapper import unicore_wrapper
 unicore = unicore_wrapper.UnicoreWrapper()
 job = unicore.get_job('${job_url}')
 job`;
