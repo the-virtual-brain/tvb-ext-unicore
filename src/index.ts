@@ -51,7 +51,7 @@ export type NullableIKernelConnection =
  * Initialization data for the tvb-ext-unicore extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'tvbextunicore:plugin',
+  id: 'tvb_ext_unicore:plugin',
   autoStart: true,
   requires: [
     ICommandPalette,
@@ -73,7 +73,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
-    const command = 'tvbextunicore:open';
+    const command = 'tvb_ext_unicore:open';
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
       execute: async (args = { defaultSite: NO_SITE }): Promise<any> => {
@@ -125,7 +125,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           });
 
           widget = new MainAreaWidget({ content });
-          widget.id = 'tvbextunicore';
+          widget.id = 'tvb_ext_unicore';
           widget.title.label = 'PyUnicore Task Stream';
           widget.title.closable = true;
         }

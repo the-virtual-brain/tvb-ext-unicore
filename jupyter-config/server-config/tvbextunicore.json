@@ -1,7 +1,7 @@
 {
   "ServerApp": {
     "jpserver_extensions": {
-      "tvbextunicore": true
+      "tvb_ext_unicore": true
     }
   }
 }

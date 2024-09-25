@@ -7,9 +7,9 @@ node_modules/
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
-tvbextunicore/labextension
+tvb_ext_unicore/labextension
 # Version file is handled by hatchling
-tvbextunicore/_version.py
+tvb_ext_unicore/_version.py
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python

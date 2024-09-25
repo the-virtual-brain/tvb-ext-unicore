@@ -7,7 +7,7 @@
 
 import json
 import enum
-from tvbextunicore.logger.builder import get_logger
+from tvb_ext_unicore.logger.builder import get_logger
 
 LOGGER = get_logger(__name__)
 

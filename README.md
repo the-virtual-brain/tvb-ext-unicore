@@ -10,7 +10,7 @@ This jupyter extension offers a UI component to monitor HPC jobs through Unicore
 to easily switch between computing sites, retrieve details about the jobs, 
 and also cancel them.
 
-The package is composed of a Python module named `tvbextunicore`
+The package is composed of a Python module named `tvb_ext_unicore`
 for the server extension and a NPM package named `tvb-ext-unicore`
 for the frontend extension.
 
@@ -85,7 +85,7 @@ pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
 # Server extension must be manually installed in develop mode
-jupyter server extension enable tvbextunicore
+jupyter server extension enable tvb_ext_unicore
 
 # Define CLB_AUTH environment variable holding your EBRAINS token
 export CLB_AUTH=${ebrains_token}
@@ -115,7 +115,7 @@ jupyter lab build --minimize=False
 
 ```bash
 # Server extension must be manually disabled in develop mode
-jupyter server extension disable tvbextunicore
+jupyter server extension disable tvb_ext_unicore
 pip uninstall tvb-ext-unicore
 ```
 
@@ -141,7 +141,7 @@ jupyter labextension develop . --overwrite
 To execute them, run:
 
 ```sh
-pytest -vv -r ap --cov tvbextunicore
+pytest -vv -r ap --cov tvb_ext_unicore
 ```
 
 #### Frontend tests

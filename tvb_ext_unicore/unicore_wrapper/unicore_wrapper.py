@@ -10,10 +10,10 @@ from pyunicore.client import _HBP_REGISTRY_URL
 import pyunicore.client as unicore_client
 from pyunicore.credentials import OIDCToken
 from requests.exceptions import ConnectionError
-from tvbextunicore.exceptions import TVBExtUnicoreException, ClientAuthException, SitesDownException
-from tvbextunicore.exceptions import FileNotExistsException, JobRunningException
-from tvbextunicore.logger.builder import get_logger
-from tvbextunicore.unicore_wrapper.job_dto import JobDTO
+from tvb_ext_unicore.exceptions import TVBExtUnicoreException, ClientAuthException, SitesDownException
+from tvb_ext_unicore.exceptions import FileNotExistsException, JobRunningException
+from tvb_ext_unicore.logger.builder import get_logger
+from tvb_ext_unicore.unicore_wrapper.job_dto import JobDTO
 
 LOGGER = get_logger(__name__)
 DOWNLOAD_MESSAGE = 'Downloaded successfully!'

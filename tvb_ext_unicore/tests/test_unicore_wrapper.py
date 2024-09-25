@@ -10,15 +10,15 @@ import os
 import pytest
 from datetime import datetime
 
-from tvbextunicore.exceptions import TVBExtUnicoreException, SitesDownException, \
+from tvb_ext_unicore.exceptions import TVBExtUnicoreException, SitesDownException, \
     FileNotExistsException, JobRunningException
-from tvbextunicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper, DOWNLOAD_MESSAGE
-from tvbextunicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
+from tvb_ext_unicore.unicore_wrapper.unicore_wrapper import UnicoreWrapper, DOWNLOAD_MESSAGE
+from tvb_ext_unicore.unicore_wrapper.job_dto import JobDTO, NAME, OWNER, SITE_NAME, STATUS, SUBMISSION_TIME, \
     TERMINATION_TIME, \
     MOUNT_POINT
-from tvbextunicore.utils import build_response, DownloadStatus
+from tvb_ext_unicore.utils import build_response, DownloadStatus
 
-GET_JOB = 'tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job'
+GET_JOB = 'tvb_ext_unicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper.get_job'
 SHUTIL_MOVE = 'shutil.move'
 
 
@@ -135,7 +135,7 @@ def test_get_jobs(mocker):
     def mockk(self, site=''):
         return MockPyUnicoreClient()
 
-    mocker.patch('tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
+    mocker.patch('tvb_ext_unicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
     unicore_wrapper = UnicoreWrapper()
     jobs, msg = unicore_wrapper.get_jobs('TEST_SITE')
 
@@ -153,7 +153,7 @@ def test_get_jobs_exception_at_sites(mocker):
     def mockk(self, site=''):
         raise SitesDownException(exception_msg)
 
-    mocker.patch('tvbextunicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
+    mocker.patch('tvb_ext_unicore.unicore_wrapper.unicore_wrapper.UnicoreWrapper._UnicoreWrapper__build_client', mockk)
     unicore_wrapper = UnicoreWrapper()
     jobs, msg = unicore_wrapper.get_jobs('TEST_SITE')
 
