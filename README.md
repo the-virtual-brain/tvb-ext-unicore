@@ -1,3 +1,7 @@
+<p>
+    <img src="style/icons/TVB_logo.svg" alt="TVB logo" title="TVB" align="right" height="100" />
+</p>
+
 # tvb-ext-unicore
 
 [![Github Actions Status](https://github.com/the-virtual-brain/tvb-ext-unicore/workflows/Build/badge.svg)](https://github.com/the-virtual-brain/tvb-ext-unicore/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=the-virtual-brain_tvb-ext-unicore&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=the-virtual-brain_tvb-ext-unicore) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=the-virtual-brain_tvb-ext-unicore&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=the-virtual-brain_tvb-ext-unicore)
