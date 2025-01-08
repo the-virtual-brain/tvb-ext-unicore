@@ -4,9 +4,9 @@
 #
 # (c) 2022-2024, TVB Widgets Team
 #
-
+import json
 import os
-from pyunicore.client import _HBP_REGISTRY_URL
+import requests
 import pyunicore.client as unicore_client
 from pyunicore.credentials import OIDCToken
 from requests.exceptions import ConnectionError
@@ -14,6 +14,7 @@ from tvb_ext_unicore.exceptions import TVBExtUnicoreException, ClientAuthExcepti
 from tvb_ext_unicore.exceptions import FileNotExistsException, JobRunningException
 from tvb_ext_unicore.logger.builder import get_logger
 from tvb_ext_unicore.unicore_wrapper.job_dto import JobDTO
+from tvb_ext_unicore.utils import get_registry
 
 LOGGER = get_logger(__name__)
 DOWNLOAD_MESSAGE = 'Downloaded successfully!'
@@ -25,23 +26,33 @@ class UnicoreWrapper(object):
         token = self.__retrieve_token_str()
         token = OIDCToken(token)
         self.transport = self.__build_transport(token)
-        self.registry = unicore_client.Registry(self.transport, _HBP_REGISTRY_URL)
+        self.registry = unicore_client.Registry(self.transport, get_registry())
 
     def __retrieve_token_str(self):
         try:
+            # for ebrains lab
             from clb_nb_utils import oauth as clb_oauth
             token = clb_oauth.get_token()
         except (ModuleNotFoundError, ConnectionError) as e:
             LOGGER.warning(f"Could not connect to EBRAINS to retrieve an auth token: {e}")
-            LOGGER.info("Will try to use the auth token defined by environment variable CLB_AUTH...")
+            try:
+                # for juelich's lab
+                api_url = os.getenv("JUPYTERHUB_API_URL")
+                user_api_url = f"{api_url}/user_oauth"
+                headers = {"Authorization": "token {}".format(os.getenv("JUPYTERHUB_API_TOKEN"))}
+                r = requests.get(user_api_url, headers=headers)
+                response = json.loads(r.content.decode("utf-8"))
+                token = response["auth_state"]["access_token"]
+            except Exception as e:
+                LOGGER.warning(f"Could not connect to Juelich's JupyterLab to retrieve an auth token: {e}")
+                LOGGER.info("Will try to use the auth token defined by environment variable CLB_AUTH...")
+                token = os.environ.get('CLB_AUTH')
+                if token is None:
+                    LOGGER.error("No auth token defined as environment variable CLB_AUTH! Please define one!")
+                    raise TVBExtUnicoreException("Cannot connect to EBRAINS HPC without an auth token! Either run "
+                                                 "this on Collab, or define the CLB_AUTH environment variable!")
 
-            token = os.environ.get('CLB_AUTH')
-            if token is None:
-                LOGGER.error("No auth token defined as environment variable CLB_AUTH! Please define one!")
-                raise TVBExtUnicoreException("Cannot connect to EBRAINS HPC without an auth token! Either run this on "
-                                             "Collab, or define the CLB_AUTH environment variable!")
-
-            LOGGER.info("Successfully retrieved the auth token from environment variable CLB_AUTH!")
+                LOGGER.info("Successfully retrieved the auth token from environment variable CLB_AUTH!")
         return token
 
     def __build_transport(self, token):

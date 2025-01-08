@@ -28,6 +28,7 @@ import { NO_SITE, getJobCode } from './constants';
 import logoUnicore from '../style/icons/logo-unicore.svg';
 import { SideButton } from './components/SideButton';
 import { LabIcon } from '@jupyterlab/ui-components';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 async function cancelJob(resource_url: string): Promise<any> {
   const dataToSend = { resource_url: resource_url };
@@ -59,7 +60,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     IConsoleTracker,
     ILabShell,
     INotebookTracker,
-    IFileBrowserFactory
+    IFileBrowserFactory,
+    ISettingRegistry
   ],
   activate: async (
     app: JupyterFrontEnd,
@@ -68,12 +70,28 @@ const plugin: JupyterFrontEndPlugin<void> = {
     consoleTracker: IConsoleTracker,
     labShell: ILabShell,
     notebookTracker: INotebookTracker,
-    factory: IFileBrowserFactory
+    factory: IFileBrowserFactory,
+    settingRegistry: ISettingRegistry
   ) => {
     console.log('JupyterLab extension tvb-ext-unicore is activated!');
     let widget: MainAreaWidget<PyunicoreWidget>;
     const columns = ['id', 'name', 'owner', 'site', 'status', 'start_time'];
     const command = 'tvb_ext_unicore:open';
+
+    // Load settings
+    console.log('SettingRegistry:', settingRegistry);
+    await settingRegistry
+      .load('tvb-ext-unicore:settings')
+      .then(settings => {
+        console.log('Settings loaded:', settings.composite);
+
+        const registry = settings.get('registry').composite as string;
+        console.log(`Registry: ${registry}`);
+      })
+      .catch(reason => {
+        console.error('Failed to load settings:', reason);
+      });
+
     app.commands.addCommand(command, {
       label: 'PyUnicore Task Stream',
       execute: async (args = { defaultSite: NO_SITE }): Promise<any> => {
