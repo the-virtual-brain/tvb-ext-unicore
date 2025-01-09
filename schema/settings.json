@@ -6,7 +6,7 @@
     "registry": {
       "type": "string",
       "title": "Registry",
-      "description": "Provide a registry url(e.g.: https://unicore.fz-juelich.de/FZJ/rest/registries/default_registry).",
+      "description": "Provide a registry url.",
       "default": "https://unicore.fz-juelich.de/HBP/rest/registries/default_registry"
     }
   },
