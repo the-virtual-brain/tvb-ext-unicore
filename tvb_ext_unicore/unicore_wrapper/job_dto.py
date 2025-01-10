@@ -42,13 +42,17 @@ class JobDTO(object):
         return username
 
     def __format_datetime(self, datetime_str):
-        date = datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%S+%f')
-        return date
+        if not datetime_str:
+            return 'undefined'
+        else:
+            date = datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%S+%f')
+            return date
 
     def to_json(self):
         attrs = vars(self)
         attrs['start_time'] = self.start_time.strftime("%m.%d.%Y, %H:%M:%S")
-        attrs['finish_time'] = self.finish_time.strftime("%m.%d.%Y, %H:%M:%S")
+        if self.finish_time != 'undefined':
+            attrs['finish_time'] = self.finish_time.strftime("%m.%d.%Y, %H:%M:%S")
         attrs['is_cancelable'] = self.is_cancelable
         return attrs
 
