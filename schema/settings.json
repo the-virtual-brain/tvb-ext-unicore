@@ -1,0 +1,15 @@
+{
+  "title": "Registry Setting",
+  "description": "Settings to define the registry you want to connect with the help of tvb-ext-unicore.",
+  "type": "object",
+  "properties": {
+    "registry": {
+      "type": "string",
+      "title": "Registry",
+      "description": "Provide a registry url.",
+      "default": "https://unicore.fz-juelich.de/HBP/rest/registries/default_registry"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object"
+}
