@@ -7,7 +7,6 @@ name = "tvb-ext-unicore"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
-version="3.1.0"
 classifiers = [
     "Framework :: Jupyter",
     "Framework :: Jupyter :: JupyterLab",
@@ -28,7 +27,7 @@ dependencies = [
     "pyunicore >= 1.0",
     "jupyterlab>=4.0.0"
 ]
-dynamic = ["description", "authors", "urls", "keywords"]
+dynamic = ["version", "description", "authors", "urls", "keywords"]
 
 [project.optional-dependencies]
 test = [
@@ -38,6 +37,9 @@ test = [
     "pytest-cov",
     "pytest-jupyter[server]>=0.6.0"
 ]
+
+[tool.hatch.version]
+source = "nodejs"
 
 [tool.hatch.metadata.hooks.nodejs]
 fields = ["description", "authors", "urls", "keywords"]
