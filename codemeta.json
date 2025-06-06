@@ -8,9 +8,9 @@
     "documentation": "https://wiki.ebrains.eu/bin/view/Collabs/tvb-widgets/Extension%20tvb-ext-unicore/",
     "downloadUrl": "https://files.pythonhosted.org/packages/92/13/a659136bb6bde4550c544dbbba703fa97f000097bc2417bbe23569d23c1d/tvb_ext_unicore-3.0.0.tar.gz",
     "datePublished": "2022-03-02",
-    "dateModified": "2024-09-25",
-    "version": "3.0.0",
-    "releaseNotes": "https://github.com/the-virtual-brain/tvb-ext-unicore/releases/tag/3.0.0",
+    "dateModified": "2025-02-14",
+    "version": "3.1.1",
+    "releaseNotes": "https://github.com/the-virtual-brain/tvb-ext-unicore/releases/tag/3.1.1b",
     "description": "This is a jupyter lab extension which offers a UI component to monitor HPC jobs through Unicore interface. It allows users to easily switch between computing sites, retrieve details about the jobs, and also cancel them.",
     "funding": "101147319 (EBRAINS 2.0 Project)",
     "funder": {
