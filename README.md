@@ -165,3 +165,5 @@ This project has received funding from the European Union’s Horizon 2020 Frame
 
 This project has received funding from the European Union’s Horizon Europe Programme under the Specific Grant Agreement No. 101147319 (EBRAINS 2.0 Project).
 
+This project has received funding from the European Union’s Research and Innovation Program Horizon Europe under Grant Agreement No. 101137289 (Virtual Brain Twin Project).
+
