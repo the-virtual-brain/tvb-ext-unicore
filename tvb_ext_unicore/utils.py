@@ -8,6 +8,7 @@
 import json
 import enum
 import os
+import json5
 
 from jupyter_core.paths import jupyter_config_dir
 from tvb_ext_unicore.logger.builder import get_logger
@@ -31,7 +32,7 @@ def get_user_settings():
     settings_path = os.path.join(data_dir, 'lab', 'user-settings', 'tvb-ext-unicore', 'settings.jupyterlab-settings')
     if os.path.exists(settings_path):
         with open(settings_path, 'r', encoding='utf-8') as f:
-            settings = json.load(f)
+            settings = json5.load(f)
     else:
         settings = {}
 
